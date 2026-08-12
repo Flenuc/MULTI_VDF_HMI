@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=SAJ PDM-30 Gestor de Parámetros
+Comment=Panel de control de parámetros VDF SAJ PDM-30 vía ESP32
+Exec=/home/master-pi/Desktop/VF patron/desktop_app/run_linux.sh
+Path=/home/master-pi/Desktop/VF patron/desktop_app
+Icon=utilities-system-monitor
+Terminal=false
+Categories=Utility;Engineering;
+StartupNotify=true

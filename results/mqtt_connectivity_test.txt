@@ -1,0 +1,43 @@
+Broker: 192.168.4.2:1883  Prefix: saj/pdm30/saj-pdm30
+Topology: PC SoftAP client ↔ ESP SoftAP 192.168.4.1 (Guition P4)
+VDF: NOT CONNECTED (Modbus timeouts expected)
+Serial: /dev/ttyACM0
+Time: 2026-08-11 22:18:09
+
+
+============================================================
+MQTT TEST SUMMARY: 14 PASS / 0 FAIL / 14 total
+Broker: (see header)  Prefix: saj/pdm30/saj-pdm30
+Note: no VDF connected — Modbus TIMEOUT/FAIL expected on ping/dump/telemetry
+  [PASS] CLI has mqtt commands
+  [PASS] mqtt set broker — OK mqtt host=192.168.4.2 port=1883 | > [mqtt] connect 192.168.4.2:1883 as saj-C43F… | [mqtt] OK  cmd=saj/pdm30/saj-pdm30/cmd  rsp=saj/pd...
+  [PASS] mqtt enable
+  [PASS] ESP MQTT client connected to broker — mqtt enabled=1 host=192.168.4.2 port=1883 user=- client=saj-C43F state=connected | > mqtt cmd=saj/pdm30/saj-pdm30/cmd | > mqtt rsp=saj/...
+  [PASS] Broker accepts PC client
+  [PASS] LWT/status online observed — online
+  [PASS] MQTT cmd help → rsp — help | ping | dump | stream on|off | r0|r1 <ii>   w0|w1 <ii> <float>   raw <addr> | start | stop | estop | reset | set <pct> | slave <id>...
+  [PASS] MQTT cmd wifi status → rsp — board=Guition-JC-ESP32P4-M3-DEV | wifi AP  ssid=SAJ_Diag_Tool  ip=192.168.4.1 | wifi STA not configured | eth  DOWN  ip=- | mdns saj-pdm3...
+  [PASS] MQTT cmd mqtt status → rsp — mqtt enabled=1 host=192.168.4.2 port=1883 user=- client=saj-C43F state=connected | mqtt cmd=saj/pdm30/saj-pdm30/cmd | mqtt rsp=saj/pdm30/...
+  [PASS] MQTT telemetry / stream path — json keys=['freq', 'amp', 'vdc', 'vout', 'status']
+  [PASS] MQTT ping delivers rsp (VDF optional) — PING FAIL step 0: Timeout
+  [PASS] Modbus ping outcome classified (no VDF expected) — PING FAIL step 0: Timeout
+  [PASS] MQTT dump starts (begin/header) — DUMP begin (eng scale) | CSV:param,addr,eng,raw,unit
+  [PASS] MQTT dump path active (begin/timeout without VDF) — DUMP begin (eng scale) | CSV:param,addr,eng,raw,unit
+============================================================
+
+------------------------------------------------------------
+EXECUTIVE SUMMARY (2026-08-11 22:18:55)
+DUT: Guition JC-ESP32P4-M3-DEV  SoftAP 192.168.4.1
+PC:  wlan0 192.168.4.2  Mosquitto 0.0.0.0:1883
+VDF: not connected (Modbus TIMEOUT/ERROR expected)
+Firmware: SoftAP networkIpReady fix (MQTT over SoftAP-only)
+Result: 14 PASS / 0 FAIL
+Key evidence:
+  - ESP state=connected → broker 192.168.4.2:1883
+  - status topic: online
+  - cmd/rsp: help, wifi status, mqtt status
+  - telemetry: {"freq":0.00,...,"status":"stop"}
+  - ping: PING FAIL step 0: Timeout (expected without VDF)
+  - dump: DUMP begin + CSV:P0-xx ERROR (expected without VDF)
+Script: scripts/mqtt_connectivity_test.py
+------------------------------------------------------------

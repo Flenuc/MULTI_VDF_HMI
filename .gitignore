@@ -1,0 +1,64 @@
+# ---------------------------------------------------------------------------
+# SAJ PDM-30 Edge / field tools — root .gitignore
+# ---------------------------------------------------------------------------
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+.idea/
+.vscode/
+*.code-workspace
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+ENV/
+*.egg
+
+# Desktop app local venv
+desktop_app/.venv/
+
+# Secrets / local connection state (Wi-Fi passwords, last ports, etc.)
+desktop_app/config/connection_profiles.json
+# Keep the example committed instead
+
+# --- PlatformIO / embedded ---
+.pio/
+**/.pio/
+firmware/.pio-venv/
+firmware/**/.pio/
+*.elf
+*.bin
+!**/boards/**/*.json
+.pioenvs/
+.piolibdeps/
+
+# ESP-IDF / cmake leftovers
+sdkconfig.old
+build/
+cmake-build-*/
+
+# --- Logs & local capture noise (keep curated results if small) ---
+*.log
+*.tmp
+.cache/
+
+# --- Optional large local dumps (uncomment if they grow) ---
+# results/*.csv
+# results/*_full.txt
+
+# --- Python packaging / locks (optional: remove if you want lockfiles) ---
+# poetry.lock

@@ -1,0 +1,2218 @@
+PDM30 Smart Mini Pump Drive
+
+            User Manual
+
+
+
+
+  Version Code :6.0004.0544-00-PDM30-E-V01-2101
+PDM30 Series
+
+
+
+
+                                   Preface
+
+Thank you for using PDM30 series products. This manual provides you with
+relevant operation instructions and detailed description of parameters. Please read
+this manual carefully before installation, running, maintenance or inspection.
+Please make sure the wiring and the pump’s rotation direction is correct before use.
+
+
+
+
+                                      - 1 -
+PDM30 Series
+
+
+
+
+                                          CONTENTS
+Preface.................................................................................................... - 1 -
+
+Notes for Safe Operation.......................................................................- 4 -
+
+Chapter 1 Operation Panel...................................................................- 8 -
+
+   1.1 Operation Panel Diagram.............................................................. - 8 -
+   1.3 Operation and display mode..........................................................- 9 -
+   1.4 Menu Operation.............................................................................- 9 -
+
+Chapter 2 Appearance and Wiring.................................................... - 12 -
+
+   2.1 Model Description.......................................................................- 12 -
+   2.2 Selection table............................................................................. - 12 -
+   2.3Dimensions...................................................................................- 13 -
+   2.4Installation Procedure Illustrations...............................................- 13 -
+   2.5Wiring Diagram of Main Circuit and Control Terminals............. - 15 -
+   2.6Control Terminals.........................................................................- 15 -
+   2.7 Wiring of Sensors........................................................................ - 16 -
+
+Chapter 3 Quick Start.........................................................................- 18 -
+
+   3.1 Parameter Settings.......................................................................- 18 -
+
+Chapter 4          Programming and Parameters......................................- 19 -
+
+   4.1Pressure and Protection Function Group......................................- 19 -
+   4.4 Frequency and Auxiliary Function Group...................................- 25 -
+   4.5 Parameter Setting Procedure....................................................... - 30 -
+   4.6 Programming Description of Parameters.................................... - 32 -
+
+
+
+                                                   - 2 -
+PDM30 Series
+
+
+
+Chapter 5 Fault Information and Troubleshooting..........................- 42 -
+
+   5.1 Fault Codes Description.............................................................. - 42 -
+   5.2 Common Faults and Actions....................................................... - 48 -
+
+Chapter 6 Warranty Policy.................................................................- 50 -
+
+Product warranty Card...................................................................... - 52 -
+
+
+
+
+                                             - 3 -
+PDM30 Series
+
+
+
+
+                       Notes for Safe Operation
+
+Read this instruction manual thoroughly before installation, operation,
+maintenance or inspection of the smart pump drive. In this manual, safe operation
+are classified as “WARNING” or “CAUTION”.
+
+SPD: Abbreviation of smart pump drive.
+
+
+
+                                          WARNING
+
+ Indicate a potentially dangerous situation which, if not avoided, could result in death or
+ serious injury to personnel.
+
+
+
+                                          CAUTION
+ Indicate a potentially dangerous situation which, if not avoided, could result in minor or
+ moderate injury and damage to equipment. It may also be used for warning against
+ unsafe practices.
+
+Even items described as (         CAUTION) may result in a vital accident in some
+situations. Please follow these important notes:
+
+
+Before Installation
+
+                                          WARNING
+ Do not install or operate any SPD that is damaged or has missing parts. Otherwise, it
+ may result in equipment damage or harm life.
+
+
+
+
+                                          - 4 -
+PDM30 Series
+
+
+
+Installation
+
+
+
+Hold the bottom of the SPD when install or move the SPD, cannot just hold the shell to
+prevent the injured or broken SPD.
+SPD must be far away from heat source, flammable and explosive objects, and installed on
+metal or other nonflammable objects.
+If the SPD is mounted in a protective cabinet, the cabinet need to set vents to ensure ambient
+temperature is below 40℃; otherwise it may be damaged because of high temperature.
+
+
+
+Wiring
+
+
+
+Ensure only qualified personnel to operate. Otherwise it can cause an electrical shock or
+damage of the SPD.
+Make sure the SPD is isolated from power supply by the circuit breaker. Otherwise it may
+cause a fire.
+Make sure that the ground terminal         is grounded correctly. Otherwise it can cause an
+electrical shock.
+Please do not touch the main circuit terminal, and the main circuit terminals of the SPD do
+not contact the shell. Otherwise it may cause an electrical shock.
+
+
+
+
+Before connecting, make sure that the SPD rated voltage, phase number confirm to input
+voltage, phase number; Otherwise it may cause fire or personal injury.
+Never connect the AC input power supply to output terminals V, U, W; Otherwise the SPD
+will be damaged and the guarantee is invalid.
+Never perform with stand voltage test of the SPD, otherwise it may cause a damage to the
+SPD.
+The main circuit wiring of the SPD and the control loop wiring should be separated or
+
+
+
+
+                                           - 5 -
+PDM30 Series
+
+
+
+vertical crossed, otherwise it will make the control signal interference.
+The cable connected to the main circuit terminals should be use lugswith isolated casing.
+If the length of cable between the SPD and the motor is more than 50 meters, it is
+recommended touse a output reactor to protect the SPD and motor.
+
+
+
+
+Run
+
+
+
+Turn on the input AC power only after the front cover is put correctly; Do not open or
+remove the front cover when operation. Otherwise it may cause an electric shock.
+If the function fault automatic reset or restart after power failure had been set, a safety
+measures should be taken in advance; otherwise it may cause damage or injury.
+The key “RUN/STOP” may be lose efficacy because some function had been set, a separate
+emergency power switch can be installed in the SPD control system; otherwise it may cause
+damage or injury.
+When the SPD is power on, the SPD terminal is still live even in stop state, do not touch,
+otherwise there is a risk of electric shock.
+
+
+
+
+Do not use circuit breaker to control the stop or start of the SPD; Otherwise it may cause
+damage to the SPD.
+Because the SPD speed from low to high that is in a very short time, make sure that the
+motor and equipment are in the permitted range to use. Otherwise it may cause damage to
+the equipment.
+Do not touch the heat sink. Otherwise it may cause harmful burns
+The factory parameters of the SPD can meet most requirements of equipment operation, if
+not necessary, please do not modify the parameters. Even though some equipment has
+special needs, only necessary parameters can be modified. Otherwise, random
+modifications may cause damage to the device.
+
+
+
+
+                                           - 6 -
+PDM30 Series
+
+
+
+Maintenance and check
+
+
+
+When power on, do not touch the connection terminals. Otherwise it may cause an
+electrical shock.
+Only qualified electrical engineering personnel can maintain, replace and inspect the SPD.
+Wait at least 10 minutes after the power failure, or make sure that is no residual voltage
+before carry out maintenance and inspection, otherwise it may cause damage.
+
+
+
+
+PCB board has CMOS integrated circuit, do not touch, otherwise the static electricity may
+damage PCB board.
+
+
+
+Others
+
+
+
+It is strictly forbidden to transform the SPD, otherwise it may cause casualties. After
+arbitrarily changing SPD, the guarantee will be invalid.
+
+
+
+
+                                          - 7 -
+PDM30 Series
+
+
+
+
+                       Chapter 1 Operation Panel
+
+1.1 Operation Panel Diagram
+
+
+                                     Target             Current
+                                     pressure           pressure
+
+
+
+
+           Name                                 Definition and operating instructions
+
+                         Click on the 0 level menu to view the role of the parameter for shifting, long
+ "MENU" button
+                         press 2S to enter the 1 level parameter setting menu；
+                         Click run / stop / reset in level 0 menu; click confirm in 1/2/3 / level password
+ "RUN / STOP" button
+                         input menu;
+                         Click the 0 level menu to increase the set pressure, frequency, modify the
+ "UP" button
+                         parameter value, long press to increase quickly;
+                         Click the 0 level menu to decrease the set pressure, frequency, modify the
+ "DOWN" button
+                         parameter value, long press to quickly decrease;
+ "Target pressure"       When the display shows "target pressure" and "current pressure", it lights up
+ Indicator               when the pressure is adjusted;
+ "Current pressure"
+                         When the display is "target pressure" and "current pressure" light up;
+ Indicator
+                         Always on during operation, blinking during sleep, and extinguished when stop
+ "Running" lights
+                         fault;
+
+ "Alarm" indicator       Blinks during faults and goes off when it is not in a fault state;
+
+                         When P0-44 = 1 speed control mode, the indicator light is on, other modes are
+ "Manual" indicator
+                         off;
+
+
+
+
+                                                - 8 -
+PDM30 Series
+
+
+
+1.3 Operation and display mode
+(1) Status display mode:
+When power on the SPD, it enters the status display mode. When it stops, it
+displays pressure setting. Press "+" or "-"to modify pressure setting. When it is
+running,it displays current pressure, operating frequency, and setting pressure.
+Press the "+" or "-" to switch the display; press "MENU" for two seconds to enter
+the parameter setting mode.
+
+
+(2) Parameter setting mode:
+To view or set the parameters, as starting from status display mode, press the
+"MENU" for 2 seconds to enter the parameter setting mode, and then press the
+"RUN / STOP" starts to set parameters. After you set the parameter press twice
+"MENU" to exit parameter setting mode, and return to the status display mode.
+
+
+(3) The alarm display mode:
+Automatically enter this mode when a drive fault or warning arises; press the
+"RUN / STOP" to reset, or it can automatically restored the previous mode after
+the alarm is eliminated.
+1.4 Menu Operation
+Three-class menus are:
+① Function group (first class)
+② Function code setting(second class)
+③Function code setting(third class)
+
+
+
+
+                                      - 9 -
+PDM30 Series
+
+
+
+Instruction: In the third class menu, pressing “MENU” or “RUN/STOP” can return
+to the second class menu. The difference is that pressing “RUN/STOP” first saves
+parameters to control board, and then returns to the second class menu and shifts to
+next function code automatically; pressing “MENU” returns to the second class
+menu directly without saving parameters and keeps staying at current function
+code.
+Under the third class menu, only flicker bit can be modified. Revisable bit will
+shift automatically after 5 seconds.
+
+
+Note: For parameters marked with “●”, please modify them in stopped state.
+Parameters marked with “◎” are actual detected and recorded values which can’t
+be modified.
+
+
+
+
+                                      - 10 -
+PDM30 Series
+
+
+
+Example: Modify P0.02 from 0 to 1
+
+
+
+
+Remarks: 0.1MPa = 100kPa = 1bar = 1kgf / cm2
+
+
+
+
+                                    - 11 -
+PDM30 Series
+
+
+
+
+            Chapter 2 Appearance and Wiring
+
+2.1 Model Description
+
+
+
+
+2.2 Selection table
+                            Power         Size（mm）         Motor
+  Voltage       Model                                              Explanation
+                            (kW)     H       W       D     (kW)
+                                                                   The factory
+            PDM30-2SR75LN   0.75    210      146     121   0.75      default is
+   220V                                                               2.2kW,
+   Single                                                           which can
+   entry    PDM30-2S1R5LN    1.5    210      146     121    1.5    be adjusted
+   Three                                                            by P1-12,
+    out                                                            0 = 0.75kW
+            PDM30-2S2R2LN    2.2    210      146     121    2.2     1 = 1.5kW
+                                                                    2 = 2.2kW
+
+
+
+
+                                    - 12 -
+PDM30 Series
+
+
+
+2.3Dimensions
+
+
+
+
+   (Unit: mm)
+2.4Installation Procedure Illustrations.
+Step 1: Remove the bottom plate
+
+
+
+
+Step 2: Install the bottom plate
+
+
+
+
+                                   - 13 -
+PDM30 Series
+
+
+
+Step 3:Install the bottom plate
+
+
+
+
+Step 4: The installation is complet
+
+
+
+
+                                      - 14 -
+PDM30 Series
+
+
+
+2.5Wiring Diagram of Main Circuit and Control Terminals
+
+
+
+
+2.6Control Terminals
+2.6.1 Control terminals
+The wiring mode of control terminals is internal terminal wiring or outer lead
+connection, cabled-out by waterproof connectors.
+
+                DI1       DI2   GND    +VO      AI   S+     S-
+
+                                Control terminals
+
+
+
+
+                                      - 15 -
+PDM30 Series
+
+
+
+2.6.2 Terminal instruction
+  Terminal
+               Terminal name                           Technical data
+   symbol
+                Multi-function
+    DI1                            Enabled when connected to GND; Disabled when open
+               input terminal 1
+                Multi-function
+    DI2                            Enabled when connected to GND; Disabled when open
+               input terminal 2
+                Analog input      It is 0 ～ 10V analog voltage input terminal or 4-20mA
+    AI
+                 terminal 1       analog current input terminal, chosen by function codes.
+               Positive terminal +5V～+24V adjustable power; Output voltage value is set
+   +VO
+               of analog power by function codes.
+             Negative terminal
+   GND                         Reference zero potential of +5V～+24V adjustable power
+             of analog power
+    S+         Standard RS485
+                                  Standard isolated485 communication interface. Please use
+               communication
+     S-                           twisted pair or shielded wire
+                   terminal
+
+
+2.7 Wiring of Sensors
+2.7.1 Terminal instruction
+◆ +VO ---5 ～ 24V Power terminal for transmissible pressure gauge/pressure
+transmitter
+◆ AI ---0～10V analog signal input terminal (voltage feedback type) or 4～20mA
+signal input terminal (current feedback type)
+◆ GND --- 5～24V signal common terminal
+
+
+2.7.2 Sensor configuration instruction
+
+A current type pressure sensor will be used by default; output signal is 4~20mA. If
+use other types of sensors, please refer to the setting parameters P0.03，P0.04，
+P0.05 in Chapter 4.5.
+
+
+
+
+                                          - 16 -
+PDM30 Series
+
+
+
+2.7.3 Wiring diagram
+The drive can be connected to transmissible pressure gauge and pressure
+transmitter. Please connect wire according to below diagrams.
+(1) Transmissible pressure gauge: working voltage 10VDC, output 0～10VDC.
+Wiring method is shown as below.
+
+
+
+
+             VO GND AI1                          1
+                                                 2
+                                                 3
+
+                                                 PE
+
+                                                               Remote pressure gauge
+                                                                         1.0Mpa
+
+
+
+
+(2) Pressure transmitter: working voltage range 10 ～ 30V, output 4 ～
+20mA.Wiring method is shown as below.
+
+
+               VO GND AI1                                   Current pressure
+                                                            transmitter
+                                  Signal line: green       Model：PTxxx
+                                                           Power：24VDC
+                                                           Range：0-1Mpa
+                Power cord: red                            Output：4-20mA
+
+
+
+
+Notes: Model for PDM30-2SXXX products will be equipped with dedicated
+sensors (red line connected to terminal +VO; black line connected to terminal AI).
+For the wiring method of various sensors and the setting of relevant parameters,
+please refer to appendix.
+
+
+
+
+                                                  - 17 -
+PDM30 Series
+
+
+
+
+                       Chapter 3 Quick Start
+
+3.1 Parameter Settings
+★Single machine debugging mode:
+Under normal circumstances, the machine is equipped with standard input and
+output lines and sensors. When connecting the pump, the motor connection method
+needs to be adjusted from the original star (380V) to the delta (220V) working
+mode;
+After power on, long press the "+" or "-" key for 3 seconds to enter the pressure
+setting mode, set the target pressure d, and then press the "start/stop" key to save,
+and then press the "start/stop" key to start the machine, and the machine will
+proceed Normal working mode;
+P0.14 = 1 Power-on self-start function (need to be turned on by the customer)
+Pump steering confirmation
+After setting the parameters, you can do a short trial run to observe whether the
+steering of the water pump is correct. The pump steering can be changed in the
+following two ways:
+Stop the inverter and exchange any two phases of the inverter output power lines U,
+V, W.
+Stop the inverter and modify parameter P0.02.
+★Multi-online mode:
+Wiring: Connect all the machine terminals S+ that need to be connected in parallel,
+and all S- in parallel;
+      For parameter setting, refer to the macro parameter table below:
+
+
+
+
+                                      - 18 -
+PDM30 Series
+
+
+
+
+     Chapter 4 Programming and Parameters
+
+Note: “☆”: The parameter can be modified in both standby and operating state.
+      “★”: The parameter can’t be modified in operating state.
+     “ ● ”: The parameter is the actual detected and recorded value which can’t be
+modified.
+4.1Pressure and Protection Function Group
+  Function                                                     Modific
+    code       Description      Set range     Unit     Default ationlev              Notes
+                                                                  el
+
+    P0-00    Pressure setting   1.0～P0-21     0.1bar      3.0     ☆
+
+             Deviation of                                                 Dormancy awakens deviation
+    P0-01                       0.0～P0-00     0.1bar      0.3     ☆
+             pressure                                                     pressure
+
+                                0: Same
+             Operation
+                                direction                                 Adjustable water pump
+    P0-02    direction                          1         0       ☆
+                                1: Opposite                               steering
+             selection
+                                direction
+
+    P0-03    Sensor range       1.0～200.0     0.1bar     10.0     ☆
+
+                                0：
+                                4-20mA/24
+                                V
+                                1：                                        Different modes can be
+             Sensor feedback
+    P0-04                       4-20mA/10       1         0       ☆       selected according to the
+             type
+                                V                                         sensor feedback signal used
+                                2：0-10V
+                                3：0.5-4.5V
+                                4：0-5V
+
+             Pressure           0.750 ～
+    P0-05                                     0.001     1.000     ☆
+             calibration factor 1.250
+
+             Proportional gain 0.0 ～
+    P0-06                                      0.1       2.00s    ☆
+             P1                100.0
+
+
+
+                                                - 19 -
+PDM30 Series
+
+
+
+  Function                                                     Modific
+    code       Description      Set range     Unit     Default ationlev               Notes
+                                                                  el
+             Integration time   0.00s ～
+    P0-07                                     0.01s      0.50s    ☆
+             I1                 10.00s
+
+                                0: off
+                                1: Sleep
+             PID function
+    P0-08                       mode 1          1         1       ☆
+             selection
+                                2: Sleep
+                                mode 2
+
+                                0.0s ～
+    P0-09    PID sleep delay                   0.1s       5.0     ☆
+                                100.0s
+
+             PID wake-up        0.0s ～
+    P0-10                                      0.1s       3.0     ☆
+             delay              100.0s
+
+                                P1.31 ~                                    If the frequency is lower
+             PID sleep
+    P0-11                       upper limit   0.01Hz    30.00     ☆       than this frequency, the
+             frequency
+                                frequency                                 machine will go to sleep
+
+             PID low
+             frequency hold     0.0s ～
+    P0-12                                      0.1s       5.0     ☆
+             frequency          120.0s
+             running time
+
+             PID sleep
+                                0.0bar ～
+    P0-13    deviation                        0.1bar      0.2     ☆
+                                1.0bar
+             pressure
+
+             Power on                                                     After it is turned on, it will
+                                0: off
+    P0-14    automatic start                    1         0       ☆       start automatically after
+                                1: open
+             function                                                     power-on
+
+             Power-on
+    P0-15    automatic start    0.0～100.0      0.1s       5.0     ☆
+             delay
+
+             Antifreeze         0: off
+    P0-16                                       1         0       ☆
+             function           1: open
+
+             Antifreeze
+    P0-17    operating          0.0～P1-06     0.01Hz    10.00     ☆
+             frequency
+
+             Antifreeze
+    P0-18                       0～1000          1s        60      ☆
+             running time
+
+             Antifreeze
+    P0-19                       0～1000          1s       300      ☆
+             operation cycle
+
+
+
+
+                                                - 20 -
+PDM30 Series
+
+
+
+  Function                                                     Modific
+    code       Description     Set range      Unit     Default ationlev              Notes
+                                                                  el
+             Leakage size
+    P0-20                      0.1～100.0       0.1       5.0      ☆
+             factor
+
+             High pressure
+                               P0.00～
+    P0-21    alarm setting                    0.1bar     9.0      ☆
+                               P0.08
+             value
+
+             High voltage
+    P0-22                     0.0～120.0        0.1s      3.0      ☆
+             alarm delay time
+
+             Low pressure
+    P0-23    alarm setting     0.0～P0.00      0.1bar     0.0      ☆
+             value
+
+             Low voltage
+    P0-24                     0.0～120.0        0.1s      3.0      ☆
+             alarm delay time
+
+                               0: off
+                               1: Judging
+                               water
+                               shortage
+                               according to
+                               frequency
+                               and current
+                               2: Judging
+             Water shortage
+                               by
+    P0-25    protection                         1        2        ☆
+                               frequency
+             function
+                               and pressure
+                               3: Judging
+                               water
+                               shortage
+                               based on
+                               frequency,
+                               current and
+                               pressure
+
+             Water shortage
+                                                                          Water shortage will be judged
+    P0-26    fault detection   0.0～P0-00      0.1bar     0.5      ☆
+                                                                          below this pressure
+             threshold
+
+             Water shortage
+                                0～Upper                                   More than this frequency will
+    P0-27    protection testing               0.01Hz    48.00     ☆
+                                frequency                                 judge water shortage
+             frequency
+
+
+
+
+                                                - 21 -
+PDM30 Series
+
+
+
+  Function                                                   Modific
+    code       Description    Set range     Unit     Default ationlev               Notes
+                                                                el
+             Water shortage
+                                                                        When the operating current is
+             protection
+    P0-28                      0～100.0      0.1%       40.0     ☆       less than this current, it is
+             detection current
+                                                                        judged as water shortage
+             percentage
+
+             Water shortage                                             After meeting the water
+    P0-29    protection       0.0～200.0      0.1s      60.0     ☆       shortage condition, alarm
+             detection time                                             after this time
+
+             Water shortage                                             After the water shortage fault
+             protection                                                 is reported, after this time
+    P0-30                      0～9999       1min       15       ☆
+             automatic restart                                          delay, the machine resets the
+             delay                                                      fault code
+
+    P0-31    PID sleep rate   0 ～ 30          1         9       ☆
+
+                                                                        When the water outlet
+             Incoming water
+                                                                        pressure is greater than this
+    P0-32    detection        0.0～P0.00     0.1bar     1.0      ☆
+                                                                        value, the fault will be reset
+             pressure
+                                                                        after a delay of P0-30
+
+             Incoming water
+    P0-33                     0.0～100.0      0.1s      20.0     ☆
+             detection time
+
+             AI minimum       0.00V ～
+    P0-34                                   0.01V     2.00V     ☆
+             input            +10.00V
+
+             AI maximum       0.00V ～
+    P0-35                                   0.01V    10.00V     ☆
+             input            +10.00V
+
+             Acceleration time 0.0s ～
+    P0-36                                    0.1s      2.0s     ☆
+             1                 100.0s
+
+             Deceleration time 0.0s ～
+    P0-37                                    0.1s      2.0s     ☆
+             1                 100.0s
+
+                              0: No
+                              operation
+                              1: Restore
+                              factory
+                              parameters,
+             Parameter
+    P0-38                     excluding       1         0       ★
+             initialization
+                              motor
+                              parameters
+                              2: Clear
+                              record
+                              information
+
+
+
+
+                                              - 22 -
+PDM30 Series
+
+
+
+  Function                                                  Modific
+    code       Description    Set range      Unit   Default ationlev   Notes
+                                                               el
+                              0: The
+                              parameter is
+             Parameter        not locked
+    P0-39                                     1        0       ☆
+             function lock    1:
+                              Parameter
+                              lock
+
+    P0-40    Broken record    0-50            1        0.0     ●
+
+
+
+
+             Radiator
+    P0-41                                                      ●
+             temperature
+
+
+
+
+             Software version
+    P0-42                     .                      1.000     ●
+             number
+
+
+
+
+                                              - 23 -
+PDM30 Series
+
+
+
+  Function                                                  Modific
+    code       Description    Set range      Unit   Default ationlev              Notes
+                                                               el
+                              0: Digital
+                              setting (no
+                              memory
+                              after power
+                              off)
+                              1: Digital
+                              setting
+                              (memory
+                              after power
+                              failure)
+                              2: Keyboard
+                              potentiomet
+                              er
+                              3: AI1
+                              4:
+             Main frequency   Multi-speed
+    P0-43    source X         command         1        8       ★
+             selection        5: Simple
+                              PLC
+                              6: Digital
+                              setting (no
+                              memory
+                              when power
+                              off)
+                              7: Digital
+                              setting (no
+                              memory
+                              after power
+                              off)
+                              8: PID
+                              9:
+                              Communica
+                              tion setting
+
+                              0: Constant                              Adjust this value to change
+                              voltage                                  the working mode
+             System working
+    P0-44                     mode            1        0       ★
+             mode
+                              1: Constant
+                              speed mode
+
+
+
+
+                                              - 24 -
+PDM30 Series
+
+
+
+  Function                                                    Modific
+    code       Description       Set range     Unit   Default ationlev             Notes
+                                                                 el
+                                 0: overall
+                                 display
+             Pressure display
+    P0-45                        1:             1        0       ☆
+             mode
+                                 Independent
+                                 display
+
+             Application                                                 Refer to the macro parameter
+    P0-47                        0-15           1        0       ★
+             macro selection                                             setting table for details
+
+
+
+
+4.4 Frequency and Auxiliary Function Group
+  Function Description                                      Modifi
+    code                         Set range     Unit Default cation                Notes
+                                                             level
+             Multiple           0: stop
+             online slave       1: Constant
+    P1-00    backup host        speed           1        0      ☆
+             action             2: Constant
+             selection          pressure
+             Multiple
+             online             0: slave
+    P1-01                                       1        0      ●
+             network mode       1: Host
+             selection
+             Number of
+             multi-line
+    P1-02                       0～5             1        0      ●
+             auxiliary
+             machines
+                                0:
+                                Multi-pump
+                                main and
+                                auxiliary
+                                control
+             Multiple           1:
+             online             Multi-pump
+    P1-03                                       1        0      ☆
+             operating          synchronous
+             modes              control
+                                2: Multiple
+                                pumps, one
+                                use and one
+                                standby
+                                control
+
+
+
+
+                                                - 25 -
+PDM30 Series
+
+
+
+  Function Description                                    Modifi
+    code                      Set range      Unit Default cation              Notes
+                                                           level
+            Multi-line
+                             0min～
+    P1-04   rotation                         1min   240min    ☆
+                             2000min
+            interval time
+            Maximum
+                             50.00Hz ～       0.1H
+    P1-05   output                                  50.00Hz   ★
+                             400.00Hz          z
+            frequency
+                             Lower limit                           Maximum adjustable
+                             frequency                             frequency range of the
+            Upper            P1-07 ～         0.1H                  machine
+    P1-06                                           50.00Hz   ☆
+            frequency        Maximum           z
+                             frequency
+                             P1-05
+                             0.00Hz ~
+            Lower limit      upper limit     0.1H
+    P1-07                                           0.00Hz    ☆
+            frequency        frequency         z
+                             P1-06
+                             0: run at
+            Frequency is     lower
+            lower than the   frequency
+    P1-08   lower limit      limit            1        0      ☆
+            frequency        1: shutdown
+            action           2: Zero speed
+                             operation
+            Carrier          1.0kHz ～        0.1k
+    P1-09                                           8.0kHz    ★
+            frequency        16.0kHz          Hz
+            PID feedback
+                             0.00 ～          0.01
+    P1-10   loss detection                           0.20     ☆
+                             10.00V           V
+            value
+            PID feedback
+                             0.0s ～
+    P1-11   loss detection                   0.1s    30.0s    ☆
+                             100.0s
+            time
+                                                                   The factory is 2.2kW, the
+                             0：0.75kW
+            Motor power                                            customer needs to adjust the
+    P1-12                    1:1.5kW          1        2      ★
+            selection                                              settings according to the
+                             2:2.2kW
+                                                                   actual pump
+            Motor rated      0.1kW ～         0.1k
+    P1-13                                             2.2     ★
+            power            2.2kW            W
+                             0-Maximum
+            Motor rated                      0.1H
+    P1-14                    frequency               50.00    ★
+            frequency                          z
+                             P1-05
+            Motor rated
+    P1-15                    0-380V           1      220      ★
+            voltage
+
+
+
+
+                                              - 26 -
+PDM30 Series
+
+
+
+  Function Description                                    Modifi
+    code                      Set range      Unit Default cation   Notes
+                                                           level
+            Motor rated                      0.01
+    P1-16                    1.00-10.00               9.60    ★
+            current                           A
+
+    P1-17   User password 0 ～ 65000           1        0      ☆
+
+                             0: No
+            DI1 terminal     function
+    P1-18   function         1: Forward       1        1      ★
+            selection        running
+                             FWD
+                             -10: External
+            DI2 terminal     fault input
+    P1-19   function         (normally        1        10     ★
+            selection        open)
+
+
+                             0.000s ～        0.001
+    P1-20   DI filter time                           0.010s   ☆
+                             1.000s            s
+            DI1 enable       0.0s ～
+    P1-21                                    0.1s     1.0s    ☆
+            delay time       100.0s
+            DI2 enable       0.0s ～
+    P1-22                                    0.1s     1.0s    ☆
+            delay time       100.0s
+            DI1 disable      0.0s ～
+    P1-23                                    0.1s     0.0s    ☆
+            delay time       100.0s
+            DI2 disable      0.0s ～
+    P1-24                                    0.1s     0.0s    ☆
+            delay time       100.0s
+            Automatic
+    P1-25   fault reset      0 ～ 10           1        5      ☆
+            times
+            Automatic
+    P1-26   fault reset      0.0 ～100.0s     0.1s    30.0s    ☆
+            time
+                             0: The
+                             cooling fan
+                             runs when
+                             the motor is
+                             running
+            Cooling fan
+    P1-27                    1:               1        1      ☆
+            control
+                             Automaticall
+                             y operate
+                             according to
+                             the radiator
+                             temperature
+
+
+
+
+                                              - 27 -
+PDM30 Series
+
+
+
+  Function Description                                    Modifi
+    code                     Set range       Unit Default cation              Notes
+                                                           level
+                            0: Decelerate
+                            to stop
+    P1-28   Stop mode                         1        0      ☆
+                            1: Free
+                            parking
+                            0.00Hz ~
+            Keyboard
+                            maximum          0.01
+    P1-29   setting                                 50.00Hz   ☆
+                            frequency         Hz
+            frequency
+                            P1-05
+                            0: positive
+                            effect
+            PID action
+    P1-30                   1:                1        0      ☆
+            direction
+                            Counteractio
+                            n
+            PID low
+            frequency       0.00Hz ～         0.01
+    P1-31                                            20.00    ☆
+            hold            50Hz              Hz
+            frequency
+            Sleep
+                            0.0 ～                                  The machine detects sleep at
+    P1-32   detection                        0.1s    30.0     ☆
+                            1000.0                                 this time
+            cycle
+                            0: CPWM
+                            1: CPWM
+    P1-33   PWM mode                          1        1      ★
+                            and DPWM
+                            switching
+                            0: Operation
+                            panel
+                            command
+                            channel
+                            (LED off)
+                            1: Terminal
+            Command         command
+                                                                   Choose different start and
+    P1-34   source          channel           1        0      ☆
+                                                                   stop methods
+            selection       (LED on)
+                            2: Serial port
+                            communicati
+                            on command
+                            channel
+                            (LED
+                            flashes)
+                            1～6, 0 is the
+    P1-35   Local address   broadcast         1        1      ☆
+                            address
+
+
+
+
+                                              - 28 -
+PDM30 Series
+
+
+
+  Function Description                                    Modifi
+    code                     Set range       Unit Default cation   Notes
+                                                           level
+                            0：4800 bPS
+                            1：9600 bPS
+    P1-36   Baud rate                         1        1    ☆
+                            2：19200 bPS
+                            3：38400 bPS
+                            0: No parity
+                            (8.N.1)
+                            1: Odd parity
+    P1-37   Data Format                       1        0    ☆
+                            (8.O.1)
+                            2: Even
+                            parity (8.E.1)
+                            0ms ～
+            Response
+    P1-38                   20ms             1ms       2    ☆
+            delay
+                            （0~200ms）
+                            0:
+                            Three-phase
+            Motor type      motor
+    P1-42                                     1        0    ★
+            selection       1:
+                            Single-phase
+                            motor
+            Single-phase
+            motor main
+    P1-43   and auxiliary   10 ～ 200          1     100     ☆
+            winding turns
+            ratio
+            Single-phase
+            motor current
+    P1-44                   50 ～ 200          1     150     ☆
+            correction
+            factor
+            Water
+            shortage
+    P1-45                   0～9999            1        10   ☆
+            protection
+            reset times
+            Parameter
+                            0: not hidden
+    P1-47   hidden                            1        1    ☆
+                            1: hidden
+            selection
+
+
+
+
+                                              - 29 -
+PDM30 Series
+
+
+
+
+4.5 Parameter Setting Procedure
+  Taking the commonly used parameters of P0.00 - P0.05 as an example, the
+parameters setting steps are as follows.
+
+
+Set P0.00 (Pressure setting)
+
+
+
+
+Notes: Pressing “ + ” or “ - ” to modify the setting pressure as 4.0 in the stop
+displayed status
+
+
+Set P0.01 (Startup pressure derivation)
+
+
+
+
+Set P0.02 (Running direction)
+
+
+                                       - 30 -
+PDM30 Series
+
+
+
+
+Set P0.03 (Sensor range)
+
+
+
+
+Set P0.04 (Sensor feedback type)
+
+
+
+
+Set P0.05 (Power setting of sensor)
+
+
+
+
+                                      - 31 -
+PDM30 Series
+
+
+
+
+4.6 Programming Description of Parameters
+
+
+P0.00      Pressure setting            0.0～P0.03         bar   3.0
+                                                                      The maximum range
+P0.03       Sensor range               0.0～200.0         bar   10.0
+                                                                      of sensor
+                                   0：Voltage feedback
+P0.04 Sensor feedback type                                      1
+                                   1：Current feedback
+P0.03 is the range of the sensor. Common range is 1MPa, namely 10.0bar.
+P0.00 is the pressure value of the pipe network. If P0.00=3.0bar, after the smart
+pump drive is started, the pressure of the pipe network keeps constant at 3.0 bar.
+General sensor is in current type. The wiring method of SPD is similar to
+pressure transmitter, connected to AI terminal as pressure feedback: if voltage
+sensor is use, please modify P0.04 to 0. The wiring method of SPD is similar to
+
+
+                                                               The value that is lower
+P0.01   Start pressure deviation      0.0～P0.00    bar   0.3
+                                                               than PID set pressure
+        PID wakeup detection                                   PID wakeup detection
+P0.10                                 0.0～100.0     s    3.0
+        delay                                                  delay
+transmissible pressure gauge, connected to AI terminal as pressure feedback.
+When feedback value is smaller than or equal to set pressure minus PID start
+pressure（P0.00-P0.01）, and it holds the state in P0.10 set time, PID adjustment
+will be restarted. For example, when P0.00=3，P0.01=0.3，P0.10=5.0, if feedback
+value is smaller than or equal to 2.7, and the time is longer than 5s, PID adjustment
+will be restarted. Once it is larger than 2.7, the time will recount.
+
+
+
+
+                                          - 32 -
+PDM30 Series
+
+
+
+        Running direction of    0：Forward                    Modify this parameter to
+P0.02                                                   0
+        motor                   1：Reverse                    change running direction
+
+In initial use, confirm the rotation direction of motor. Exchange arbitrary two lines
+of output power line U, V, W of the SPD or modify parameter P0.02 to change the
+rotation direction of the motor.
+
+
+                                       The larger the parameter, the faster the response
+        Proportional                   speed of the pressure system. However, when it
+P0.06                  0.0～100.0 %   2
+        gain                           is set too big, the system will oscillate. Adjust it
+                                       according to different water supply system.
+Adjustment method:
+If factory parameters can’t meet demands, adjust parameters finely. First increase
+proportional gain to make sure that the system will not oscillate.
+Note: improper parameter setting of P0.06 will cause huge speed overshoot, and
+even over voltage fault in overshoot back.
+
+
+
+
+                                      - 33 -
+PDM30 Series
+
+
+
+                                                        0：Sleep invalid
+P0.08 PID sleep choices         0～2               2     1：Sleep mode 1
+                                                        2：Sleep mode 2
+                                                        In small water consumption, if
+                                                        sleeping is slow or it can’t sleep,
+      PID sleep detection       0.0～
+P0.09                                     s       1.0   make the value smaller; if it sleeps
+      delay                     120.0
+                                                        in advance or it starts and stops
+                                                        frequently, make the value bigger.
+        PID wakeup detection    0.0～
+P0.10                                     s       1.0   PID wakeup detection delay
+        delay                   120.0
+                                                        PID runs at sleep low level hold
+        PID sleep low level hold 0.00～
+P0.11                                    Hz    35.00    frequency. After the time of P0.12,
+        frequency                60.00                  PID sleeps.
+      Running time at PID
+                               0.00～
+P0.12 low level hold                      s       3.0
+                                3600
+      frequency
+                                                        If feedback pressure is in sleep
+        PID sleep deviation     0.0～
+P0.13                                    bar      0.1   deviation range, start sleeping
+        pressure                P0.01
+                                                        treatment.
+
+
+
+
+                                         - 34 -
+PDM30 Series
+
+
+
+After selecting sleep mode 1 by parameter P0.08, the SPD will detect whether
+feedback pressure is higher than set pressure. If yes, the SPD will start sleep
+detection. After PID sleep detection delay set by P0.09, if feedback pressure is still
+higher than set pressure, SPD will decrease output frequency gradually to sleep
+detection low level hold frequency set by P0.11. After sleep detection low level
+hold frequency waiting time, if feedback pressure is still higher than set pressure,
+the SPD decreases output frequency to 0Hz and enter standby. If in above process,
+feedback pressure is lower than set pressure, the SPD will judge as invalid sleep
+detection and come back to PID adjustment status.
+After the SPD enters standby, if feedback pressure is lower than PID sleep
+threshold, SPD will start wakeup detection. After PID wakeup detection delay set
+by P0.10, if feedback pressure is still lower than wakeup pressure threshold,
+wakeup is successful and SPD comes back to PID adjustment status; else, wakeup
+fails. Too high PID sleep threshold may cause frequent start and stop of the SPD.
+Too low PID sleep threshold may cause deficient pressure.
+Notes: sleep holding frequency of different water supply system is different. When
+there is no water outside and the water tap is turned off, but the pump is still
+running, increase P0.11 to sleep holding frequency.
+
+
+                           Ones：Auto-start choices
+                          0：OFF
+      Automatically                                                 By default, self-reset is
+                          1：ON
+P0.14 start self-reset at                                     10    ON and auto-start is
+                          Tens：Fault self-reset choices
+      power on                                                      OFF.
+                          0：OFF
+                           1：ON
+        Auto-start delay                                            Delay time before
+P0.15                              0.0～100.0              s   5.0
+        at power on                                                 auto-start at power on
+
+If you hope that the SPD can start automatically after time delay set by P0.15 at
+power on, after setting all parameters, make P0.14 = 1 to enable auto-start function
+of the SPD. Every time at power on or fault reset, it will start automatically.
+
+
+
+
+                                         - 35 -
+PDM30 Series
+
+
+
+                              0：OFF                          Self anti-freezing function of
+P0.16 Antifreeze                                       0
+                              1：ON                           pump
+        Anti-freezing
+P0.17                          0.0～60.00     Hz       8.00
+        running frequency
+        Anti-freezing
+P0.18                           0～9999        s        60
+        running time
+                                                             When it is set as 0, it keeps
+        Anti-freezing
+P0.19                           0～9999        s       300    running at anti-freezing running
+        running interval
+                                                             frequency
+Set P0.16=1 to enable anti-freezing function. The SPD will adjust the running
+frequency of pump according to current status after it is started.
+Note:
+   Pump auto-adjusting given frequency is prior to anti-freezing frequency.
+ Anti-freezing frequency can’t be set to high. It should be set as the frequency
+that can just drive the pump but can’t supply pressure.
+
+
+        Water leakage                               The bigger the water leakage, the bigger
+P0.20                      0.0～100.0        1.0
+        coefficient                                 the coefficient.
+In no water consumption, because of water leakage of pipe network, the SPD can’t
+sleep and stop. It starts and stops frequently. To solve the water leakage problem of
+pipe network, modify the value of P0.20 according to water leakage. The bigger
+the water leakage, the bigger the coefficient.
+
+
+
+
+                                           - 36 -
+PDM30 Series
+
+
+
+        Set value of high                                       When feedback pressure is bigger
+P0.21                            0.0～P0.03        bar     8.0
+        pressure alarm                                          than or equal to the set value, after
+        Detection time of                                       the delay of P0.22, it alarms and
+P0.22                            0.0～200.0         s      3.0
+        high pressure alarm                                     stops.
+        Set value of low                                        When feedback pressure is smaller
+P0.23                            0.0～P0.21        bar     0.0
+        pressure alarm                                          than the set value, after the delay of
+                                                                P0.24, it alarms and stops. This
+        Detection time of
+P0.24                            0.0～200.0         s      3.0   function is invalid when it is set to
+        low pressure alarm
+                                                                0.
+The SPD will compare P0.21 and P0.23 according pipe network pressure fed back
+by sensor. If pressure is abnormal, it will stop and alarm automatically to protect
+pipe network system.
+
+
+                                                                0: off
+                                                                1: Judging water shortage
+                                                                according to frequency and current
+        Water shortage
+P0.25                                0-3                 2      2: Judging by frequency and
+        protection
+                                                                pressure
+                                                                3: Judging water shortage based on
+                                                                frequency, current and pressure
+                                                                It judges water shortage only when
+        Water shortage fault        0.0～
+P0.26                                        bar         0.5    feedback pressure is smaller than
+        detection threshold         P0.00
+                                                                the set value.
+      Water shortage                                            It is valid when P0.25 = 01.
+                                     0～
+P0.27 protection detection                   Hz         48.00   Comparison frequency of water
+                                    60.00
+      frequency                                                 shortage judgment.
+      Current percentage of
+                                                                It is valid only whenP0.25=01.
+P0.28 water shortage                0-100    %          40.0
+                                                                Percentage of motor rated current.
+      protection detection
+      Water shortage
+                                     0～
+P0.29 protection detection                    s         60.0
+                                    900.0
+      time
+      Self-restarting delay of
+                                    0～                          If it is set to be 0, use pressure to
+P0.30 water shortage                         min         15
+                                    9999                        self-reset water shortage.
+      protection
+
+
+                                             - 37 -
+PDM30 Series
+
+
+
+Following methods can realize water shortage protection by default:
+（1）The switch of water shortage protection is turned on（P0.25=X）;
+（2）The feedback pressure is less than allowed threshold value of water shortage
+detection(feedback pressure<P0.26);
+
+（ 3 ） The current running frequency is no less than water shortage protection
+detection frequency（running frequency>=P0.27）;
+（4）When （1）-（3） are satisfied, timing starts. When the time meeting the
+condition exceeds abnormal pressure alarm delay time (delay time>P0.29), water
+shortage fault will be reported. When either condition is not satisfied during timing,
+timing recounts.
+When water shortage fault is reported, after the time set by P0.30, the drive will
+reset. By setting the next following parameters:
+
+
+P0.32   Inflow detection pressure   0.0～P0.00      bar   1.0
+P0.33     Inflow detection time     0.0～100.0       s    20.0
+
+Use inflow detection pressure to reset water shortage faults directly.
+Note:When judge water shortage according to pressure, because the working
+condition of each drive is different such as range of load size, only setting the
+value of P0.28 reasonably according to site conditions can it make correct
+judgment to water shortage.
+Setting method: Run the drive. When running frequency reaches maximum
+frequency, turn off inlet and record the output current displayed on the drive.
+Divide this current by P1.16 (the rated current of the motor) to get a percentage.
+Make the value of P0.28 a little higher than 5-10 percentage points of the
+percentage. Too high value of P0.28 will lead to false water shortage report in
+normal operation. Water shortage protection will not work effectively with too low
+value of P0.28.
+
+
+
+
+                                       - 38 -
+PDM30 Series
+
+
+
+
+        Lower limit of       0.0～                           Used to correct lower limit of AI
+P0.34                                  V/mA      2.00
+        AI input signal      P0.35                          signal
+        Upper limit of       P0.34～                         Used to correct upper limit of AI
+P0.35                                  V/mA   10.00
+        AI input signal        20                           signal
+
+If you find there is some deviation between sensor feedback pressure and feedback
+pressure displayed on SPD, adjust above parameter to correct the sensor.
+Note: the unit of current sensor is 4~20mA; that of voltage sensor is 0~10V.
+
+
+P0.36      Acceleration time          0.1～3600          s          2.0
+P0.37      Deceleration time          0.1～3600          s          2.0
+
+Acceleration/deceleration time setting of the pump’s motor.
+
+
+P0.38   Parameter initialization        0～2                         0
+
+When P0.38 is set as 1, restore factory defaults.
+
+
+P0.39   Parameter lock function        0～1                          0
+
+After setting parameters, if you don’t want them to be modified by misoperation,
+make P0.39= 1. At this time, parameters can only be monitored, but not be
+modified. Only when P0.39 is modified to 0, can parameters be modified.
+
+
+P0.40     Current fault type          0～29
+
+Record fault type of the SPD. 0 means no fault. 1～29 refers to E001～E029. For
+more details, please refer to fault inspection and troubleshooting chapter.
+
+
+
+         Start/stop signal                                   0：Start/stop by keyboard
+P1.34                            0～1                0
+             choices                                         1：Start/stop by terminals
+
+        Frequency source                                     0：Digital setting
+P0.43                            0～8                8
+            choices                                          1～7：Reserved
+
+
+                                          - 39 -
+PDM30 Series
+
+
+
+                                                      8：Water supply PID
+
+Each SPD can choose different start/stop modes and frequency sources.
+P1 group parameters have the same meaning as P0 group. Please refer to P0 group
+for more details.
+
+
+
+P1.06 Upper limit frequency               P1.07～60.0               Hz   50.00
+
+P1.07 Lower limit frequency               0.00～P1.06               Hz    0.00
+
+      Action choices when        0：Run at lower limit frequency
+P1.08 running frequency is lower 1：Stop                                    2
+      than lower limit frequency 2：Standby
+
+P1.06 limits the maximum working frequency of SPD.
+Use P1.08 to choose running status of SPD when running frequency is lower than
+lower limit frequency. To prevent motor from being in low speed operation for a
+long time, you can use this parameter to stop it.
+
+
+If use a 60Hz pump, please set parameters according to the following steps.
+Step 1: Set the parameter P1.06 (Upper limit frequency) to 60
+Step 2: Set the parameter P1.13 (Motor rated frequency) to 60
+
+
+P1.09   Carrier frequency setting   1.0～15.0     kHz Set according to models
+
+Use this parameter to adjust carrier frequency of SPD. You can decrease motor
+noise by adjusting carrier frequency, avoid point of resonance, decrease leakage
+current of wires to ground and decrease interference of SPD.
+When carrier frequency is high, motor loss decreases, temperature rising of motor
+is small, but SPD loss increases, temperature rising of SPD increases and
+interference increases.
+
+
+
+                                        - 40 -
+PDM30 Series
+
+
+
+P1.10   Feedback broken line detection value     0.0～1.00   V   0.20
+P1.11    Feedback broken line detection time     0.0～3600   s   30.0
+Feedback broken line detection value: the detection value is relative to input signal
+voltage. System keeps detecting PID feedback value. When feedback value is
+smaller than or equal to feedback broken line detection, system starts detection
+timing. When detection timing exceeds feedback broken line detection time,
+system will report PID feedback broken line fault.
+Please set according to parameters of the motor nameplate.
+To guarantee control performance, please configure motor according to standard
+adaptive motor of drives. If there is big difference between motor power and
+standard adaptive motor, control performance of drives will decrease obviously.
+
+
+
+
+                                        - 41 -
+PDM30 Series
+
+
+
+
+               Chapter 5 Fault Information and
+
+                               Troubleshooting
+
+5.1 Fault Codes Description
+Fault
+        Fault type          Possible reasons                        Solution
+code
+
+                     1．Too fast acceleration          1．Increase acceleration time
+
+                     2．IGBT inside broken             2．Seek for support
+        Invert cells
+E001                                                  3．Check whether peripheral
+           fault     3．Malfunction caused by
+                                                      equipments have strong interference
+                     interference
+                                                      source
+
+                     4．.Sound grounding or not        4．Check grounding line
+
+                    1．Too fast acceleration           1．Increase acceleration time
+           Over
+         current in 2．Too low grid voltage            2．Check input power
+E002
+        accelerated
+          running 3．The power of the SPD is too
+                                                      3．Use bigger power SPD
+                    low
+
+                     1．Too fast deceleration          1．Increase deceleration time
+           Over
+                    2．The inertia torque of load is   2．Add proper dynamic braking
+         current in
+E003
+        decelerated too big.                          modules
+          running
+                    3．The power of the SPD is too
+                                                      3．Increase power of the SPD
+                    low
+
+          Over       1．Saltation or abnormality       1．Check the load or decrease the
+        current in   happens to load                  saltation of the load
+E004     constant
+          speed
+                     2．The grid voltage is too low    2．Check input power supply
+         running
+
+
+
+
+                                          - 42 -
+PDM30 Series
+
+
+
+Fault
+        Fault type           Possible reasons                         Solution
+code
+
+                     3．The power of the SPD is too
+                                                        3．Use bigger power SPD
+                     low
+
+
+           Over     1．The input voltage is abnormal 1．Check input power supply
+         voltage in
+E005
+        accelerated
+                    2．Restart rotating motor after
+          running                                   2．Avoid restarting after it is stopped
+                    momentary outages
+
+
+                 1．Too fast deceleration          1．Increase acceleration time
+        Over
+      voltage in
+E006
+     decelerated 2．The inertia of load is too big 2．Increase dynamic braking modules
+       running
+                 3．The input voltage is abnormal. 3．Check input power
+
+          Over       1．Abnormal changes happen to
+                                                  1．Install input reactor
+        voltage in   input voltage
+E007     constant
+          speed                                         2．Add proper dynamic braking
+                     2．The inertia of load is too big
+         running                                        modules
+
+                     1．The input voltage is abnormal 1．Check input power supply
+        Hardware
+E008      over       2．Too fast deceleration            2．Increase deceleration time
+         voltage
+                     3．The inertia of load is too big   3．Increase dynamic braking modules
+
+        Bus under
+E009              1．The grid voltage is too low         1．Check grid input power supply
+         voltage
+
+                     1．Too fast acceleration            1．Increase acceleration time
+
+        Controller 2．Restart rotating motor             2．Avoid restarting after it is stopped
+E010
+        overload
+
+                     3．The grid voltage is too low      3．Check grid voltage
+
+
+
+
+                                           - 43 -
+PDM30 Series
+
+
+
+Fault
+        Fault type           Possible reasons                        Solution
+code
+
+                     4．Overload                        4．Use bigger power SPD
+
+
+                     1．The grid voltage is too low     1．Check grid voltage
+
+
+                     2．Wrong setting to motor rated
+                                                       2．Reset motor rated current
+                     current
+         Motor
+E011
+        overload
+                     3．Motor stall or big changes to   3．Check the load and adjust torque
+                     load                              lifting capacity
+
+
+                     4．Motor is too small              4．Use proper motor
+
+
+                                                       1．Check output wiring
+                   U,V,W phase loss output(or the
+         Output
+E013               three phases of load is not
+        phase loss
+                   symmetrical)
+                                                       2．Check motor and cable
+
+                     1．Instant over current of SPD     1．Refer to over current solutions
+
+                     2．Output three phases have
+                     interphase or ground is short     2．Re-wiring
+                     circuit
+
+                   3．Air passage block or fan
+         Module broken                                 3．Dredge air passage or change fan
+E014    overheatin
+            g      4．The environmental                 4．Decrease environmental
+                   temperature is too high             temperature
+
+                     5．SPD wire or plugins loose       5．Check and re-connect
+
+
+                     6．Power circuit irregularity      6．Seek for service
+
+
+
+
+                                            - 44 -
+PDM30 Series
+
+
+
+Fault
+        Fault type           Possible reasons                     Solution
+code
+
+                     8．Control board exception
+
+
+         External
+E015      water      Water shortage is detected     Check whether water is deficient.
+         shortage
+
+                     1．Poor contact of control board
+                                                     1．Check connector and re-plug
+                     connector
+         Fault of
+                     2．Power circuit irregularity
+         current
+E018
+        detection
+                     3．Damage to hall devices
+         circuits                                   2．Seek for service
+                     4．Exception of amplifying
+                     circuit
+
+                   1．Read write of control
+        EEPROM                                      1．Press RUN/STOP key to reset
+                   parameter goes wrong
+E022    read write
+          faults
+                   2．EEPROM broken                  2．Seek for service
+
+                     1．Too fast acceleration        1．Increase acceleration time
+
+                     2．Restart rotating motor       2． Avoid restart rotation motor
+         Torque
+E023
+          rich
+                     3．Grid voltage is too low      3．Check grid voltage
+
+                     4．Load is too heavy            4．Use big power SPD
+
+                     1．Sensor broken line or poor   1．Check the installation and wiring of
+                     contact                        sensor
+            PID
+         feedback 2．Broken line detection time is
+E024                                                2．.Increase broken line detection time
+        broken line too short
+           fault
+                    3．The sensor is broken or the
+                                                    3．Change sensor
+                    system has no feedback signal
+
+
+
+
+                                           - 45 -
+PDM30 Series
+
+
+
+Fault
+        Fault type          Possible reasons                          Solution
+code
+
+         Running
+           time
+E025                1．Running time reaches set time 1．Seek for service
+        reaches set
+           time
+
+E026    Reserved     Reserved                           Reserved
+
+                                                        1．Check whether the pressure of
+                     1．Water pressure/level exception
+                                                        inlet is abnormal or not
+
+                     2．Sensor broken line or poor
+                                                        2．Check the installation and wiring of
+                     contact. System has no feedback
+                                                        sensor
+                     signal
+          Water
+                     3．Water shortage alarm detection
+E027     shortage
+          alarm      time is too short（P0.29）
+
+                     4．Water shortage protection
+                     frequency is too low(P0.27)        3．C heck relevant parameter settings
+
+                     5．Water shortage protection
+                     detection current is too
+                     low(P0.28)
+
+                     1．Feedback signal of senor
+                                                        1．Check the wiring of sensor
+                     exception
+          High       2．High pressure alarm value
+E028     pressure
+                     adjustment is too low（P0.21）
+          alarm
+                                                        2．Check relative parameter settings
+                     3．Alarm detection time
+                     adjustment is too short（P0.22）
+
+                     1．Low pressure alarm value is
+                                                        1．Modify parameters
+                     set too high（P0.23）
+           Low
+E029     pressure
+          alarm      2．Sensor broken line or poor
+                     contact. System has no feedback    2．Check the sensor
+                     signal
+
+
+
+
+                                          - 46 -
+PDM30 Series
+
+
+
+Fault
+        Fault type          Possible reasons         Solution
+code
+
+                     3．Sensor type is inconsistent
+                     with actual situation
+
+
+
+
+                                          - 47 -
+PDM30 Series
+
+
+
+5.2 Common Faults and Actions
+The following faults may happen in use. For brief fault analysis, please refer to the
+following methods.
+
+5.2.1 No display at power on
+(1) Check whether the input power is consistent with the nominal voltage of the
+drive with multimeter.
+(2) Check whether the three-phase rectifier bridge is intact. If the rectifier bridge is
+broken down, please request service.
+
+
+5.2.2 The power air switch trips off at power on.
+(1) Check whether there is short circuit or ground connection between input power.
+If yes, please eliminate it.
+(2) Check whether the rectifier bridge has been broken down. If yes, please request
+service.
+
+5.2.3 The motor doesn’t rotate after the SPD runs.
+(1) Check whether there is balanced three-phase output among U, V,W. If yes,
+check whether the motor is broken or blocked. If no, please confirm whether the
+motor parameters are set correctly.
+(2) If there is output but the three-phase power is not balanced, please request
+service.
+(3) If there is no output voltage, please request service.
+
+5.2.4 SPD shows normally at power on but the power air switch trips off after
+running.
+(1) Check whether short circuit occurs between output modules interval. If yes,
+please request service.
+
+
+
+
+                                        - 48 -
+PDM30 Series
+
+
+
+(2) Check if there is short circuit or ground connection between motor leads. If yes,
+please eliminate it.
+(3) If switch stripping off occurs occasionally and the distance between motor and
+inverter is far, consider to add output AC reactor.
+
+5.2.5 It doesn’t stop in no water use.
+(1) Check whether the feedback pressure displayed on the SPD board is no less
+than set pressure. If the feedback pressure is less than set pressure, please check
+whether the range of the pressure sensor is set correctly, whether the pump rotates
+reversely, whether there is air and whether the inlet is blocked by sundries.
+(2) If the feedback pressure is no less than set pressure, please decrease the set
+value of P0.09 and increase P0.11.
+(3) If feedback pressure changes nearby set value, stop the SPD manually and see
+whether the pressure decreases. If yes, check valve needs to be changed.
+
+5.2.6 It can’t sleep in small amount of water use or leakage
+(1) If it can’t sleep or the sleep time is too long, decrease P0.09 and increase P0.11,
+If it is still not effective, increase P0.31.
+(2) If it sleeps in advance, first increase P0.09. If it is still not effective, decrease
+P0.20.
+(3) If it starts and stops frequently, first increase P0.09. If it is not effective,
+increase P0.20. If it is still not effective, increase P0.01.
+
+5.2.7 It can’t stop to make protection in water shortage.
+(1) Water shortage protection switch P0.25 is not enabled.
+(2) The threshold value of water shortage detection P0.26 is set too low.
+(3) The current percentage of water shortage detection P0.28 is set too low.
+
+
+
+
+                                         - 49 -
+PDM30 Series
+
+
+
+
+                       Chapter 6 Warranty Policy
+
+Standard Warranty Period:
+The pump controller manufacturer grants a standard warranty period of 18 months (1.5 years) for
+
+the pump controllers, starting from the date of shipment from manufacturer factory or 12 months
+
+(1 year) starting from the date of purchased invoice marked (whichever is longer).
+
+Warranty Conditions:
+
+If your pump controller gets fault and requires troubleshooting, please contact your distributor or
+
+dealer directly. Alternatively, feedback briefly to manufacture service hotline for logging and
+
+send your warranty card to our service department by fax/email to process the warranty claim.
+
+During the warranty period, the pump controller manufacturer covers all costs for replacing any
+
+product or parts of the product proved to be defective in design or manufacture. To claim the
+
+warranty under the warranty policy of pump controller manufacturer, you need to supply us with
+
+the following information and documentation regarding the faulty pump controller:
+
+   1. Product model No.(e.g. PDM30-2S2R2) and serial No. (e.g.C121661B280H000292YA).
+
+   2. Copy of the invoice and warranty certificate of the controller.
+
+   3. Copy of the installation report and installation date.
+
+   4. Error message on LED screen ( if available ) or any information which would be helpful to
+
+determine the defect
+
+   5. Detailed information about the entire system (modules, circuits, etc.).
+
+   6. Documentation of previous claims/exchanges (if applicable).
+
+After receiving above information, The pump controller manufacturer will decide how to
+
+proceed the service:
+
+      Repaired by manufacture factory, or
+
+      Repaired on-site by manufacture service center, or
+
+      Offer a replacement device of equivalent value according to model and age.
+
+In the case of an exchange, the remaining portion of the original warranty period will be
+
+
+
+                                                - 50 -
+PDM30 Series
+
+
+
+transferred to the replacement device. You will not receive a new certificate, as your entitlement
+
+is documented at pump controller manufacturer.
+
+If the pump controller needs to be replaced following assessment, manufacture will send a
+
+replacement unit immediately. The defective pump controller should be sent back to the closest
+
+manufacture service center by packing in its original package if possible.
+
+
+
+
+                                              - 51 -
+PDM30 Series
+
+
+
+
+                      Product warranty Card
+
+
+               Company name:
+
+
+   Custome     Company address:
+
+   r info.     Contact:               Tel.:
+
+               Fax:                   Zip code:
+
+               Product model:         SN code:
+   Product
+               Buying date:           Fault date:
+   info.
+               Motor power:           Application situation:
+
+               Fault description:
+
+
+
+
+   Fault
+
+   info.
+
+
+
+
+               Signature:                                Date:
+
+
+
+
+                                    - 52 -
+PDM30 Series
+
+
+
+
+               - 53 -
+

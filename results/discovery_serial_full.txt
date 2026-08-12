@@ -1,0 +1,177 @@
+> 
+PING...
+  0x3000 FAIL: Timeout / no response
+  0x1001 FAIL: Timeout / no response
+  0x1010 FAIL: Timeout / no response
+No response. Check: wiring A/B, GND, baud, slave ID, DE pin.
+> 
+Scoring address map schemes against known defaults...
+(Best results if VFD still has factory / known settings)
+
+--- Scheme 0 ---
+  P0-00 @0x0000  NO RESP (Timeout / no response)
+  P0-01 @0x0001  NO RESP (Timeout / no response)
+  P0-03 @0x0003  NO RESP (Timeout / no response)
+  P0-08 @0x0008  NO RESP (Timeout / no response)
+  P0-14 @0x000E  NO RESP (Timeout / no response)
+  P0-25 @0x0019  NO RESP (Timeout / no response)
+  P0-36 @0x0024  NO RESP (Timeout / no response)
+  P0-37 @0x0025  NO RESP (Timeout / no response)
+  P0-43 @0x002B  NO RESP (Timeout / no response)
+  P0-44 @0x002C  NO RESP (Timeout / no response)
+  P1-05 @0x0105  NO RESP (Timeout / no response)
+  P1-06 @0x0106  NO RESP (Timeout / no response)
+  P1-09 @0x0109  NO RESP (Timeout / no response)
+  P1-34 @0x0122  NO RESP (Timeout / no response)
+  P1-35 @0x0123  NO RESP (Timeout / no response)
+  P1-36 @0x0124  NO RESP (Timeout / no response)
+  P1-37 @0x0125  NO RESP (Timeout / no response)
+  P1-38 @0x0126  NO RESP (Timeout / no response)
+Score: 0 (higher is better, max ~36)
+
+--- Scheme 1 ---
+  P0-00 @0xF000  NO RESP (Timeout / no response)
+  P0-01 @0xF001  NO RESP (Timeout / no response)
+  P0-03 @0xF003  NO RESP (Timeout / no response)
+  P0-08 @0xF008  NO RESP (Timeout / no response)
+  P0-14 @0xF00E  NO RESP (Timeout / no response)
+  P0-25 @0xF019  NO RESP (Timeout / no response)
+  P0-36 @0xF024  NO RESP (Timeout / no response)
+  P0-37 @0xF025  NO RESP (Timeout / no response)
+  P0-43 @0xF02B  NO RESP (Timeout / no response)
+  P0-44 @0xF02C  NO RESP (Timeout / no response)
+  P1-05 @0xF105  NO RESP (Timeout / no response)
+  P1-06 @0xF106  NO RESP (Timeout / no response)
+  P1-09 @0xF109  NO RESP (Timeout / no response)
+  P1-34 @0xF122  NO RESP (Timeout / no response)
+  P1-35 @0xF123  NO RESP (Timeout / no response)
+  P1-36 @0xF124  NO RESP (Timeout / no response)
+  P1-37 @0xF125  NO RESP (Timeout / no response)
+  P1-38 @0xF126  NO RESP (Timeout / no response)
+Score: 0 (higher is better, max ~36)
+
+--- Scheme 2 ---
+  P0-00 @0x0000  NO RESP (Timeout / no response)
+  P0-01 @0x0001  NO RESP (Timeout / no response)
+  P0-03 @0x0003  NO RESP (Timeout / no response)
+  P0-08 @0x0008  NO RESP (Timeout / no response)
+  P0-14 @0x000E  NO RESP (Timeout / no response)
+  P0-25 @0x0019  NO RESP (Timeout / no response)
+  P0-36 @0x0024  NO RESP (Timeout / no response)
+  P0-37 @0x0025  NO RESP (Timeout / no response)
+  P0-43 @0x002B  NO RESP (Timeout / no response)
+  P0-44 @0x002C  NO RESP (Timeout / no response)
+  P1-05 @0x0069  NO RESP (Timeout / no response)
+  P1-06 @0x006A  NO RESP (Timeout / no response)
+  P1-09 @0x006D  NO RESP (Timeout / no response)
+  P1-34 @0x0086  NO RESP (Timeout / no response)
+  P1-35 @0x0087  NO RESP (Timeout / no response)
+  P1-36 @0x0088  NO RESP (Timeout / no response)
+  P1-37 @0x0089  NO RESP (Timeout / no response)
+  P1-38 @0x008A  NO RESP (Timeout / no response)
+Score: 0 (higher is better, max ~36)
+
+BEST scheme = 0  score=0  (low confidence — try watch mode)
+  0 = MAP_GROUP_DIRECT  P0-12→0x000C  P1-35→0x0123
+  1 = MAP_F_STYLE       P0-12→0xF00C  P1-35→0xF123  (PDH30-like)
+  2 = MAP_GROUP_100     P0-12→12      P1-35→135
+> 
+CSV:param,address_hex,address_dec,raw_value,name
+CSV:P0-00,0x0000,0,ERROR,"Pressure setting"
+CSV:P0-01,0x0001,1,ERROR,"Pressure deviation (wake)"
+CSV:P0-02,0x0002,2,ERROR,"Operation direction"
+CSV:P0-03,0x0003,3,ERROR,"Sensor range"
+CSV:P0-04,0x0004,4,ERROR,"Sensor feedback type"
+CSV:P0-05,0x0005,5,ERROR,"Pressure calibration factor"
+CSV:P0-06,0x0006,6,ERROR,"Proportional gain P1"
+CSV:P0-07,0x0007,7,ERROR,"Integration time I1"
+CSV:P0-08,0x0008,8,ERROR,"PID function selection"
+CSV:P0-09,0x0009,9,ERROR,"PID sleep delay"
+CSV:P0-10,0x000A,10,ERROR,"PID wake-up delay"
+CSV:P0-11,0x000B,11,ERROR,"PID sleep frequency"
+CSV:P0-12,0x000C,12,ERROR,"PID low-freq hold run time"
+CSV:P0-13,0x000D,13,ERROR,"PID sleep deviation pressure"
+CSV:P0-14,0x000E,14,ERROR,"Power-on automatic start"
+CSV:P0-15,0x000F,15,ERROR,"Power-on auto start delay"
+CSV:P0-16,0x0010,16,ERROR,"Antifreeze function"
+CSV:P0-17,0x0011,17,ERROR,"Antifreeze operating frequency"
+CSV:P0-18,0x0012,18,ERROR,"Antifreeze running time"
+CSV:P0-19,0x0013,19,ERROR,"Antifreeze operation cycle"
+CSV:P0-20,0x0014,20,ERROR,"Leakage size factor"
+CSV:P0-21,0x0015,21,ERROR,"High pressure alarm value"
+CSV:P0-22,0x0016,22,ERROR,"High pressure alarm delay"
+CSV:P0-23,0x0017,23,ERROR,"Low pressure alarm value"
+CSV:P0-24,0x0018,24,ERROR,"Low pressure alarm delay"
+CSV:P0-25,0x0019,25,ERROR,"Water shortage protection fn"
+CSV:P0-26,0x001A,26,ERROR,"Water shortage fault threshold"
+CSV:P0-27,0x001B,27,ERROR,"Water shortage test frequency"
+CSV:P0-28,0x001C,28,ERROR,"Water shortage current %"
+CSV:P0-29,0x001D,29,ERROR,"Water shortage detect time"
+CSV:P0-30,0x001E,30,ERROR,"Water shortage auto restart delay"
+CSV:P0-31,0x001F,31,ERROR,"PID sleep rate"
+CSV:P0-32,0x0020,32,ERROR,"Incoming water detection pressure"
+CSV:P0-33,0x0021,33,ERROR,"Incoming water detection time"
+CSV:P0-34,0x0022,34,ERROR,"AI minimum input"
+CSV:P0-35,0x0023,35,ERROR,"AI maximum input"
+CSV:P0-36,0x0024,36,ERROR,"Acceleration time 1"
+CSV:P0-37,0x0025,37,ERROR,"Deceleration time 1"
+CSV:P0-38,0x0026,38,ERROR,"Parameter initialization"
+CSV:P0-39,0x0027,39,ERROR,"Parameter function lock"
+CSV:P0-40,0x0028,40,ERROR,"Broken record"
+CSV:P0-41,0x0029,41,ERROR,"Radiator temperature"
+CSV:P0-42,0x002A,42,ERROR,"Software version"
+CSV:P0-43,0x002B,43,ERROR,"Main frequency source X"
+CSV:P0-44,0x002C,44,ERROR,"System working mode"
+CSV:P0-45,0x002D,45,ERROR,"Pressure display mode"
+CSV:P0-46,0x002E,46,ERROR,"(reserved / unknown)"
+CSV:P0-47,0x002F,47,ERROR,"Application macro selection"
+CSV:P1-00,0x0100,256,ERROR,"Multi online slave backup host action"
+CSV:P1-01,0x0101,257,ERROR,"Multi online network mode"
+CSV:P1-02,0x0102,258,ERROR,"Number of multi-line aux machines"
+CSV:P1-03,0x0103,259,ERROR,"Multi online operating modes"
+CSV:P1-04,0x0104,260,ERROR,"Multi-line rotation interval"
+CSV:P1-05,0x0105,261,ERROR,"Maximum output frequency"
+CSV:P1-06,0x0106,262,ERROR,"Upper frequency"
+CSV:P1-07,0x0107,263,ERROR,"Lower limit frequency"
+CSV:P1-08,0x0108,264,ERROR,"Below lower limit frequency action"
+CSV:P1-09,0x0109,265,ERROR,"Carrier frequency"
+CSV:P1-10,0x010A,266,ERROR,"PID feedback loss detection value"
+CSV:P1-11,0x010B,267,ERROR,"PID feedback loss detection time"
+CSV:P1-12,0x010C,268,ERROR,"Motor power selection"
+CSV:P1-13,0x010D,269,ERROR,"Motor rated power / related"
+CSV:P1-14,0x010E,270,ERROR,"Motor rated frequency"
+CSV:P1-15,0x010F,271,ERROR,"(see manual)"
+CSV:P1-16,0x0110,272,ERROR,"(see manual)"
+CSV:P1-17,0x0111,273,ERROR,"(see manual)"
+CSV:P1-18,0x0112,274,ERROR,"(see manual)"
+CSV:P1-19,0x0113,275,ERROR,"(see manual)"
+CSV:P1-20,0x0114,276,ERROR,"(see manual)"
+CSV:P1-21,0x0115,277,ERROR,"(see manual)"
+CSV:P1-22,0x0116,278,ERROR,"(see manual)"
+CSV:P1-23,0x0117,279,ERROR,"(see manual)"
+CSV:P1-24,0x0118,280,ERROR,"(see manual)"
+CSV:P1-25,0x0119,281,ERROR,"(see manual)"
+CSV:P1-26,0x011A,282,ERROR,"(see manual)"
+CSV:P1-27,0x011B,283,ERROR,"(see manual)"
+CSV:P1-28,0x011C,284,ERROR,"Stop mode"
+CSV:P1-29,0x011D,285,ERROR,"Keyboard setting frequency"
+CSV:P1-30,0x011E,286,ERROR,"PID action direction"
+CSV:P1-31,0x011F,287,ERROR,"PID low frequency hold frequency"
+CSV:P1-32,0x0120,288,ERROR,"Sleep detection cycle"
+CSV:P1-33,0x0121,289,ERROR,"PWM mode"
+CSV:P1-34,0x0122,290,ERROR,"Command source selection"
+CSV:P1-35,0x0123,291,ERROR,"Local address (Modbus slave)"
+CSV:P1-36,0x0124,292,ERROR,"Baud rate"
+CSV:P1-37,0x0125,293,ERROR,"Data format"
+CSV:P1-38,0x0126,294,ERROR,"Response delay"
+CSV:P1-39,0x0127,295,ERROR,"(reserved / unknown)"
+CSV:P1-40,0x0128,296,ERROR,"(reserved / unknown)"
+CSV:P1-41,0x0129,297,ERROR,"(reserved / unknown)"
+CSV:P1-42,0x012A,298,ERROR,"Motor type selection"
+CSV:P1-43,0x012B,299,ERROR,"Single-phase turns ratio"
+CSV:P1-44,0x012C,300,ERROR,"Single-phase current correction"
+CSV:P1-45,0x012D,301,ERROR,"Water shortage protection reset times"
+CSV:P1-46,0x012E,302,ERROR,"(reserved / unknown)"
+CSV:P1-47,0x012F,303,ERROR,"(reserved / unknown)"
+CSV:END
+> 
