@@ -11,6 +11,9 @@
 #if BOARD_HAS_ETHERNET
 #include <ETH.h>
 #endif
+#if defined(ESP_IDF_VERSION_MAJOR)
+#include <esp_wifi.h>
+#endif
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -173,6 +176,10 @@ void NetworkService::setupWifi() {
   WiFi.setHostname(MDNS_HOSTNAME);
   WiFi.setSleep(false);
   WiFi.persistent(false);
+  // Modem sleep kills Classic BT coexistence (SPP drop / non-discoverable).
+#if defined(ESP_IDF_VERSION_MAJOR)
+  esp_wifi_set_ps(WIFI_PS_NONE);
+#endif
   WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASS, WIFI_AP_CHANNEL);
 
   applyActiveProfile();
@@ -230,6 +237,8 @@ void NetworkService::pollSta() {
                       WiFi.localIP().toString().c_str(), WiFi.RSSI());
         refreshMdns();
         _mqttNextTry = 0;  // try MQTT ASAP
+        // SoftAP may have hopped channel with STA — re-assert BT discoverable
+        btRefreshDiscoverable();
       } else if ((int32_t)(now - _staPhaseAt) >= (int32_t)WIFI_STA_CONNECT_TIMEOUT_MS) {
         _staPhase = StaPhase::Failed;
         _staPhaseAt = now;

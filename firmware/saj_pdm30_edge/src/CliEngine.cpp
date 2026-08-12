@@ -2,6 +2,7 @@
 #include "ScaleTable.h"
 #include "TelemetryService.h"
 #include "NetworkService.h"
+#include "BtIo.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -25,6 +26,7 @@ void CliEngine::printHelp(const Channel &ch) {
   replyf(ch, "wifi profile list|save <name> <ssid> <pass>|use <name>|delete <name>");
   replyf(ch, "mqtt status | mqtt set <host> [port] | mqtt user <u> <p>");
   replyf(ch, "mqtt enable | mqtt disable");
+  replyf(ch, "bt status | bt advertise | bt clearbonds");
   replyf(ch, "link: MQTT topics saj/pdm30/saj-pdm30/{cmd,rsp,telemetry}");
 }
 
@@ -37,6 +39,7 @@ static bool isControlOnlyCmd(int argc, char **argv) {
   if (strcmp(cmd, "stream") == 0) return true;
   if (strcmp(cmd, "wifi") == 0) return true;   // status/set/profile/reconnect
   if (strcmp(cmd, "mqtt") == 0) return true;   // status/set/user/enable/disable
+  if (strcmp(cmd, "bt") == 0) return true;     // status/advertise/clearbonds
   if (strcmp(cmd, "slave") == 0 && argc < 2) return true;  // query only
   return false;
 }
@@ -238,6 +241,43 @@ void CliEngine::dispatch(const Channel &ch, int argc, char **argv) {
       return;
     }
     replyf(ch, "usage: mqtt status|set|user|enable|disable");
+    return;
+  }
+
+  // ----- Bluetooth (Classic SPP / BLE NUS bridge status) -----
+  if (strcmp(cmd, "bt") == 0) {
+    if (argc < 2 || strcmp(argv[1], "status") == 0) {
+      char st[160];
+      st[0] = '\0';
+      if (g_btIo.fillStatus) {
+        g_btIo.fillStatus(st, sizeof(st));
+      }
+      if (st[0]) {
+        replyf(ch, "%s", st);
+      } else {
+        replyf(ch, "bt ready=0 (not enabled on this board build)");
+      }
+      return;
+    }
+    if (strcmp(argv[1], "advertise") == 0 || strcmp(argv[1], "adv") == 0) {
+      if (g_btIo.refreshDiscoverable) {
+        g_btIo.refreshDiscoverable();
+        replyf(ch, "OK bt advertise refreshed");
+      } else {
+        replyf(ch, "ERR: bt not available");
+      }
+      return;
+    }
+    if (strcmp(argv[1], "clearbonds") == 0 || strcmp(argv[1], "unpair") == 0) {
+      if (g_btIo.clearBonds) {
+        g_btIo.clearBonds();
+        replyf(ch, "OK bt bonds cleared — re-pair host");
+      } else {
+        replyf(ch, "ERR: bt not available");
+      }
+      return;
+    }
+    replyf(ch, "usage: bt status|advertise|clearbonds");
     return;
   }
 
