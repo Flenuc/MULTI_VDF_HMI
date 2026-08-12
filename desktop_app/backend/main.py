@@ -1,20 +1,27 @@
 """
-MULTI_VDF_HMI — local HTTP + WebSocket API for React Native / web UIs.
+MULTI_VDF_HMI — local HTTP + WebSocket API for React Native / Electron UIs.
 
-  uvicorn backend.main:app --host 127.0.0.1 --port 8765 --app-dir desktop_app
+Dev:
+  cd desktop_app && ./run_backend.sh
 
-Or:  python -m backend.main
+Packaged (PyInstaller):
+  multi_vdf_backend   # serves API + optional static UI from MULTI_VDF_UI_DIR
 """
 
 from __future__ import annotations
 
 import asyncio
 import concurrent.futures
+import os
+import sys
 from contextlib import asynccontextmanager
-from typing import List
+from pathlib import Path
+from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from backend.schemas import (
     BtDevice,
@@ -26,6 +33,45 @@ from backend.schemas import (
     StatusResponse,
 )
 from backend.session import session
+
+
+def _ui_dir() -> Optional[Path]:
+    """Locate exported Expo web build (optional)."""
+    env = os.environ.get("MULTI_VDF_UI_DIR", "").strip()
+    candidates: List[Path] = []
+    if env:
+        candidates.append(Path(env))
+    if getattr(sys, "frozen", False):
+        # PyInstaller: next to the executable
+        meipass = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.extend(
+            [
+                exe_dir / "ui",
+                meipass / "ui",
+                exe_dir.parent / "ui",
+            ]
+        )
+    else:
+        root = Path(__file__).resolve().parents[1]
+        candidates.extend(
+            [
+                root / "frontend" / "dist",
+                root / "electron" / "resources" / "ui",
+            ]
+        )
+    for c in candidates:
+        if c.is_dir() and (c / "index.html").is_file():
+            return c
+    return None
+
+
+def _bind_host() -> str:
+    return os.environ.get("MULTI_VDF_HOST", "127.0.0.1")
+
+
+def _bind_port() -> int:
+    return int(os.environ.get("MULTI_VDF_PORT", "8765"))
 
 
 @asynccontextmanager
@@ -45,7 +91,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Local RN (Expo web / metro) + Electron / desktop webviews
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -167,12 +212,13 @@ async def ws_events(ws: WebSocket):
     await session.register_ws(ws)
     try:
         while True:
-            # Keepalive / ignore client pings; UI is push-only for events
             try:
                 await asyncio.wait_for(ws.receive_text(), timeout=60.0)
             except asyncio.TimeoutError:
                 try:
-                    await ws.send_json({"type": "ping", "payload": "keepalive", "meta": {}})
+                    await ws.send_json(
+                        {"type": "ping", "payload": "keepalive", "meta": {}}
+                    )
                 except Exception:
                     break
     except WebSocketDisconnect:
@@ -181,16 +227,66 @@ async def ws_events(ws: WebSocket):
         session.unregister_ws(ws)
 
 
+# --- Optional static UI (Expo web export) — registered last so API wins ---
+_UI = _ui_dir()
+if _UI is not None:
+    # Expo puts hashed assets under _expo/ and assets/
+    for sub in ("_expo", "assets"):
+        p = _UI / sub
+        if p.is_dir():
+            app.mount(f"/{sub}", StaticFiles(directory=str(p)), name=f"ui-{sub}")
+
+    @app.get("/")
+    async def ui_index():
+        return FileResponse(_UI / "index.html")
+
+    @app.get("/{full_path:path}")
+    async def ui_spa(full_path: str):
+        # Never shadow known API prefixes (safety)
+        if full_path.split("/", 1)[0] in {
+            "health",
+            "status",
+            "telemetry",
+            "ports",
+            "bt",
+            "connect",
+            "disconnect",
+            "command",
+            "ws",
+            "docs",
+            "openapi.json",
+            "redoc",
+        }:
+            raise HTTPException(status_code=404, detail="Not found")
+        candidate = (_UI / full_path).resolve()
+        try:
+            candidate.relative_to(_UI.resolve())
+        except ValueError:
+            raise HTTPException(status_code=404, detail="Not found") from None
+        if candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(_UI / "index.html")
+
+
 def main() -> None:
     import uvicorn
 
-    uvicorn.run(
-        "backend.main:app",
-        host="127.0.0.1",
-        port=8765,
-        reload=False,
-        log_level="info",
-    )
+    host = _bind_host()
+    port = _bind_port()
+    ui = _ui_dir()
+    print(f"[backend] http://{host}:{port}  ui={ui or '(API only)'}", flush=True)
+
+    # When frozen, pass app object (string import path may fail)
+    if getattr(sys, "frozen", False):
+        uvicorn.run(app, host=host, port=port, log_level="info")
+    else:
+        uvicorn.run(
+            "backend.main:app",
+            host=host,
+            port=port,
+            reload=False,
+            log_level="info",
+        )
 
 
 if __name__ == "__main__":

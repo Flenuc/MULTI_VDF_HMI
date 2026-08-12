@@ -14,12 +14,23 @@ import type {
 const DEFAULT_BASE = "http://127.0.0.1:8765";
 
 export function apiBase(): string {
-  // Expo public env (optional)
+  // Explicit override (dev / remote backend)
   const env =
     typeof process !== "undefined" && process.env?.EXPO_PUBLIC_API_URL
-      ? process.env.EXPO_PUBLIC_API_URL
+      ? String(process.env.EXPO_PUBLIC_API_URL)
       : "";
-  return (env || DEFAULT_BASE).replace(/\/$/, "");
+  if (env) return env.replace(/\/$/, "");
+
+  // Same-origin when UI is served by the Python backend (Electron pack / production)
+  if (typeof window !== "undefined" && window.location?.protocol?.startsWith("http")) {
+    const { protocol, hostname, port } = window.location;
+    // Metro/Expo web on 8081 → still talk to backend :8765
+    if (port === "8081" || port === "19006" || port === "19000") {
+      return DEFAULT_BASE;
+    }
+    return `${protocol}//${hostname}${port ? `:${port}` : ""}`.replace(/\/$/, "");
+  }
+  return DEFAULT_BASE;
 }
 
 export function wsUrl(): string {
