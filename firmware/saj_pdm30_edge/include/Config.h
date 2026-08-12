@@ -27,6 +27,15 @@
 #define BOARD_HAS_BT_BLE_NUS 0
 #endif
 
+// Bluetooth Classic SPP (ESP32-DevKit)
+#ifndef BT_DEVICE_NAME
+#define BT_DEVICE_NAME "SAJ-PDM30-Edge"
+#endif
+// Fixed PIN for legacy hosts; SSP Just Works is preferred when supported.
+#ifndef BT_PIN_CODE
+#define BT_PIN_CODE "1234"
+#endif
+
 // ---------------------------------------------------------------------------
 // USB debug CLI
 // ---------------------------------------------------------------------------

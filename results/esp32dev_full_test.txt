@@ -1,0 +1,80 @@
+ESP32-DevKit full field test
+Date: 2026-08-12 15:53 (+ BT retest ~15:55)
+Serial: /dev/ttyACM0
+DUT: ESP32-DevKit (BOARD_HAS_BT_CLASSIC=1, SoftAP+STA+MQTT+USB+SPP)
+VDF: SAJ PDM-30 on external RS485 — Link OK (vdc≈318 V)
+Broker: mosquitto on PC eth0 192.168.203.62:1883
+SoftAP: SAJ_Diag_Tool → PC wlan0 192.168.4.2
+
+================================================================
+OVERALL CORE (USB + Modbus + SoftAP + MQTT): PASS
+BT Classic SPP: FAIL (advertise intermittent; pair/RFCOMM not usable)
+================================================================
+
+--- A) USB serial CLI ---
+[PASS] help (core + wifi + mqtt)
+[PASS] board=ESP32-DevKit
+[PASS] SoftAP SAJ_Diag_Tool @ 192.168.4.1
+[PASS] mqtt status host=192.168.203.62 state=connected
+[PASS] STA REDACTED_SSID ip=192.168.203.68
+
+--- B) Modbus / VDF (USB) ---
+[PASS] ping → status=3 (stop) freq=0 Hz amp=0 A vdc=318.3 V Link OK
+[PASS] raw 0x3000 = 3
+[PASS] r0 0 → P0-00 = 1.5 bar (raw=15)
+[PASS] r1 35 → P1-35 = 1 (local address)
+[PASS] dump full P0/P1 CSV eng values (CSV:END / DUMP done)
+
+--- C) SoftAP ---
+[PASS] PC associated SAJ_Diag_Tool (192.168.4.2)
+[PASS] ICMP 192.168.4.1
+
+--- D) MQTT (STA path → eth0 broker) ---
+[PASS] ESP state=connected
+[PASS] PC paho connect + status online
+[PASS] cmd help → rsp
+[PASS] cmd wifi status → board=ESP32-DevKit + AP/STA
+[PASS] cmd ping multi-line → status/freq/amp/vdc + Link OK
+       (initial automated wait_rsp caught only first line; recheck with 4s wait = Link OK)
+[PASS] telemetry JSON
+       {"freq":0.00,"amp":0.00,"vdc":318.3,"vout":0,"pset":1.5,"pfb":0.0,"status":"stop"}
+
+--- E) Bluetooth Classic SPP ---
+Expected name: SAJ-PDM30-Edge  MAC seen: 88:57:21:CC:38:16  class 0x02c110
+
+[PARTIAL] Discovery
+  - bluetoothctl scan: intermittent (sometimes not listed; BLE-biased scan)
+  - hcitool scan / inquiry: FOUND "SAJ-PDM30-Edge" 88:57:21:CC:38:16
+  - hcitool name: SAJ-PDM30-Edge OK
+
+[FAIL] Pairing
+  - bluetoothctl pair asks passkey confirm; agent did not auto-accept
+  - Result: Connected: yes temporarily, Paired: no, Bonded: no
+
+[FAIL] RFCOMM / SPP data path
+  - AF_BLUETOOTH RFCOMM ch1/ch2: timeout or OSError ENONEM (Cannot allocate memory)
+  - sudo rfcomm bind 0 <mac> 1 → /dev/rfcomm0 created but open fails ENOMEM
+  - No CLI help over BT
+
+User observation confirmed: BT not operational for field CLI despite partial advertise.
+
+Likely factors (not fixed this run):
+  1) ESP32 Classic BT + SoftAP + STA coexistence stress
+  2) Host BlueZ RFCOMM ENOMEM / pairing incomplete on Pi
+  3) Secure Simple Pairing passkey not completed
+
+--- Script ---
+scripts/esp32dev_full_test.py
+Live log: results/esp32dev_full_test_live.log
+
+--- Automated suite counts (first run) ---
+19 PASS / 5 FAIL / 24 total
+  FAILs: MQTT multi-line ping assertion (false negative, rechecked OK),
+         E-BT discover/pair/connect/RFCOMM (real)
+
+CONCLUSION
+  USB:    OK
+  Modbus: OK (VDF linked)
+  SoftAP: OK
+  MQTT:   OK (cmd/rsp/telemetry + Link OK)
+  BT SPP: NOT WORKING

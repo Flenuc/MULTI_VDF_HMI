@@ -73,7 +73,8 @@ void setup() {
   Serial.println(F("Ethernet IP101 enabled (wait for link/DHCP)"));
 #endif
 #if BOARD_HAS_BT_CLASSIC
-  Serial.println(F("Bluetooth SPP: SAJ-PDM30-Edge (Classic serial)"));
+  Serial.println(F("Bluetooth SPP: SAJ-PDM30-Edge (Classic; Just Works / PIN 1234)"));
+  Serial.println(F("  CLI: bt status | bt advertise | bt clearbonds"));
 #endif
 #if BOARD_HAS_BT_BLE_NUS
   Serial.println(F("Bluetooth LE NUS: SAJ-PDM30-Edge (Nordic UART)"));
