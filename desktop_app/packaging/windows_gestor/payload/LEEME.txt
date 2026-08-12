@@ -1,0 +1,41 @@
+SAJ_PDM30_Gestor — instalacion Windows
+======================================
+
+Que es
+------
+App de campo MULTI_VDF_HMI / SAJ Edge:
+USB serial, MQTT (SoftAP), Bluetooth LE (NUS), BT Classic SPP, modo simulado.
+
+Instalacion
+-----------
+1. Ejecute SAJ_PDM30_Gestor_Setup.exe
+2. Si no hay Python 3.12, el setup lo instala (usuario, con Tcl/Tk)
+3. Primera vez: Internet para pip
+4. Atajos: Escritorio y menu Inicio → SAJ PDM-30 Gestor
+
+Uso
+---
+- USB: elija puerto COM del micro
+- MQTT: conecte al SoftAP del Edge y use el perfil MQTT
+- BLE NUS: empareje / seleccione el Guition (Windows 10/11 con BT)
+- Listas de parametros en la carpeta param_lists
+
+Si falla el arranque
+-------------------
+Carpeta por defecto:
+  %LOCALAPPDATA%\MULTI_VDF_HMI\Gestor
+Ejecute:  post_install.bat
+
+Requisitos
+----------
+- Windows 10/11 64-bit
+- Internet en la primera instalacion de dependencias
+- Drivers USB-UART si usa cable serie
+- Bluetooth del PC para BLE/SPP
+
+Desinstalar
+-----------
+Panel de control → Programas → SAJ PDM-30 Gestor
+(No elimina Python del sistema)
+
+Repo: https://github.com/Flenuc/MULTI_VDF_HMI

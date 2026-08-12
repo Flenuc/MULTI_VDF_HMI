@@ -1,0 +1,39 @@
+MULTI_VDF_HMI Flasher — instalacion Windows
+==========================================
+
+Que es
+------
+GUI para descargar firmwares desde GitHub (Flenuc/MULTI_VDF_HMI)
+y flashear ESP32 / Guition con esptool.
+
+Instalacion
+-----------
+1. Ejecute MULTI_VDF_HMI_Flasher_Setup.exe
+2. Si no hay Python 3.12, el setup lo instala (usuario actual, con Tcl/Tk)
+3. La primera vez necesita Internet (pip: customtkinter, pyserial, esptool)
+4. Accesos directos en Escritorio y menu Inicio
+
+Uso
+---
+- Conecte el micro por USB
+- "Buscar ultimo firmware" o "Carpeta local..."
+- Elija placa + puerto COM → Flashear
+
+Si falla el arranque
+-------------------
+Abra la carpeta de instalacion (por defecto):
+  %LOCALAPPDATA%\MULTI_VDF_HMI\Flasher
+y ejecute:  post_install.bat
+
+Requisitos
+----------
+- Windows 10/11 64-bit
+- Internet en la primera instalacion de dependencias
+- Puerto serie (drivers USB-UART del ESP / Guition)
+
+Desinstalar
+-----------
+Panel de control → Programas → MULTI_VDF_HMI Flasher
+(No elimina Python del sistema)
+
+Repo: https://github.com/Flenuc/MULTI_VDF_HMI

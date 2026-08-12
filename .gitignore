@@ -66,3 +66,7 @@ dist/
 
 # --- Python packaging / locks (optional: remove if you want lockfiles) ---
 # poetry.lock
+
+# Windows setup build cache (official Python installer ~26MB)
+desktop_app/packaging/**/cache/
+desktop_app/packaging/**/payload/python-*.exe
