@@ -2,7 +2,8 @@
 Bluetooth Classic SPP (RFCOMM) transport — wireless serial port.
 
 Uses BlueZ AF_BLUETOOTH sockets on Linux (no rfcomm bind / root required
-for connect-to-paired). Discovery via ``bluetoothctl`` when available.
+for connect). Discovery prefers Classic inquiry (hcitool / bluetoothctl
+BREDR) so ESP32 SPP appears **without** prior manual pairing.
 
 The Edge advertises SPP name: SAJ-PDM30-Edge (ESP32 classic only).
 """
@@ -10,16 +11,18 @@ The Edge advertises SPP name: SAJ-PDM30-Edge (ESP32 classic only).
 from __future__ import annotations
 
 import re
+import shutil
 import socket
 import subprocess
 import threading
 import time
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from .base import CommsClient, ConnectionState
 
 # Serial Port Profile RFCOMM channel (BluetoothSerial default is 1)
 DEFAULT_RFCOMM_CHANNEL = 1
+PREFERRED_NAMES = ("SAJ-PDM30-Edge", "SAJ-PDM30", "SAJ")
 
 
 def _run(cmd: list[str], timeout: float = 12.0) -> Tuple[int, str]:
@@ -35,24 +38,117 @@ def _run(cmd: list[str], timeout: float = 12.0) -> Tuple[int, str]:
         return 1, str(e)
 
 
-def list_bluetooth_devices(scan_seconds: float = 0.0) -> List[dict]:
-    """
-    Return paired / known devices from bluetoothctl.
-    Optional short scan if scan_seconds > 0 (may require agent).
-    Each item: {address, name, paired, trusted}
-    """
-    if scan_seconds > 0:
-        _run(["bluetoothctl", "scan", "on"], timeout=2.0)
-        time.sleep(min(scan_seconds, 10.0))
-        _run(["bluetoothctl", "scan", "off"], timeout=2.0)
+def _merge_device(
+    bag: Dict[str, dict],
+    address: str,
+    name: str = "",
+    *,
+    paired: Optional[bool] = None,
+    trusted: Optional[bool] = None,
+    source: str = "",
+) -> None:
+    address = address.strip().upper()
+    if not re.match(r"^[0-9A-F:]{17}$", address):
+        return
+    cur = bag.get(address)
+    if cur is None:
+        bag[address] = {
+            "address": address,
+            "name": (name or address).strip() or address,
+            "paired": bool(paired) if paired is not None else False,
+            "trusted": bool(trusted) if trusted is not None else False,
+            "source": source,
+        }
+        return
+    if name and (cur["name"] == cur["address"] or not cur["name"]):
+        cur["name"] = name.strip()
+    if paired is not None:
+        cur["paired"] = paired
+    if trusted is not None:
+        cur["trusted"] = trusted
+    if source and source not in (cur.get("source") or ""):
+        cur["source"] = f"{cur.get('source', '')}+{source}".strip("+")
 
-    rc, out = _run(["bluetoothctl", "devices"], timeout=8.0)
-    devices: List[dict] = []
-    if rc != 0:
-        return devices
 
+def _scan_hcitool(scan_seconds: float) -> Dict[str, dict]:
+    """Classic inquiry — finds ESP32 SPP without prior pairing."""
+    bag: Dict[str, dict] = {}
+    if not shutil.which("hcitool"):
+        return bag
+    # hcitool scan runs inquiry until done (~10s); timeout must cover it
+    timeout = max(14.0, float(scan_seconds) + 8.0)
+    rc, out = _run(["hcitool", "scan"], timeout=timeout)
+    if rc != 0 and not out.strip():
+        # some systems need hci0 up
+        _run(["hciconfig", "hci0", "up"], timeout=5.0)
+        rc, out = _run(["hcitool", "scan"], timeout=timeout)
     for line in out.splitlines():
-        # Device AA:BB:CC:DD:EE:FF Name here
+        # "\tAA:BB:CC:DD:EE:FF\tName" or "AA:BB:... Name"
+        m = re.search(
+            r"([0-9A-Fa-f:]{17})\s+(\S.*\S|\S)\s*$",
+            line.strip(),
+        )
+        if not m:
+            continue
+        addr, name = m.group(1), m.group(2).strip()
+        if name.lower() in ("scanning", "...") or name.startswith("Scanning"):
+            continue
+        _merge_device(bag, addr, name, source="hcitool")
+    return bag
+
+
+def _scan_bluetoothctl_bredr(scan_seconds: float) -> None:
+    """
+    Start a Classic-only scan so devices enter the BlueZ cache.
+    Default ``bluetoothctl scan on`` is often LE-biased and misses SPP.
+    """
+    if not shutil.which("bluetoothctl"):
+        return
+    seconds = min(max(float(scan_seconds), 5.0), 20.0)
+    try:
+        p = subprocess.Popen(
+            ["bluetoothctl"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        assert p.stdin is not None
+        for line in (
+            "power on",
+            "agent NoInputNoOutput",
+            "default-agent",
+            "pairable on",
+            "menu scan",
+            "transport bredr",
+            "duplicate-data on",
+            "back",
+            "scan on",
+        ):
+            p.stdin.write(line + "\n")
+        p.stdin.flush()
+        time.sleep(seconds)
+        p.stdin.write("scan off\nquit\n")
+        p.stdin.flush()
+        try:
+            p.communicate(timeout=6)
+        except subprocess.TimeoutExpired:
+            p.kill()
+            p.communicate(timeout=3)
+    except Exception:
+        # Fallback: plain scan (may still catch some Classic devices)
+        _run(["bluetoothctl", "power", "on"], timeout=5.0)
+        _run(["bluetoothctl", "scan", "on"], timeout=3.0)
+        time.sleep(seconds)
+        _run(["bluetoothctl", "scan", "off"], timeout=3.0)
+
+
+def _devices_from_bluetoothctl() -> Dict[str, dict]:
+    bag: Dict[str, dict] = {}
+    rc, out = _run(["bluetoothctl", "devices"], timeout=8.0)
+    if rc != 0:
+        return bag
+    for line in out.splitlines():
         m = re.match(r"Device\s+([0-9A-Fa-f:]{17})\s+(.*)$", line.strip())
         if not m:
             continue
@@ -60,38 +156,113 @@ def list_bluetooth_devices(scan_seconds: float = 0.0) -> List[dict]:
         info_rc, info = _run(["bluetoothctl", "info", addr], timeout=5.0)
         paired = "Paired: yes" in info if info_rc == 0 else False
         trusted = "Trusted: yes" in info if info_rc == 0 else False
-        devices.append(
-            {
-                "address": addr,
-                "name": name or addr,
-                "paired": paired,
-                "trusted": trusted,
-            }
+        _merge_device(
+            bag,
+            addr,
+            name,
+            paired=paired,
+            trusted=trusted,
+            source="bluetoothctl",
+        )
+    return bag
+
+
+def list_bluetooth_devices(scan_seconds: float = 10.0) -> List[dict]:
+    """
+    Discover Classic Bluetooth devices for SPP.
+
+    Does **not** require prior system pairing. Uses:
+      1) hcitool inquiry (best for ESP32 Classic SPP)
+      2) bluetoothctl BREDR scan (fills BlueZ cache)
+      3) bluetoothctl known device list + pair/trust flags
+
+    Each item: {address, name, paired, trusted, source?}
+    """
+    _run(["bluetoothctl", "power", "on"], timeout=5.0)
+    # Some desktops soft-block BT
+    if shutil.which("rfkill"):
+        _run(["rfkill", "unblock", "bluetooth"], timeout=3.0)
+
+    bag: Dict[str, dict] = {}
+
+    # Classic inquiry first (works even if never paired)
+    for addr, d in _scan_hcitool(scan_seconds).items():
+        bag[addr] = d
+
+    # BREDR scan — helps BlueZ + finds devices hcitool missed
+    _scan_bluetoothctl_bredr(scan_seconds)
+
+    for addr, d in _devices_from_bluetoothctl().items():
+        if addr in bag:
+            _merge_device(
+                bag,
+                addr,
+                d.get("name", ""),
+                paired=d.get("paired"),
+                trusted=d.get("trusted"),
+                source="bluetoothctl",
+            )
+        else:
+            bag[addr] = d
+
+    devices = list(bag.values())
+
+    def rank(d: dict) -> tuple:
+        name_u = (d.get("name") or "").upper()
+        pref = 0
+        for i, needle in enumerate(PREFERRED_NAMES):
+            if needle.upper() in name_u:
+                pref = i
+                break
+        else:
+            pref = 50
+        return (
+            pref,
+            0 if d.get("paired") else 1,
+            (d.get("name") or "").lower(),
         )
 
-    # Prefer SAJ devices first
-    devices.sort(
-        key=lambda d: (
-            0 if "SAJ" in d["name"].upper() or "PDM" in d["name"].upper() else 1,
-            0 if d["paired"] else 1,
-            d["name"].lower(),
-        )
-    )
+    devices.sort(key=rank)
     return devices
 
 
-def ensure_paired(address: str, timeout: float = 30.0) -> None:
-    """Best-effort pair + trust (user may need to confirm on agent)."""
+def ensure_paired(address: str, timeout: float = 25.0) -> None:
+    """
+    Best-effort trust + pair (Just Works / NoInputNoOutput agent).
+
+    SPP often works without full bond; RFCOMM connect is what matters.
+    """
     address = address.upper()
     _run(["bluetoothctl", "power", "on"], timeout=5.0)
-    _run(["bluetoothctl", "agent", "on"], timeout=5.0)
-    _run(["bluetoothctl", "default-agent"], timeout=5.0)
-    _run(["bluetoothctl", "pairable", "on"], timeout=5.0)
-    rc, out = _run(["bluetoothctl", "pair", address], timeout=timeout)
-    if rc != 0 and "AlreadyExists" not in out and "already" not in out.lower():
-        # still try trust/connect
-        pass
-    _run(["bluetoothctl", "trust", address], timeout=8.0)
+    # Register a non-interactive agent so passkey prompts don't hang
+    try:
+        p = subprocess.Popen(
+            ["bluetoothctl"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        assert p.stdin is not None
+        for line in (
+            "agent NoInputNoOutput",
+            "default-agent",
+            "pairable on",
+            f"trust {address}",
+            f"pair {address}",
+        ):
+            p.stdin.write(line + "\n")
+        p.stdin.flush()
+        time.sleep(min(timeout, 18.0))
+        p.stdin.write("quit\n")
+        p.stdin.flush()
+        try:
+            p.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            p.kill()
+    except Exception:
+        _run(["bluetoothctl", "trust", address], timeout=8.0)
+        _run(["bluetoothctl", "pair", address], timeout=timeout)
 
 
 class BluetoothClient(CommsClient):
@@ -129,12 +300,12 @@ class BluetoothClient(CommsClient):
             f"BT SPP {address} ch{self._channel}…",
         )
 
-        try:
-            if pair:
+        # Soft pair/trust — optional; SPP often works without full bond
+        if pair:
+            try:
                 ensure_paired(address)
-        except Exception as e:
-            # pairing is best-effort; connect may still work if already paired
-            self._emit_error(f"BT pair aviso: {e}")
+            except Exception as e:
+                self._emit_error(f"BT pair aviso: {e}")
 
         try:
             if not hasattr(socket, "AF_BLUETOOTH"):
@@ -142,7 +313,9 @@ class BluetoothClient(CommsClient):
                     "Este Python/SO no expone AF_BLUETOOTH (¿BlueZ en Linux?)"
                 )
             sock = socket.socket(
-                socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM  # type: ignore[attr-defined]
+                socket.AF_BLUETOOTH,
+                socket.SOCK_STREAM,
+                socket.BTPROTO_RFCOMM,  # type: ignore[attr-defined]
             )
             sock.settimeout(20.0)
             sock.connect((address, self._channel))
@@ -156,7 +329,8 @@ class BluetoothClient(CommsClient):
                 f"No se pudo abrir SPP con {address}.\n"
                 f"Detalle: {e}\n\n"
                 "Comprobá: Edge con firmware BT (ESP32 classic), "
-                "emparejado, y nombre SAJ-PDM30-Edge."
+                "visible al escanear «SAJ-PDM30-Edge», y BT del PC encendido.\n"
+                "No hace falta emparejar a mano en el sistema: usá «Escanear BT»."
             ) from e
 
         self._stop.clear()
@@ -204,7 +378,9 @@ class BluetoothClient(CommsClient):
                 if not chunk:
                     if not self._stop.is_set():
                         self._emit_error("BT: conexión cerrada por el peer")
-                        self._set_state(ConnectionState.DISCONNECTED, "BT peer closed")
+                        self._set_state(
+                            ConnectionState.DISCONNECTED, "BT peer closed"
+                        )
                     break
                 buf += chunk.decode("utf-8", errors="replace")
                 while "\n" in buf:
