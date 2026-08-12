@@ -45,6 +45,11 @@ Ver **[ARCHITECTURE.md](./ARCHITECTURE.md)** para detalles y API.
 
 # UI React Native (web desktop)
 ./run_rn_web.sh
+
+# App de escritorio empaquetada (Electron + backend embebido)
+./build_desktop_linux.sh          # → electron/dist/*.AppImage
+# Windows (en PC x64): build_desktop_windows.bat
+# Dev shell:  cd electron && npm install && npm start
 ```
 
 **Legacy (sigue operativo):** CustomTkinter en-proceso.

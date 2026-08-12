@@ -40,6 +40,15 @@ desktop_app/frontend/dist/
 *.p12
 *.mobileprovision
 
+# Electron desktop pack (generated artifacts)
+desktop_app/electron/node_modules/
+desktop_app/electron/dist/
+desktop_app/electron/resources/backend/*
+!desktop_app/electron/resources/backend/.gitkeep
+desktop_app/electron/resources/ui/*
+!desktop_app/electron/resources/ui/.gitkeep
+desktop_app/build/pyi/
+
 # Secrets / local connection state (Wi-Fi passwords, last ports, etc.)
 desktop_app/config/connection_profiles.json
 # Keep the example committed instead
