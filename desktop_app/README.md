@@ -71,3 +71,26 @@ source .venv/bin/activate
 pip install -r requirements.txt
 python main.py
 ```
+
+## Flasheo de firmwares (GUI)
+
+Herramienta para bajar el **último release** de GitHub (`Flenuc/MULTI_VDF_HMI`) y grabar el micro con **esptool**:
+
+```bash
+cd desktop_app
+pip install -r requirements.txt   # incluye esptool
+python run_flasher.py
+# o: ./run_flasher.sh
+```
+
+1. **Buscar último firmware** (API Releases + zip `MULTI_VDF_HMI-firmware-*.zip`)
+2. Elegir placa (`guition_jc_esp32p4_m3` / `esp32dev`) y puerto serial
+3. **Flashear**
+
+También podés **Cargar carpeta local…** apuntando a `dist/firmware/<version>/manifest.json` generado con:
+
+```bash
+python3 scripts/package_firmware.py --version 0.1.0
+```
+
+CI: al pushear un tag `v*` se ejecuta `.github/workflows/release-firmware.yml` y publica el zip en Releases.

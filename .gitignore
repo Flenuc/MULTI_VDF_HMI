@@ -60,5 +60,9 @@ cmake-build-*/
 # results/*.csv
 # results/*_full.txt
 
+# Local firmware packages (built artifacts; CI uploads to Releases)
+dist/
+
+
 # --- Python packaging / locks (optional: remove if you want lockfiles) ---
 # poetry.lock

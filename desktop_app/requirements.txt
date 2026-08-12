@@ -3,3 +3,4 @@ pyserial>=3.5
 paho-mqtt>=1.6.1
 websocket-client>=1.6.0
 bleak>=0.22.0
+esptool>=4.7.0
