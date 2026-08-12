@@ -36,9 +36,24 @@ O UI en navegador: `./run_rn_web.sh` + `./run_backend.sh`.
 ## Build Linux (esta máquina)
 
 ```bash
-cd desktop_app
+cd desktop_app          # una sola vez desde el repo
 ./build_desktop_linux.sh
-# → electron/dist/*.AppImage  y/o  *.deb
+# → electron/dist/MULTI_VDF_HMI-*-arm64.AppImage
+```
+
+**Nota:** el target `.deb` no se genera en Raspberry Pi (aarch64): electron-builder
+usa `fpm` x86. En x86_64 Linux puedes forzar: `cd electron && npm run dist:linux:deb`.
+
+### Ejecutar
+
+```bash
+# Si ya estás en desktop_app:
+chmod +x electron/dist/MULTI_VDF_HMI-*.AppImage
+./electron/dist/MULTI_VDF_HMI-0.2.0-arm64.AppImage
+
+# Dev (Electron + backend .venv o binario en resources/):
+cd electron    # NO "cd desktop_app/electron" si ya estás en desktop_app
+npm start
 ```
 
 ## Build Windows
