@@ -3,15 +3,27 @@
   "productName": "MULTI_VDF_HMI",
   "version": "0.2.0",
   "description": "MULTI_VDF_HMI field desktop — Electron + Python backend",
+  "homepage": "https://github.com/Flenuc/MULTI_VDF_HMI",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Flenuc/MULTI_VDF_HMI.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Flenuc/MULTI_VDF_HMI/issues"
+  },
   "main": "main.js",
-  "author": "Flenuc",
+  "author": {
+    "name": "Flenuc",
+    "email": "flenuc@users.noreply.github.com"
+  },
   "license": "MIT",
   "private": true,
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "dist:linux": "electron-builder --linux AppImage deb",
+    "dist:linux": "electron-builder --linux AppImage",
+    "dist:linux:deb": "electron-builder --linux deb",
     "dist:win": "electron-builder --win nsis"
   },
   "build": {
@@ -39,8 +51,11 @@
       }
     ],
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": ["AppImage"],
       "category": "Science",
+      "maintainer": "Flenuc <flenuc@users.noreply.github.com>",
+      "vendor": "Flenuc",
+      "synopsis": "SAJ PDM-30 field tool (USB / MQTT / BT)",
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "win": {

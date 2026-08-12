@@ -70,10 +70,18 @@ Electron sets MULTI_VDF_UI_DIR to ../ui
 Port: 127.0.0.1:8765
 EOF
 
-npx electron-builder --linux AppImage deb
+# AppImage only by default — .deb uses fpm (x86) and fails on aarch64/Pi.
+npx electron-builder --linux AppImage
 cd ..
 
 echo ""
 echo "=== Desktop Linux build listo ==="
-ls -lh electron/dist/* 2>/dev/null || ls -lh electron/dist/
-echo "Instala/ejecuta el AppImage o el .deb en electron/dist/"
+ls -lh electron/dist/*AppImage 2>/dev/null || ls -lh electron/dist/
+echo ""
+echo "Ejecutar (estás en desktop_app):"
+echo "  chmod +x electron/dist/MULTI_VDF_HMI-*.AppImage"
+echo "  ./electron/dist/MULTI_VDF_HMI-*-arm64.AppImage"
+echo ""
+echo "Dev sin empaquetar (desde desktop_app):"
+echo "  cd electron && npm start"
+echo "  # NO: cd desktop_app/electron  (si ya estás dentro de desktop_app)"
