@@ -33,11 +33,25 @@ cp config/connection_profiles.example.json config/connection_profiles.json
 python main.py
 ```
 
+### Flasheo (GUI + paquetes)
+
+```bash
+# Generar zip + manifest (local)
+python3 scripts/package_firmware.py --version 0.1.0
+# → dist/firmware/MULTI_VDF_HMI-firmware-0.1.0.zip
+
+# GUI: baja el último release de GitHub y graba el micro
+cd desktop_app && python run_flasher.py
+```
+
+Repo público de releases: **https://github.com/Flenuc/MULTI_VDF_HMI**  
+CI: tag `v*` → workflow `.github/workflows/release-firmware.yml` publica el zip.
+
 ### Git / secretos
 
 - `desktop_app/config/connection_profiles.json` está en **`.gitignore`** (Wi‑Fi/MQTT reales).
 - Usá `connection_profiles.example.json` como plantilla.
-- Builds PlatformIO (`.pio/`) y venvs no se suben.
+- Builds PlatformIO (`.pio/`), `dist/` y venvs no se suben.
 
 ---
 
