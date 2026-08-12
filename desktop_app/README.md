@@ -28,15 +28,34 @@ WebSocket dejó de ser el canal principal (problemas multiplataforma y saturaci�
 
 ## Arquitectura
 
+**Nueva (multiplataforma):** React Native (Expo) + backend Python local.
+
 ```
-GUI (CustomTkinter) ── CommsClient ──┬── SerialClient
-                                     ├── BleNusClient (BLE NUS / bleak)
-                                     ├── BluetoothClient (SPP / RFCOMM)
-                                     ├── MqttClient  (paho-mqtt)
-                                     └── DummyClient
+frontend/ (Expo RN)  ──HTTP/WS──►  backend/ (FastAPI)
+                                        │
+                                        ▼
+comms/ ── Serial · MQTT · BT SPP · BLE NUS · Dummy
 ```
 
-UI no bloqueante: cola de eventos + `after(40ms)`.
+Ver **[ARCHITECTURE.md](./ARCHITECTURE.md)** para detalles y API.
+
+```bash
+# Backend (transportes)
+./run_backend.sh
+
+# UI React Native (web desktop)
+./run_rn_web.sh
+```
+
+**Legacy (sigue operativo):** CustomTkinter en-proceso.
+
+```
+GUI (CustomTkinter) ── CommsClient ──┬── SerialClient
+                                     ├── BleNusClient / BluetoothClient
+                                     ├── MqttClient / DummyClient
+```
+
+UI CTk no bloqueante: cola de eventos + `after(40ms)`.
 
 ## Perfiles guardados
 

@@ -31,6 +31,15 @@ ENV/
 # Desktop app local venv
 desktop_app/.venv/
 
+# React Native / Expo
+desktop_app/frontend/node_modules/
+desktop_app/frontend/.expo/
+desktop_app/frontend/dist/
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+
 # Secrets / local connection state (Wi-Fi passwords, last ports, etc.)
 desktop_app/config/connection_profiles.json
 # Keep the example committed instead
