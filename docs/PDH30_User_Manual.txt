@@ -1,0 +1,2654 @@
+PDH30 Series
+
+
+
+
+                PDH30 Smart Pro Pump Drive
+
+                               User Manual
+
+
+
+
+               Version code：6.0004.0554-00-PDH30-E-V01-2101
+                  - 1 -
+PDH30 Series
+
+
+
+                                   Preface
+
+     Thank you for using PDH30 series products. This manual provides you with
+relevant operation instructions and detailed description of parameters. Please read
+this manual carefully before installation, running, maintenance or inspection.
+     Make sure the wiring and the pump’s rotation direction is correct before
+using.
+
+
+
+
+                                     - 2 -
+PDH30 Series
+
+
+
+                                                    Content
+
+
+PREFACE...............................................................................................- 2 -
+
+NOTES FOR SAFE OPERATION...................................................... - 5 -
+
+CHAPTER 1 OPERATION PANEL INSTRUCTION....................... - 8 -
+
+             1.1 OPERATION PANEL DIAGRAM........................................................................ - 8 -
+             1.2 INDICATOR LIGHT INSTRUCTION.................................................................... - 9 -
+             1.3 OPERATION AND DISPLAY MODE.................................................................. - 10 -
+             (1) STATUS DISPLAY MODE:...................................................................................... - 10 -
+             (2) PARAMETER SETTING MODE:............................................................................... - 10 -
+             (3) THE ALARM DISPLAY MODE:................................................................................ - 10 -
+             1.4 MENU OPERATION....................................................................................... - 10 -
+             1.5 PRESSURE SETTING INSTRUCTION................................................................- 12 -
+
+CHAPTER 2 MODEL DESCRIPTION AND INSTALLATION....- 13 -
+
+             2. 1 MODEL INSTRUCTION..................................................................................- 13 -
+             2.2 QUICK SELECTION........................................................................................ - 13 -
+             2.3 INSTALLATION PROCEDURE ILLUSTRATIONS................................................- 14 -
+             2.4 WIRING DIAGRAM OF MAIN CIRCUIT AND CONTROL TERMINALS.............. - 15 -
+             2.5 CONTROL LOOP TERMINALS AND FUNCTIONS...............................................- 16 -
+             2.6 WIRING DIAGRAM........................................................................................ - 18 -
+
+CHAPTER 3 QUICK SETTING........................................................ - 19 -
+
+PLEASE FOLLOW THE STEPS BELOW TO FINISH SETTING- 19 -
+
+CHAPTER 4 DATASHEET OF PDH30............................................ - 22 -
+
+
+
+                                                         - 3 -
+PDH30 Series
+
+            4.1 PARAMETERS DISPLAYED AT RUNNING STATUS...........................................- 22 -
+            4.2 PARAMETERS DISPLAYED AT STOPPED STATUS............................................- 23 -
+            4.3 COMMON PARAMETER SETS OF SINGLE-DRIVE............................................ - 23 -
+            4.4 COMMON PARAMETER GROUPS OF MULTI-DRIVE MODE............................ - 26 -
+            4.5 DEBUGGING PARAMETER GROUPS...............................................................- 28 -
+            4.6 PID AND STANDBY PARAMETER SETS......................................................... - 31 -
+            4.7 PARAMETER SETS OF PUMP PROTECTION.....................................................- 34 -
+            4.8 PARAMETER SETS OF MOTOR.......................................................................- 37 -
+            4.9 PARAMETER SETS OF TERMINALS................................................................ - 38 -
+            4.10 COMMUNICATION PARAMETER SETS..........................................................- 40 -
+            4.11 MONITORING PARAMETER SETS................................................................. - 41 -
+            4.12 USER PARAMETER SETS............................................................................. - 42 -
+            4.13 AGENT PARAMETER SETS...........................................................................- 43 -
+            4.14 D0 GROUP MONITORING PARAMETERS....................................................... - 43 -
+            4.15 FAULT RECORD PARAMETER GROUPS.........................................................- 44 -
+
+CHAPTER 5 FAULT INFORMATION AND TROUBLESHOOTING- 46 -
+
+            5.1 FAULT CODES DESCRIPTION........................................................................ - 46 -
+            5.2 COMMON FAULTS AND HANDLING.............................................................. - 50 -
+
+CHAPTER 6 COMMUNICATION PROTOCOL............................ - 52 -
+
+            6.1 COMMAND CODES AND COMMUNICATION DATA DESCRIPTION.................. - 52 -
+
+MEANING OF FAULT CODES........................................................- 55 -
+
+THE EXAMPLE OF READING AND WRITING PARAMETERS
+COMMAND......................................................................................... - 56 -
+
+
+
+
+                                                     - 4 -
+PDH30 Series
+
+
+
+                      Notes for Safe Operation
+
+
+    Warning: Indicate a potentially dangerous situation in which could result in
+death or serious physical injuries.
+     Caution: Indicate a potentially dangerous situation in which could result in
+minor or moderate physical injuries and damage to equipments. Meanwhile, this
+sign can be also used for indicating errors or unsafe operation.
+SPD: Abbreviation of smart pump drive.
+
+
+     ■ Inspection
+
+                                           CAUTION
+
+ ◎Do not install or operate the SPD if it is damaged or has missing parts. Otherwise it
+ may result in equipment damage or physical injuries.
+
+
+
+     ■ Installation
+
+                                           CAUTION
+
+ ◎Please hold the bottom of SPD when installing or moving it. In case that the SPD is
+ broken or damaged; only holding the shell is not allowed.
+ ◎Keep the SPD away from heat, inflammable and explosive goods; Install SPD on the
+ metal or other nonflammable objects.
+ ◎If the SPD is mounted in an electric cabinet or other enclosed objects, fans or other
+ cooling device should be installed inside the cabinet; Setting ventilation opening to
+ ensure ambient temperature is below 40℃. Otherwise it may be damaged because of
+ high temperature.
+
+
+
+
+                                          - 5 -
+PDH30 Series
+
+    ■ Wiring
+
+                                           WARNING
+
+ ◎Wiring must be completed by qualified electrical engineers. Otherwise it can cause an
+ electrical shock or SPD damage.
+ ◎Before wiring, make sure the power supply is de-energized. Otherwise it will cause an
+ electrical shock or a fire.
+ ◎Make sure the ground terminal           is grounded safely and correctly. Otherwise there
+ will be a risk of electrical shock on the shell of SPD.
+ ◎Do not touch the main circuit terminal, and the main circuit terminals of the SPD are
+ not allowed to contact the shell. Otherwise it may cause an electrical shock.
+
+
+
+                                            CAUTION
+
+ ◎Before connecting, make sure the voltage rating and phase number of SPD is
+ conformed to the input power voltage, phase number; Otherwise it may cause a fire or
+ physical injuries.
+ ◎Never connect the AC input power supply to the output terminals V, U, W of SPD;
+ Otherwise it will cause damage to the SPD and you are not guaranteed to enjoy the
+ warranty services.
+ ◎Never conduct a pressure test on SPD；Otherwise it will cause damage to the SPD.
+ ◎The main circuit wiring of the SPD and the control loop wiring should be separated or
+ vertical crossed, otherwise the control signal will be interfered.
+ ◎The cable connected to the main circuit terminals should be use lugs with isolated
+ casing
+ ◎If the length of cable between the SPD and the motor is over 50 meters, an output
+ reactor is recommended so as to protect the SPD and motor.
+
+
+
+    ■ Running
+
+                                           WARNING
+
+ ◎Turn on the input AC power after the wiring of SPD is completed and the front cover
+ is installed. Do not dismantle the front cover when operating; otherwise it will lead to an
+ electric shock.
+
+
+
+                                           - 6 -
+PDH30 Series
+
+ ◎When SPD is set with the function of fault automatic reset or auto-restart after power
+ failure, protection measures for equipment system should be taken in advance. Otherwise
+ it will cause physical injuries.
+ ◎The key “RUN/STOP” may be lose efficacy because some function had been set, a
+ separate emergency power switch can be installed in the SPD control system; Otherwise
+ it may cause damage or physical injuries.
+ ◎Though the SPD terminal is in stop state, the terminal is electrified after power on. Do
+ not touch; otherwise there will be a risk of electric shock.
+
+
+
+
+    ■ Maintenance and Inspection
+
+                                           WARNING
+
+ ◎When power on, do not touch the connection terminals. Otherwise it may cause an
+ electrical shock.
+ ◎Only qualified electrical engineering personnel can maintain, replace and inspect the
+ SPD.
+ ◎Wait at least 10 minutes after the power failure, or make sure that is no residual
+ voltage before carry out maintenance and inspection, otherwise it may cause damage.
+
+
+
+
+                                           CAUTION
+
+ ◎PCB board has CMOS integrated circuit, do not touch, otherwise the static electricity
+ may damage PCB board.
+
+
+
+
+    ■ Others
+
+                                           WARNING
+
+ ◎It is strictly forbidden to transform the SPD, otherwise it may cause casualties. After
+ arbitrarily changing SPD, will no longer enjoy the warranty service.
+
+
+
+
+                                          - 7 -
+PDH30 Series
+
+
+
+         Chapter 1 Operation Panel Instruction
+
+
+1.1 Operation Panel Diagram
+
+
+
+
+                          - 8 -
+PDH30 Series
+
+     (1) MENU: used to switch from fixed model to modification model.
+     (2) P.SP/ENT: shortcut key of water pressure setting and “confirmation” key
+of parameter setting.
+     (3) SHIFT: used to shift display and move cursors in parameter
+modification .In running status, pressing “shift” can switch back and forth among
+running frequency, output current, pressure setting and feedback pressure. Press
+“shift” to modify parameters. Flicker bit is the current bit which can be modified.
+     (4)▲▼keys: used to modify parameter values.
+     (5) RUN: start button when using keyboard as starting mode.
+   (6) STOP: stop button and fault reset button when using keyboard as start
+mode.
+
+
+1.2 Indicator Light Instruction
+
+     (1) Run: (Always on) Running instruction; (Flicker): Sleep or stop instruction
+
+     (2) Stop: Stop or standby instruction
+
+     (3) Alarm:Inverter protection alarm.
+     (4)Net Pump: Online instruction: When the light is on, the communication is
+successful.
+     (5)Target pressure:When the display shows "target pressure" and "current
+pressure", it lights up when the pressure is adjusted;
+     (6)Current pressure:When the display is "target pressure" and "current
+pressure" light up;
+
+
+
+
+                                       - 9 -
+PDH30 Series
+
+
+1.3 Operation and display mode
+
+    (1) Status display mode:
+     When power on the SPD, it enters the status display mode. When it stops, it
+displays pressure setting. Press "+" or "-"to modify pressure setting. When it is
+running,it displays current pressure, operating frequency, and setting pressure.
+Press the "+" or "-" to switch the display; press "MENU" for two seconds to enter
+the parameter setting mode.
+
+
+    (2) Parameter setting mode:
+   To view or set the parameters, as starting from status display mode, press the
+"MENU" for 2 seconds to enter the parameter setting mode, and then press the
+"RUN / STOP" starts to set parameters. After you set the parameter press twice
+"MENU" to exit parameter setting mode, and return to the status display mode.
+
+
+    (3) The alarm display mode:
+     Automatically enter this mode when a drive fault or warning arises; press the
+"RUN / STOP" to reset, or it can automatically restored the previous mode after
+the alarm is eliminated.
+
+
+1.4 Menu Operation
+
+    Three-class menus are:
+
+    ① Function group (first class)
+    ② Function code setting(second class)
+    ③Function code setting(third class)
+
+
+
+
+                                     - 10 -
+PDH30 Series
+
+      Instruction: In the third class menu, pressing “MENU” or “RUN/STOP” can
+return to the second class menu. The difference is that pressing “RUN/STOP” first
+saves parameters to control board, and then returns to the second class menu and
+shifts to next function code automatically; pressing “MENU” returns to the second
+class menu directly without saving parameters and keeps staying at current
+function code.
+     Under the third class menu, only flicker bit can be modified. Revisable bit
+will shift automatically after 5 seconds.
+
+
+    Note: For parameters marked with “●”, please modify them in stopped state.
+Parameters marked with “◎” are actual detected and recorded values which can’t
+be modified.
+
+
+
+
+                                     - 11 -
+PDH30 Series
+
+    Example: Modify F0.02 from 0 to 1; pressing the menu key for two
+seconds can access to parameter set.
+
+
+
+
+                        Figure1-3-1 Parametric settings diagram
+
+
+
+1.5 Pressure Setting Instruction
+
+
+
+
+                         Figure1-4-1 Pressure setting diagram
+
+    Remarks--Pressure Measure:
+    0.1MPa = 100kPa = 1bar = 1kgf / cm2
+
+
+
+
+                                     - 12 -
+PDH30 Series
+
+
+
+    Chapter 2 Model description and installation
+
+
+2. 1 Model Instruction
+
+
+
+
+                   Figure2-1-1 model instruction of PDH30 diagram
+
+
+
+2.2 Quick selection
+
+
+                   Rated Power         Input     Output
+                                                                    G/P
+ Inverter Model   power capacity      current    current
+                  （kW）
+                          kVA            A         A         kW           HP
+ PDH30-4TR75       0.75      1.5        3.4        2.1      0.75          1
+ PDH30-4T1R5       1.5        3         5.0        3.8      1.5           2
+ PDH30-4T2R2       2.2        4         5.8        5.1      2.2           3
+ PDH30-4T004        4        5.9       10.5         9        4            5.5
+ PDH30-4T5R5       5.5       8.9       14.6        13       5.5           7.5
+ PDH30-4T7R5       7.5       11        20.5        17       7.5           10
+ PDH30-4T011        11       17         26         25        11           15
+ PDH30-4T015        15       21         35         32        15           20
+PDH30-4T18R5       18.5      24        38.5        37       18.5          25
+
+                     Table 2-2-1 selection table of PDH30
+
+
+
+                                    - 13 -
+PDH30 Series
+
+
+2.3 Installation Procedure Illustrations.
+
+
+First open the pump motor junction box, fix the connection terminal between the
+power line and the water pump, and then fix the bottom plate on the motor junction
+box, consider the frequency converter is centered, and the bottom plate should be
+adjusted reasonably.
+
+
+
+
+2. Fix the machine on the bottom plate, remove the wiring surface shell on the
+right side of the machine, so that the pump output line, the input line of the
+frequency converter and the sensor line pass through the waterproof joint
+successively, and fix it according to the mark.
+
+
+
+
+                                       - 14 -
+PDH30 Series
+
+3. The main terminal of the machine is R/S/T is the input end of the power supply,
+U/V/W is the output end of the motor, pay attention to the wiring, to prevent the
+wrong connection resulting in the explosion of the machine.
+
+
+
+
+2.4 Wiring Diagram of Main Circuit and Control Terminals
+
+
+
+
+                                   Figure 2-4-1
+   Terminal
+                          Name                           Instructions
+    mark
+                   Three-phase power            Three - phase AC power input
+   R、S、T
+                     input terminal                 connection terminal
+  U、V、W          Inverter output terminal      Connection of three-phase motor
+
+
+
+
+                                      - 15 -
+PDH30 Series
+
+
+      PE       Earthing terminal            Connect the earth terminal
+
+                             Figure 2-4-2
+
+
+2.5 Control loop terminals and functions
+
+
+
+
+                             Figure 2-5-1
+
+
+
+
+                                   - 16 -
+PDH30 Series
+
+    Control terminal instruction
+Terminal symbol       Terminal name                    Technical specification
+
+                                            1. Optical couplers isolation one-way input
+                                            2. Enabled when connected to GND. Disabled
+                   Multi-function digital   when open
+    DI1~DI3                                 3. Input voltage range: 9~36 VDC
+                     input terminal
+                                            4. Input impedance:4 KΩ
+                                            5. the terminal of 11-400kW is DI1-DI6
+
+
+      AI1         Analog input terminal 1 1. Input voltage range: DC 0~10VDC or
+                                          0/4~20mA, determined by parameters.
+                                          2.Input impedance: 22KΩ when voltage input;
+      AI2         Analog input terminal 2 500Ω when current input
+
+                     Analog reference       5V, ±5%
+      5V
+                         voltage            maximum output current 30mA
+
+                     Analog reference       10V, ±5%
+     10V
+                         voltage            maximum output current 50mA
+
+     GND          Analog ground terminal 5V and 10V reference zero potential
+
+                                            T1A~T1B: normally open terminals
+                                            Contact capacity:
+    T1A/T1B         Relay RO1 output
+                                            AC 250V / 3A / normally open terminals
+
+                                         Provide +24V power to external devices.
+                  24V power for external Maximum output current 100 mA. Commonly
+     24V
+                        devices          used as digital input working power and
+                                         external sensor power
+
+                    24V power public        Provide 24V power public terminal to external
+     COM
+                        terminal            devices
+
+
+      A+                                 Standard isolated485 communication interface.
+                     Standard RS485
+                                         Please use twisted pair or shielded wire.
+                  communication terminal
+                                         Can be used for PC communication control.
+      B-
+
+      S+                   CAN              Standard CAN communication interface.
+
+
+
+                                        - 17 -
+PDH30 Series
+
+
+Terminal symbol              Terminal name                                   Technical specification
+
+      S-                 communication terminal Please use twisted pair or shielded wire.
+                                                Can be used for inverter on-line.
+      S0
+                                              Figure 2-5-2
+
+
+2.6 Wiring diagram
+
+ The VFD can be connected to remote pressure gauge and pressure transmitter.
+Please connect wire according to below diagrams.
+    ① Remote pressure gauge: Working voltage 4~13VDC, output 0~10VDC.
+Wiring method is shown as below,Signal input connection AI2;
+
+
+                                       S+ S- A+ B- AI1 AI2 DI1 DI2 DI3                         1
+                                                                                               2
+                                                                                               3
+
+                                         SO GND 5V 10V 24V GND DO1 T/A T/B
+                                                                                               地
+
+
+                 YTZ
+                1.0Mpa
+
+
+
+
+                                              Figure 2-6-1
+
+② 24V pressure transmitter: working voltage range 10~30VDC, output
+4~20mA,Signal input connection AI1.
+
+           S+ S- A+ B- AI1 AI2 DI1 DI2 DI3
+
+                                                                              Pressure
+                                                                              Transmitter
+               SO GND 5V 10V 24V GND DO1 T/A T/B
+
+
+                                              POWER
+
+                                              OPUT
+
+
+
+
+                                              Figure 2-6-2
+
+
+
+
+                                                      - 18 -
+PDH30 Series
+
+
+
+                     Chapter 3 Quick Setting
+
+Please follow the steps below to finish setting
+     Step 1: Set the sensor range, the sensor type
+     F0.08 = 16.0 Sensor’s range
+    F0.09 = 2 Sensor feedback channel selection (0: AI1 channel 1: AI2 channel;
+2: Max (AI1, AI2))
+     F2.00= 0 AI1 Sensor type (0:4-20mA; 1:0-10V; 2:0.5-4.5V)
+     Step2: Confirm the motor’s rotation direction
+     Run the pump shortly, monitor if the direction is correct. Change the rotation
+direction by 2 ways below:
+
+    ① Disconnect the input power and make sure the display is OFF, then
+exchange two lines of any of U\V\W.
+    ② Stop the VFD, Modify to F0.02.
+
+     Step 3: Adjust the display pressure
+     There is two ways to adjust the display pressure and actual pressure:
+    ① When the pressure is stable, adjust F2.01 or F2.03 within each range of
+0.010.
+    ② If the VFD pressure is a little higher, make the sensor range lower(F0.08);
+If the VFD pressure is a little lower, make the sensor range higher (F0.08).
+
+
+
+
+                                       - 19 -
+PDH30 Series
+
+     Step4: Macro Settings
+     Please refer to the table below, to set the system quickly.
+                             Details of parameters changed
+ System Type     Parameter                                             Description
+                                      automatically
+
+  Solo Pump                        F0.06=1; F1.02=0;
+                  F0.20=1                                     Auto-Reset, Auto- Start enable,
+    setting                    F1.03=0; F2.05=8; F8.00=1
+
+                                                              Auto-Reset, Auto- Start enable,
+ Two VFDs, as                      F0.06=1; F1.02=1;
+                  F0.20=2                                          an auxiliary drives
+  Host drives                  F1.03=1; F2.05=8; F8.00=1
+                                                                    can be controlled
+
+                                                              Auto-Reset, Auto- Start enable,
+Three VFDs, as                      F0.06=1; F1.02=1;
+                  F0.20=3                                          two auxiliary drives
+  Host drives                  F1.03 = 2; F2.07=8; F8.00=1
+                                                                    can be controlled
+
+                                                              Auto-Reset, Auto- Start enable,
+Four VFDs , as                     F0.06=1; F1.02=1;
+                  F0.20=4                                         three auxiliary drives
+ Host drives                   F1.03=3; F2.05=8; F8.00=1
+                                                                    can be controlled
+
+                                                              Auto-Reset, Auto- Start enable,
+Five VFDs , as                     F0.06=1; F1.02=1;
+                  F0.20=5                                          four auxiliary drives
+  Host drives                  F1.03=4; F2.07=5; F8.00=1
+                                                                     can be controlled
+
+                                                              Auto-Reset, Auto- Start enable,
+ Six VFDs, as                  F0.06=1; F1.02=1; F8.00=1
+                  F0.20=6                                          five auxiliary drives
+  Host drives                      F1.03=5; F2.07=5
+                                                                     can be controlled
+
+                               F0.06=1; F1.02=0; F1.03=0;
+ One VFD drive                                                  Auto- Start; RO1 and RO2
+                  F0.20=7      F2.05=8; F7.08=3; F7.09=4;
+two pumps mode                                                   through pressure output
+                                        F8.00=1;
+
+One VFD drive
+                               F0.05=1; F2.00=1; F2.05=2;    Terminal start up, Free stop, Turn
+multiple pumps    F0.20=8
+                                        F2.12=1;                 off water pressure alarm
+     mode
+
+Emergent Mode     F0.20=9      F2.05=1; F0.06=1; F8.00=1        Frequency source changed
+
+                                                              Auto- Start enable, The VFD
+VFD network,                   F0.05=2; F0.06=1; F1.00=1;
+                 F0.20=11                                    communication address set to 1,
+Auxiliary No.1                 F1.04=0; F2.05=9; F8.00=2
+                                                                Start up the standby host
+
+                                                               Auto- Start enable, The VFD
+VFD network,                   F0.05=2; F0.06=1; F1.00=2;
+                 F0.20=12                                    communication address set to 2 ,
+Auxiliary No.2                 F1.04=0; F2.05=9; F8.00=3
+                                                                Start up the standby host
+
+
+
+
+                                        - 20 -
+PDH30 Series
+
+                                                           Auto- Start enable, The VFD
+VFD network,                F0.05=2; F0.06=1; F1.00=3;
+                 F0.20=13                                communication address set to 3 ,
+Auxiliary No.3              F1.04=0; F2.05=9; F8.00=4
+                                                            Start up the standby host
+
+                                                           Auto- Start enable, The VFD
+VFD network,                F0.05=2; F0.06=1; F1.00=4;
+                 F0.20=14                                communication address set to 4 ,
+Auxiliary No.4              F1.04=0; F2.05=9; F8.00=5
+                                                            Start up the standby host
+
+                                                           Auto- Start enable, The VFD
+VFD network,                F0.05=2; F0.06=1; F1.00=5;
+                 F0.20=15                                communication address set to 5 ,
+Auxiliary No.5              F1.04=0; F2.05=9; F8.00=6
+                                                            Start up the standby host
+
+                                  Figure 3-1-1
+
+
+
+
+                                  Figure 3-1-2
+
+
+
+
+                                     - 21 -
+PDH30 Series
+
+
+
+               Chapter 4 Datasheet of PDH30
+
+    Note:
+    “○”: The parameter can be modified in both standby and operating state.
+
+    “●”: The parameter can’t be modified in operating state.
+
+   “ ◎ ”:The parameter is the actual detected and recorded value which can’t be
+modified.
+
+
+4.1 Parameters Displayed at Running Status
+
+    Note: Press “SHIFT” key to switch
+                                                                                 Revision
+ Display            Name                       Description                Unit
+                                                                                  level
+    P           Current pressure     Pressure value of actual operation   bar      ◎
+   H           Running frequency        Current running frequency         Hz       ◎
+    d             Set pressure                 Set pressure               bar      ◎
+    A           Running current      Actual output current of the VFD      A       ◎
+   U            DC Bus voltage             Bus voltage of VFD              V       ◎
+
+
+
+
+                                     - 22 -
+PDH30 Series
+
+
+
+
+4.2 Parameters Displayed at Stopped Status
+
+       Note: Press “SHIFT” key to switch
+                                                                                                 Revision
+Display                    Name                         Description                  Unit
+                                                                                                  level
+                                                   Pressure value of actual
+   P                   Current pressure                                               Bar            ◎
+                                                          operation
+
+   d                     Set pressure                   Set pressure                  bar            ◎
+   U                   DC Bus voltage               Bus voltage of VFD                 V             ◎
+
+
+
+
+4.3 Common Parameter Sets of Single-drive
+
+Function                                                        Revision
+           Description          Set range   Unit     Default                            Remarks
+  code                                                           level
+
+                                                                              In multi-drive mode, users
+           Pre-set
+ F0.00
+           pressure
+                              F4.01~F0.10   bar        3.0         ○          only need to set parameters of
+                                                                              the host drive.
+
+           Startup                                                            Wakeup from standby mode
+ F0.01     pressure             0.0~F0.00   bar        0.3         ○          when the pressure is lower
+           derivation                                                         than pre-set pressure
+
+           Motor                                                              Rotation direction can be
+                               0: Forward
+ F0.02     rotation
+                               1: Reverse
+                                             \          0          ●          changed by modifying this
+           direction                                                          parameter
+
+
+
+
+                                                 - 23 -
+PDH30 Series
+
+Function                                                         Revision
+           Description        Set range        Unit    Default                         Remarks
+  code                                                            level
+
+                             0: Disabled                                    Antifreeze and rust-proof
+                              1: Enabled                                    function of the pump itself.
+                             (in seconds)                                   For details, please refer to
+           Antifreeze
+ F0.03
+           function
+                            2: Enabled (in      \        0         ○        F0.12~F0.14
+                               minutes)                                     The antifreeze function for
+                           3: inlet pressure                                each VFD need to be set
+                                control                                     separately in multi-pump.
+
+           Water
+                                                                            The bigger the water leakage,
+ F0.04     leakage            0.0~100.0         \        2.5       ○        the smaller the coefficient.
+           coefficient
+
+                                                                            0:Keyboard start/stop
+           Start/stop                                                       1:Terminal start/stop
+ F0.05
+           signal option
+                                 0~2            \        0         ○        2:Start/stop by communication
+                                                                            control
+
+           Auto-startin
+ F0.06
+           g option
+                                 0~1            \        0         ○        0:Disabled 1:Enabled
+
+           Auto-startin                                                     Delay time while auto-starting
+ F0.07
+           g delay time
+                              0.0~100.0         s        5.0       ○        at power on
+
+
+ F0.08     Sensor range       0.0~200.0        bar      16.0       ○        The maximum range of sensor
+
+
+                                0:AI1
+           The
+                                1:AI2
+           selection of                                                     AI1 and AI2 can be connected
+                               2: Max
+ F0.09     sensor
+                              (AI1,AI2)
+                                                \        2         ○        to the default sensor
+           feedback                                                         randomly.
+                           3:Min(AI1,AI2)
+           channel
+
+                                                                            When feedback pressure is
+                                                                            bigger than this set pressure, it
+           High                                                             alarms and stops after 0.1s
+ F0.10     pressure         F0.00~F0.08        bar      14.4       ○        delay. When the pressure
+           alarm value                                                      returns to normal, after the
+           setting                                                          reset delay time, the fault is
+                                                                            solved automatically.
+
+
+
+
+                                                    - 24 -
+PDH30 Series
+
+Function                                                   Revision
+           Description      Set range    Unit    Default                         Remarks
+  code                                                      level
+
+                                                                      When the feedback pressure is
+                                                                      less than this set pressure, it
+                                                                      alarms and stops after alarm
+                                                                      delay set by F4.09. This
+           Low
+                                                                      function is invalid when this
+ F0.11     pressure        0.0~F4.01     bar       0.0       ○        parameter is set as 0. When
+           alarm value
+                                                                      the pressure returns to normal,
+           setting
+                                                                      the fault is solved
+                                                                      automatically after the reset
+                                                                      delay
+
+
+           Inlet stop
+ F0.12
+           pressure
+                          0.0Bar～F0.08   Bar     3.5Bar      ○        Effective when F0.05=3, the
+                                                                      converter starts when the inlet
+                                                                      pressure is less than F0.13,
+           Intake
+                                                                      and stops when the inlet
+ F0.13     starting       0.0Bar～F0.12   Bar     2.5Bar      ○        pressure is greater than
+           pressure
+                                                                      F0.12.The inlet pressure
+           Intake                                                     sensor can choose AI1 or AI2
+ F0.14     feedback          0:AI1
+                             1:AI2
+                                          0        0         ○        as signal detection.
+           channel
+
+
+           Working
+                                                                      0:Pressure mode
+ F0.15     mode of            0~1         \        0         ○        1:General mode
+           VFD
+
+
+
+ F0.16
+           Product
+           number
+                                          \                  ◎        Product predefined by
+                                                                      manufacturer
+
+                                                                      This instruction is only
+ F0.17
+           Software
+           version
+                          2.000~2.999     \                  ◎        applicable to the software in
+                                                                      this version.
+
+
+ F0.18
+           Acceleration
+           time
+                           0.0 ~6500.0    s        5.0       ○        Differentiating from the
+                                                                      power range
+
+
+ F0.19
+           Deceleration
+           time
+                           0.0~6500.0     s        5.0       ○        Differentiating from the
+                                                                      power range
+
+
+
+
+                                              - 25 -
+PDH30 Series
+
+Function                                                       Revision
+           Description        Set range      Unit    Default                         Remarks
+  code                                                          level
+
+                                                                          Refer to quick settings
+ F0.20
+           Macro
+           function
+                                0~15          \         0        ●        （Chapter 3）
+
+
+
+
+4.4 Common Parameter Groups of Multi-drive Mode
+
+Function                                                       Revision
+           Description        Set range      Unit    Default                         Remarks
+  code                                                          level
+
+           On-line                                                        1-5 is the address of auxiliary
+ F1.00     communicati          0-5           \        0         ◎        drives. The address of host
+           on address                                                     drive is 0.
+
+
+                                                                          0: auxiliaries shut down after
+           The             0: closing down                                the host is disconnected.
+           selection of       1: constant                                 1: auxiliaries can operate at a
+ F1.01     standby
+           host(auxiliar
+                                 speed
+                              2: constant
+                                              \        0         ○        constant speed without
+                                                                          connecting pressure sensors.
+           y)                  pressure                                   2: auxiliaries can operate at a
+                                                                          constant pressure
+
+
+
+           The
+           selection of
+ F1.02     communicati          0~1           \        0         ◎        0: CAN was set to auxiliary
+                                                                          1: CAN was set to host
+           on network
+           mode
+
+
+
+
+                                                                          0: Cancel the control function
+                                                                          of the host drives over the
+           Number of                                                      auxiliaries.
+ F1.03     the auxiliary        0~5          Set       0         ◎        Note: This parameter only
+           drives                                                         serves as PID frequency
+                                                                          source and is only set in CAN
+                                                                          host drive.
+
+
+
+
+                                                  - 26 -
+PDH30 Series
+
+Function                                                     Revision
+           Description     Set range       Unit    Default                         Remarks
+  code                                                        level
+
+                                                                        0: when the pressure is not
+                                                                        enough, and the system is put
+                          0: Sequential                                 into auxiliary operation in
+                              control                                   turn.
+           On-line
+                         1: Synchronous                                 1: when the pressure is not
+ F1.04     operation
+                              control
+                                            \        0         ●        enough, host and auxiliary
+           mode
+                            2: Standby                                  Operating frequency is the
+                               mode                                     same.
+                                                                        2: Only one VFD runs at any
+                                                                        time and the rest is standby.
+
+                                                                        The alternating time of host
+                                                                        drives and auxiliary drives
+           Alternating
+ F1.05
+           time
+                            0~3600         min      240        ○        0: Cancel the alternating
+                                                                        function of host drives and the
+                                                                        auxiliary drives.
+
+                                                                        It is invalid when this address
+           Address
+                                                                        is bigger than the number of
+           setting of
+ F1.06
+           small pump
+                              0~6           \        6         ○        auxiliary drives. 0 means that
+                                                                        the host drive is the small
+                                                                        pump.
+
+           Delay time                                                   It means the delay time of
+ F1.07     of adding       0.0~100.0        s        5.0       ○        adding pumps when the
+           pumps                                                        pressure is not enough.
+
+                         0：Controlled
+           Alternate     by the original                                When the alternate host is
+           host boot     host's original                                enabled, you can modify the
+ F1.17
+           command         start signal
+                                            1        1         ○        parameters to choose how to
+           control       1：Automatic                                    start the command.
+                               start
+
+
+                            0：Host
+                                                                        When the host computer is
+           Communicat     computer start
+                                                                        installed, you can modify this
+           ion start         control
+ F1.18
+           command        1：Multi-line
+                                            1        1         ○        parameter to select the
+                                                                        machine to directly start and
+           control       communication                                  stop the machine.
+                             control
+
+
+
+
+                                                - 27 -
+PDH30 Series
+
+
+
+
+4.5 Debugging Parameter Groups
+
+
+
+Function                                                      Revision
+           Description      Set range      Unit     Default                           Remarks
+  code                                                         level
+
+           Selection of                                                  0:4-20mA
+           AI1 channel                                                   1:0-10V
+ F2.00
+           feedback
+                               0-2           /        0         ○        2:0.5-4.5V
+           types                                                         3:0-5V
+
+           AI1 signal
+                                                                         Correction of AI1 channel
+ F2.01     correction      0.750-1.250     0.001    1.000       ○        signal deviation
+           coefficient
+
+           Selection of                                                  0:4-20mA
+           AI2 channel                                                   1:0-10V
+ F2.02
+           feedback
+                               0-2           /        1         ○        2:0.5-4.5V
+           types                                                         3:0-5V
+
+           AI2 signal
+                                                                         Correction of AI2 channel
+ F2.03     correction      0.750-1.250     0.001    1.000       ○        signal deviation
+           coefficient
+
+           Motor
+                            0：SVC                                        0：AM-SVC；
+ F2.04     control
+                             1：VF
+                                            1         1         ●        1：AM-VF；
+           mode
+
+                          1: Up/Down is
+                             digital set
+                               2: AI1
+                               3: AI2                                    Choose 8 for the host drives
+           Frequency
+                           5: Emergent                                   Choose 9 for auxiliary drives
+ F2.05     source
+                           water supply
+                                             /        8         ●        Choose 5 for emergent
+           choice
+                              8: PID                                     water supply.
+                           9:Setting-by
+                           communicatio
+                                  n
+
+           Upper limit
+                                                                         The upper limit of VFD’s
+ F2.06     of running     F2.08~F2.07       Hz      50.00       ○        running frequency
+           frequency
+
+
+
+
+                                                 - 28 -
+PDH30 Series
+
+Function                                                          Revision
+           Description         Set range       Unit    Default                          Remarks
+  code                                                             level
+
+           Maximum
+ F2.07     output            50.00-320.00      Hz      50.00        ●
+           frequency
+
+           Lower limit
+ F2.08     of running         0.00~F2.06       Hz       0.00        ○
+           frequency
+
+                              0: Running
+           Options
+                            according to the
+           when it
+                              lower limit
+ F2.09     reaches the
+                               frequency
+                                                \        2          ○
+           lower limit
+                                 1: stop
+           frequency
+                               2: standby
+
+                                                          Set
+           Setting of                                 accordin               Noise of the motor can be
+ F2.10     carrier             0.5~15.0        kHz     g to the     ○        adjusted by modifying this
+           frequency                                  machine                value
+                                                         type
+
+                              0: Running
+                            constantly when
+                                start-up
+           Fan running
+ F2.11
+           mode
+                              1: Running        \        0          ○
+                            constantly when
+                               power on
+
+
+                               0: Stop by
+           Selection of
+                              deceleration                                   The selection for the halt
+ F2.12     the halt
+                                 1:Stop
+                                                \        0          ○        mode of VFD.
+           mode
+                             automatically
+
+           Number of                                                         (E015/E024/E027/E028/E029/
+ F2.13     automatic              0~5           \        3          ○        E031) These are not affected
+           reset failures                                                    by this function.
+
+
+
+
+                                                    - 29 -
+PDH30 Series
+
+Function                                                         Revision
+           Description        Set range        Unit    Default                        Remarks
+  code                                                            level
+
+                               LED bits:
+                                Carrier is
+                           associated with
+                              temperature
+                              0: It doesn't
+                               depend on
+                              temperature
+                            1: It has to do
+                                  with
+                              temperature
+                             LED 10 bits:
+                                Carrier is
+                           associated with
+                                 output
+                               frequency
+                            0: Independent
+           Random                                                           Electromagnetic noise can be
+ F2.14
+           carrier
+                             of the output     1001      0         ○        improved
+                               frequency
+                           1: Related to the
+                                 output
+                               frequency
+                            LED hundred:
+                            random PWM
+                                  depth
+                             0: shut down
+                            1-8: Open and
+                           adjust the depth
+                           LED thousand:
+                           overmodulation
+                                 option
+                             0: shut down
+                                 1: open
+
+
+           Frequency
+                                                                            Standby host uses the
+           of standby
+ F2.15                         0~100.0          %      80.0%                operating frequency of
+           host(auxiliar
+                                                                            constant speed mode.
+           y)
+
+
+
+
+                                                    - 30 -
+PDH30 Series
+
+
+4.6 PID and Standby Parameter Sets
+
+Function                                                    Revision
+           Description      Set range     Unit    Default                         Remarks
+  code                                                       level
+
+                                                                       The bigger this parameter is,
+                                                                       the quicker the response speed
+                                                                       of water pressure system will
+           Proportional                                                be. However, if the value is
+ F3.00
+           gain
+                            0.00~100.0     %       20.0       ○        too big, the system will
+                                                                       oscillate. The value should be
+                                                                       adjusted according to different
+                                                                       water supply system.
+
+ F3.01     Integral time    0.01~10.00     s       1.00       ○
+           Differential
+ F3.02
+           time
+                           0.000~10.000    s       0.00       ○
+           Start-up time
+ F3.03
+           of PID
+                            0.00~100.0     s       0.10       ○
+           Deviation
+ F3.04     limit of PID     0.0~100.0      %        0.0       ○
+           control
+
+           PID source                                                  0: setting by keyboard
+ F3.05     setting             0~2         \        0         ○        1: setting by AI1
+           choice                                                      2: setting by AI2
+
+
+
+
+                                               - 31 -
+PDH30 Series
+
+Function                                                       Revision
+           Description        Set range      Unit    Default                         Remarks
+  code                                                          level
+
+                                                                          Ones:
+                                                                          0000: Positive control: When
+                                                                          the feedback signal is bigger
+                                                                          than the PID setting signal, the
+                                                                          output frequency decreases;
+                                Ones                                      when the feedback signal is
+                             0: Positive                                  smaller than the PID setting
+           PID output        1: Negative                                  signal, the output frequency
+ F3.06     characteristi        Tens:         \       0000       ○        increases.
+           c choice           Reserved                                    0001: Negative control: When
+                             Hundreds:                                    the feedback signal is bigger
+                              Reserved                                    than the PID setting signal, the
+                                                                          output frequency increases;
+                                                                          when the feedback signal is
+                                                                          smaller than the PID setting
+                                                                          signal, the output frequency
+                                                                          decreases.
+
+                                                                          When the inverter runs
+           Broken-line                                                    through the detection time,
+           fault                                                          If the PID feedback value is
+ F3.07     detection         0.0~100.0        s       30.0       ○        still 0, the PID feedback
+           time of PID                                                    disconnection fault is
+           feedback                                                       reported. This function is
+                                                                          invalid when the setting is 0.
+
+                                                                          Sleep mode 1: The system
+                                                                          performs sleep processing
+                                                                          based on pressure, frequency
+                                                                          and time. At this time, the
+           PID standby        0: Disabled
+                                                                          water leakage coefficient, the
+ F3.08     function        1: Sleep mode 1    \        1         ○        pressure holding detection
+           option          2: Sleep mode 2
+                                                                          time and the sleep rate are
+                                                                          effective.
+                                                                          Sleep mode 2:Sleep based on
+                                                                          pressure and sleep frequency
+
+           PID wakeup
+ F3.09     detection         0.0~100.0        s        3.0       ○        PID wakeup detection delay
+           delay
+
+
+
+
+                                                  - 32 -
+PDH30 Series
+
+Function                                                 Revision
+           Description    Set range    Unit    Default                         Remarks
+  code                                                    level
+
+                                                                    If the standby is slow or it
+                                                                    can’t enter standby in small
+           PID standby                                              water demand, decrease this
+ F3.10     detection      0.0~100.0     s        0.5       ○        value. If it enters standby in
+           delay                                                    advance or it is started and
+                                                                    stopped frequently, increase
+                                                                    this value.
+
+                                                                    When the feedback pressure is
+           PID standby
+ F3.11
+           deviation
+                           0.0~1.0     bar       0.1       ○        within standby deviation
+                                                                    range, it starts standby.
+           pressure
+
+                                                                    PID runs at standby hold
+           PID standby
+                                                                    frequency. After the standby
+ F3.12     hold          0.00~F3.13    Hz      20.00       ○        duration, PID enters standby
+           frequency
+                                                                    status.
+
+           Standby                                                  The system will judge whether
+ F3.13     detection     F3.12~F2.07   Hz      25.00       ○        the condition of standby
+           frequency                                                function, meet the frequency.
+
+           Low
+                                                                    When the system goes to
+           frequency
+ F3.14
+           operation
+                          0~120.0       s        3.0       ○        sleep, the running time of PID
+                                                                    standby hold frequency.
+           hold time
+
+           Pressure                                                 After this time, the system
+ F3.15     check          0~120.0       s       30.0                automatically detects the
+           interval                                                 pressure hold status.
+
+           The
+           frequency
+                                                                    Used in the mode of average
+           for half
+                                                                    dividing frequency. It is the
+           pump flow
+                                                                    frequency value that the pump
+           (The
+                                       Hz                           reach half pump flow (notes:
+ F3.16     pumping       20.00~F2.07
+                                       (%)
+                                               30.00       ○        the parameter is reused in the
+           flow ratio
+                                                                    small pump, serving as the
+           between
+                                                                    flow percentage for small
+           small pump
+                                                                    pumps and large pumps.)
+           and large
+           pump)
+
+
+
+
+                                            - 33 -
+PDH30 Series
+
+Function                                                  Revision
+           Description     Set range    Unit    Default                          Remarks
+  code                                                     level
+
+           VFD Sleep
+ F3.17
+           Ratio
+                             0~30        \        9          ○       Set bigger make sleep quicker
+
+           The
+           feedback of                                               Sampling minimum value in
+ F3.18     disconnected     0~1.00       V       0.20        ○       the system. It is judged by the
+           detection                                                 voltage.
+           value
+
+           Proportional
+ F3.19
+           gain 2
+                           0.0~100.0     %       20.0        ○
+           Integral time
+ F3.20
+           2
+                           0.00~10.00    s       2.00        ○
+
+
+
+4.7 Parameter Sets of Pump Protection
+
+Function                                                  Revision
+           Description     Set range    Unit   Default                          Remarks
+  code                                                     level
+
+                                                                     0: Disabled
+           Water                                                     1: Enabled. Judge by
+ F4.00     shortage           0~2        \        2         ○        frequency, pressure and current
+           protection                                                2: Enabled. Judge by outlet
+                                                                     pressure
+
+           Threshold of
+                                                                     When feedback pressure is
+           water
+ F4.01
+           shortage
+                           0.0~F0.00    bar      0.5        ○        smaller than this value, water
+                                                                     shortage judgement is made
+           detection
+
+           Detection                                                 Comparison frequency to judge
+           frequency of                                              whether water shortage occurs.
+ F4.02     water            0~F2.07     Hz      48.00       ○        When running frequency is
+           shortage                                                  bigger than this frequency, it is
+           protection                                                judged as water shortage.
+
+
+
+
+                                             - 34 -
+PDH30 Series
+
+Function                                                Revision
+           Description     Set range   Unit   Default                          Remarks
+  code                                                   level
+
+           Detection
+                                                                   When it meets the condition of
+           time of
+                                                                   water shortage, water shortage
+ F4.03     water           0.0~200.0    s      60.0       ○        fault will be reported after this
+           shortage
+                                                                   time.
+           protection
+
+           Current
+                                                                   It is valid only when F4.00 = 1.
+           percentage
+                                                                   The percentage of motor rated
+           of water
+ F4.04
+           shortage
+                           0~100.0      %      40.0       ○        current. When running current
+                                                                   is less than this current, it is
+           protection
+                                                                   judged as water shortage.
+           detection
+
+           Automatic
+           restart delay                                           Set 0: use F4.07 and F4.08 to
+ F4.05     of water         0~9999     min      15        ○        reset water shortage faults. If it
+           shortage                                                is not the “Set 0”
+           protection
+
+                                                                   When water shortage fault is
+                                                                   reported, after the period set by
+                                                                   F4.05, the VFD resets and runs
+           Automatic                                               automatically. Reset times are
+           reset times                                             limited by F4.05. When it
+ F4.06     of water         0~9999      \       10        ○        reaches reset times, water
+           shortage                                                shortage fault can’t be cleared
+           protection                                              automatically. Press REST
+                                                                   manually to reset the fault.
+                                                                   9999 can reset the fault
+                                                                   unlimitedly
+
+           Input water                                             If the system reported the
+           recover                                                 water shortage fault (E027);
+ F4.07
+           pressure
+                           0~F0.00     bar      1.0       ○        When the VFD detection
+                                                                   pressure is greater or equal to
+                                                                   detection pressure of setting
+                                                                   input water, and the time is
+           Input water                                             greater than the detection time
+           recover                                                 of input water, the system will
+ F4.08
+           detect time
+                           0~100.0      s      20.0       ○        reset to E027. This is
+                                                                   applicable to pressurization
+                                                                   system .of water inlet This is
+                                                                   pressure value of output water
+
+
+
+
+                                            - 35 -
+PDH30 Series
+
+Function                                                       Revision
+           Description        Set range      Unit    Default                          Remarks
+  code                                                          level
+
+           The delay
+           time of                                                        The delay time of water
+ F4.09     abnormal          0.0~120.0         s       3.0       ○        pressure alarm and failure
+           pressure                                                       alarm
+           alarm
+
+           Antifreeze
+                           0.00Hz ~ upper
+ F4.10     operation                          Hz      10.00      ○
+                           frequency F2.07
+           frequency
+                                                                          The time unit of antifreeze and
+                                                                          antirust can be seconds or
+           Antifreeze         0s/min～
+                                                                          minutes, refer to the setting of
+ F4.11
+           running time      65000s/min
+                                             s/min     60        ○        F0.03.When the interval is set
+                                                                          to 0, always run at the
+                                                                          antifreeze operating frequency.
+           Antifreeze
+                              0s/min～
+ F4.12     operation
+                             65000s/min
+                                             s/min     300       ○
+           interval time
+
+                                                                          The running frequency of all
+                                                                          drives in system is greater or
+                                                                          equal than F4.02, and the
+           Detection                                                      pressure is less than the
+ F4.13     time of burst       0~1000          s        0        ○        starting pressure. It will report
+           pipes                                                          E030 fault after the time of
+                                                                          F4.15.
+                                                                          Set“0”: The detection of burst
+                                                                          pipes is invalid.
+
+
+
+
+                                                   - 36 -
+PDH30 Series
+
+
+4.8 Parameter Sets of Motor
+
+Function                                                   Revision
+             Description     Set range   Unit    Default                        Remarks
+  code                                                      level
+
+                                                                      0: asynchronous motor (AM)
+                                                                      1: Permanent magnet
+ F5.00     The motor type      0～2        1        0         ●        synchronous motor (PM)
+                                                                      2: Single-phase motor
+
+                                                 Default
+                                                value of
+           Motor rated                                                Set according to motor
+ F5.01
+           power
+                             0.75~18.5   kW     correspo     ●        nameplate.
+                                                  nding
+                                                 motor
+
+                                                 Default
+           Motor rated                          value of
+                                                                      Set according to motor
+ F5.02     voltage            1~440       V     correspo     ●        nameplate.
+                                                  nding
+                                                 motor
+
+                                             Default
+                                      0.01A value of
+           Motor rated                                                Set according to motor
+ F5.03
+           current
+                            0.01A～50A    /  correspo         ●        nameplate.
+                                      0.1A    nding
+                                             motor
+
+                                                 Default
+                                                value of
+           Motor rated                                                Set according to motor
+ F5.04
+           frequency
+                            0.01~F2.07   Hz     correspo     ●        nameplate.
+                                                  nding
+                                                 motor
+
+                                                 Default
+                                                value of
+           Motor rated                                                Set according to motor
+ F5.05
+           speed
+                             1~36000     rpm    correspo     ●        nameplate.
+                                                  nding
+                                                 motor
+
+           The number of
+ F5.06
+           motor
+                              2～48                 4         ●
+           Motor no-load
+ F5.07
+           current
+                            0.1～50.0A                        ●
+
+
+                                              - 37 -
+PDH30 Series
+
+
+Function                                                        Revision
+         Description          Set range      Unit   Default                Remarks
+  code                                                           level
+
+
+
+ F5.08
+           Motor stator
+           resistance
+                               0.001～
+                                                                  ●
+                                65.000
+
+
+                               0.001～
+ F5.09
+           Motor rotor
+           resistance
+                                                                  ●
+                                65.000
+
+
+                                0.1～
+ F5.10
+           Motor stator
+           inductance
+                                                                  ●
+                              6500.0mH
+
+           Motor stator
+ F5.11     rotor mutual
+                                0.1～
+                                                                  ●
+           inductance         6500.0mH
+
+                                                                           Different learning classes will
+                                 0: No
+                                                                           be adopted according to F0.00
+                               operation
+           Motor                                                                      and F5.00;
+                               1: Rotary
+ F5.12
+           parameters
+           self-tuning
+                             self-learning            0           ●          Synchronizer needs to learn
+                                                                            rotation, PG synchronization
+                                2: static
+           selection                                                          vector will learn encoder
+                             self-learning
+                                                                                  installation Angle;
+
+
+
+
+4.9 Parameter Sets of Terminals
+
+Function                                                              Revision
+           Description       Set range       Unit     Default                            Remarks
+  code                                                                 level
+
+           Choose DI1     0: Non-function
+ F7.00
+           input
+           terminal
+                          1: Forward                      1                ●
+                          running
+           function       2: Reverse
+           Choose DI2     running
+                          7: Fault
+ F7.01
+           input
+           terminal       resetting                       11               ●
+           function       11:Water
+
+
+
+
+                                                - 38 -
+PDH30 Series
+
+Function                                                       Revision
+           Description      Set range      Unit      Default              Remarks
+  code                                                          level
+
+                         shortage
+                         protection
+                         normally open
+                         input
+                         12: No. 1 pump
+                         failure
+                         13: No. 2 pump
+           Choose DI3    failure
+ F7.02
+           input
+           terminal
+                         18: Emergency                   18      ●
+                         water shortage
+           function      switch
+                         Attention：This
+                         form is not
+                         listed the
+                         function of the
+                         data is used to
+                         set prohibited
+
+           Output
+                         0-2
+ F7.07     terminal 1
+                         0: No function
+                                            1            2       ●
+           (DO1)
+                         1: Run the
+           Relay RO1     output
+           output        2: Fault output
+ F7.08
+           function
+                                            1            1       ●
+           selection
+
+
+
+
+                                                - 39 -
+PDH30 Series
+
+
+4.10 Communication Parameter Sets
+
+Function                                                       Revision
+           Description       Set range     Unit      Default                     Remarks
+  code                                                          level
+
+              Local
+ F8.00     communicati         1~6          /            1       ○          This address is used
+                                                                          for PC communication.
+            on address
+
+                             0:300BPS
+                             1:600BPS
+                            2:1200BPS
+           RS485 Baud
+                            3:2400BPS                                      The baud rate of the
+            rate setting
+ F8.01           of
+                            4:4800BPS
+                            5:9600BPS
+                                            \            5       ○        VFD must be the same
+                                                                          as the baud rate of the
+           communicati
+                           6:19200BPS                                              PC.
+                 on
+                           7:38400BPS
+                           8:57.6kBPS
+                           9:115.2kBPS
+
+                            0: No check
+                              (8, N, 2)
+                           1: Even check                                   The data bit check
+              RS485           (8, E, 1)                                    setting of the VFD
+ F8.02       Data bit      2: Odd check     \            3       ○         must be the same as
+           check setting      (8 ,0 ,1)                                     the data bit check
+                            3: No check                                     setting of the PC.
+                              (8, N ,1)
+
+
+             RS485
+ F8.03      Response           0~20        ms            2       ○
+             delay
+
+              RS485
+ F8.04      Time out         0.0~60.0       s            0.0     ○         0.0: The function is
+                                                                                 disabled.
+            fault time
+
+           RS485 read                                                       This is to determine
+ F8.05        current
+                             0: 0.01A
+                             1: 0.1A
+                                            \            0       ○        the current unit read by
+            resolution                                                      the communication.
+
+
+
+
+                                                - 40 -
+PDH30 Series
+
+Function                                                        Revision
+           Description      Set range    Unit      Default                        Remarks
+  code                                                           level
+
+              Local
+ F8.00     communicati        1~6         /            1          ○          This address is used
+                                                                           for PC communication.
+            on address
+
+                             0:300BPS
+                             1:600BPS
+                            2:1200BPS
+           RS485 Baud
+                            3:2400BPS                                       The baud rate of the
+            rate setting
+ F8.01           of
+                            4:4800BPS
+                            5:9600BPS
+                                          \            5          ○        VFD must be the same
+                                                                           as the baud rate of the
+           communicati
+                           6:19200BPS                                               PC.
+                 on
+                           7:38400BPS
+                           8:57.6kBPS
+                           9:115.2kBPS
+
+
+
+
+4.11 Monitoring Parameter Sets
+
+Function                                                        Revision
+           Description      Set range    Unit      Default                        Remarks
+  code                                                           level
+
+
+ F9.00
+           Temperature
+           of radiator
+                             0~100       ℃             0          ◎        Temperature of VFD.
+
+
+           Running                                                         Running time of this
+ F9.01     time of this     0~65535      min           0          ○        VFD. (this is the
+           VFD                                                             statistical time).
+
+           Running
+ F9.12     time of this     0~65535      min                      ◎
+           host drives
+                                                  The time is
+                                                                           The host drives will
+           Running                                decided by
+ F9.13     time of No.      0~65535      min     the host and     ◎        count the running time
+                                                                           of each machine and
+           1 auxiliary                             auxiliary
+                                                                           conduct the rotation.
+                                                     drive
+           Running
+ F9.14     time of No.      0~65535      min                      ◎
+           2 auxiliary
+
+
+
+
+                                              - 41 -
+PDH30 Series
+
+Function                                                   Revision
+           Description    Set range    Unit      Default                      Remarks
+  code                                                      level
+
+           Running
+ F9.15     time of No.    0~65535      min                   ◎
+           3 auxiliary
+
+           Running
+ F9.16     time of No.    0~65535      min                   ◎
+           4 auxiliary
+
+           Running
+ F9.17     time of No.    0~65535      min                   ◎
+           5 auxiliary
+
+
+
+
+4.12 User Parameter Sets
+
+Function                                                   Revision
+           Description    Set range    Unit      Default                     Remarks
+  code                                                      level
+
+
+ FD.00
+           Password of
+           the agent
+                         00000~65535    \         0000       ○        Password to enter
+                                                                      group FD.
+
+                                                                      0: No operation
+           Restore
+ FD.01     factory          0~2         \            0       ●        1: Restore factory
+                                                                      defaults
+           defaults
+                                                                      2: Clear fault records
+
+
+ FD.02
+           Parameter
+           locked
+                            0~1         \            0       ○        0: unlocked   1: locked
+
+
+
+
+                                            - 42 -
+PDH30 Series
+
+
+4.13 Agent Parameter Sets
+
+Function                                                         Revision
+           Description    Set range        Unit        Default                       Remarks
+  code                                                            level
+
+
+ FE.00     Password       0000~9999          \           0000      ○          The password to enter
+                                                                              group FE.
+
+           Number of
+
+ FE.01
+           times the
+           fault record
+                            0~15             h           0000      ○
+           is displayed
+
+           Power-on                                                           After the power-on
+ FE.02     arrival time    0~65535           h            0        ○          time is reached, the
+           setting                                                            VFD will stop.
+
+           Run time                                                           After the Running time
+ FE.03     arrival         0~65535           h            0        ○          is reached, the VFD
+           setting                                                            will stop.
+
+
+
+
+4.14 D0 group monitoring parameters
+
+ Function code                     Description                      Unit
+
+ D0.00                             Operating frequency              0.01 Hz
+
+ D0.01                             Setting frequency                0.01 Hz
+
+ D0.02                             Bus voltage                      0.1V
+
+ D0.03                             Output voltage                   1V
+
+ D0.04                             Output current                   0.01A（>55Kw，0.1A）
+
+ D0.05                             Output Power                     0.1kW
+
+ D0.06                             Output torque                    0.1%
+
+ D0.07                             DI input status                  1
+
+ D0.08                             DO output status                 1
+
+ D0.09                             AI1 voltage                      0.01V
+
+
+
+
+                                                 - 43 -
+PDH30 Series
+
+ D0.10                              AI2 voltage                           0.01V
+
+ D0.11                              Cumulative power-on time              1H
+
+ D0.12                              Cumulative running time               1H
+
+ D0.13                              Cumulative power consumption          1kWh
+
+ D0.14                              Load speed                            1RPM
+
+ D0.15                              PID setting                           0.1Bar
+
+ D0.16                              PID feedback                          0.1Bar
+
+
+
+
+4.15 Fault record parameter groups
+
+
+Function                                                                             Revision level
+                                   Description                             Default
+  code
+
+
+ E0.00                           Last fault type
+
+
+ E0.01                     Frequency at the last fault
+
+
+ E0.02                      Current at the last fault
+
+
+ E0.03                    Bus voltage at the last fault
+
+                                                                               \          ◎
+ E0.04                input terminal status at the last fault
+
+
+ E0.05               Output terminal status at the last fault
+
+
+ E0.06                    VFD status at the last fault
+
+
+
+ E0.07     Failure time at the last fault (Starting from this power-on)
+
+
+
+
+                                                   - 44 -
+PDH30 Series
+
+
+ E0.08         Failure time at the last fault (Starting from the run)
+
+
+
+ E0.09                              Reserved
+
+
+ E0.10                              Reserved
+
+
+
+
+                                                 - 45 -
+ PDH30 Series
+
+
+
+
+                 Chapter 5 Fault Information and
+
+                                    Troubleshooting
+
+
+ 5.1 Fault Codes Description
+
+Fault
+          Fault type               Possible fault reasons                          Solution
+code
+
+        Over current in   1.Too fast acceleration                 1.Increase acceleration time
+E002     accelerated      2.Too low grid voltage                  2.Check input power
+           running        3.The power of the VFD is too low       3.Use bigger power VFD
+
+        Over current in
+                          1.Too fast deceleration                 1.Increase deceleration time
+E003     decelerated
+                          2.The power of the VFD is too low       2.Increase power of the VFD
+           running
+
+                          1.Saltation or abnormality happens to   1.Check the load or decrease the saltation
+        Over current in
+                          load                                    of the load
+E004    constant speed
+                          2.The grid voltage is too low           2.Check input power supply
+           running
+                          3. The power of the VFD is too low      3.Use bigger power VFD
+
+        Over voltage in 1. The input voltage is abnormal
+                                                                  1.Check input power supply
+E005     accelerated    2. Restart rotating motor after
+                                                                  2.Avoid restarting after it is stopped
+           running      momentary outages
+
+        Over voltage in 1.Too fast deceleration                   1.Increase acceleration time
+E006     decelerated    2.The inertia of load is too big          2.Increase dynamic braking modules
+           running      3. The input voltage is abnormal          3.Check input power
+
+
+        Over voltage in 1. Abnormal changes happen to input
+                                                                  1.Install input reactor
+E007    constant speed voltage
+                                                                  2. Add proper dynamic braking modules
+           running      2.The inertia of load is too big
+
+
+        Buffer resistor   1.Input voltage is not within the       1.Adjust the input voltage to the specified
+E008
+          overload        specified rang                          range
+
+
+
+
+                                                 - 46 -
+ PDH30 Series
+
+
+Fault
+          Fault type               Possible fault reasons                           Solution
+code
+
+
+           Low bus
+E009                      1. The grid voltage is too low.          1. Check grid input power supply
+           voltage
+
+
+                          1.Too fast acceleration                  1.Increase acceleration time
+                          2. Restart rotating motor                2.Avoid restarting after it is stopped
+E010    VFD overload
+                          3. The grid voltage is too low.          3.Check grid voltage
+                          4. Overload                              4.Use bigger power VFD
+
+                                                                   1.Check grid voltage
+                       1. The grid voltage is too low.
+                                                                   2. Reset motor rated current
+                       2.Wrong setting to motor rated current
+E011    Motor overload                                             3.Check the load and adjust torque lifting
+                       3.Motor stall or big changes to load
+                                                                   capacity
+                       4. Motor is too small
+                                                                   4.Use proper motor
+
+                                                                   1.Check input power
+E012    Input phase loss Phase loss of input R,S,T
+                                                                   2.Check wiring installation
+
+         Output phase     U,V,W phase loss output(or the three     1. Check output wiring
+E013
+             loss         phases of load is not symmetrical)       2. Check motor and cable
+
+                          1.Instant over current of VFD
+                          2.Output three phases have interphase
+                                                                   1.Refer to over current solutions
+                          or ground is short circuit
+                                                                   2.Re-wiring
+                          3.Air passage block or fan broken
+            Module                                                 3.Dredge air passage or change fan
+E014                      4.The environmental temperature is too
+          overheating                                              4.Decrease environmental temperature
+                          high
+                                                                   5.Check and re-connect
+                          5.Control panel wire or plugins loose
+                                                                   6.Seek for service
+                          6. Power circuit irregularity
+                          7.Control board exception
+
+E015    External faults   External input terminals faults          1.Check input of external equipment
+
+                      1. Baud rate is set improperly               1.Set proper baud rate
+                      2.Communication faults of adopting           2.Press RUN/STOP key to reset; seek for
+        Communication
+E016                  serial communication                         service
+           faults
+                      3. Communication is interrupted for a        3.Check wiring of communication
+                      long time                                    interface
+
+
+E017     Relay failure    1.The relay is not closed                1.Replacement relay and seek for service
+
+
+
+
+                                                 - 47 -
+ PDH30 Series
+
+
+Fault
+           Fault type              Possible fault reasons                              Solution
+code
+
+
+                         1.Poor contact of control board
+        Fault of current connector
+                                                                      1.Check connector and re-plug
+E018       detection     2.Power circuit irregularity
+                                                                      2.Seek for service
+            circuits     3.Damage to hall devices
+                         4.Exception of amplifying circuit
+
+
+                          1.Read write of control parameter goes
+           EEPROM                                                     1.Press RUN/STOP key to reset
+E022                      wrong
+        read write faults                                             2.Seek for service
+                          2.EEPROM broken
+
+         Short circuit
+                          1. The motor and the ground are
+E023    protection with                                               1. Seek for service
+                          short-circuited
+             earth
+
+                          1. Sensor broken line or poor contact       1.Check the installation and wiring of
+           Feedback
+                          2.Broken line detection time is too short   sensor
+E024      broken line
+                          3.The sensor is broken or the system        2.Increase broken line detection time
+             fault
+                          has no feedback signal.                     3.Change sensor
+
+        Power-on time
+E025                      1. The power-on time is reached             1.Seek for service
+           arrival
+
+         Running time
+E026                      1.The running time is reached               1.Seek for service
+            arrival
+
+                          1.Water pressure/level exception
+                          2. Sensor broken line or poor contact.
+                                                                      1. Check whether the pressure of inlet is
+                          System has no feedback signal
+                                                                      abnormal or not
+        Water shortage    3.Water shortage alarm detection time
+                                                                      2.Check the installation and wiring of
+E027        alarm         is too short (F4.03)
+                                                                      sensor
+                          4.Water shortage protection frequency
+                                                                      3.Check relevant parameter settings
+                          is too low(F4.02)
+                          5.Water shortage protection detection
+                          current is too low（F4.04）
+
+
+                          1.Feedback signal of senor exception
+         High pressure                                                1.Check the wiring of sensor
+E028                      2.High pressure alarm value adjustment
+            alarm                                                     2.Check relative parameter settings
+                          is too low (F0.10)
+
+
+
+
+                                                 - 48 -
+  PDH30 Series
+
+ Fault
+            Fault type            Possible fault reasons                            Solution
+ code
+
+                         1. Low pressure alarm value is set too
+                         high（F0.11）
+                                                                   1.Modify parameters
+          Low pressure   2. Sensor broken line or poor contact.
+ E029                                                              2.Check the sensor
+             alarm       System has no feedback signal
+                         3.Sensor type is inconsistent with actual
+                         situation
+
+           Burst pipes   The detection time of burst pipe is too   Pipe detection (Notes: This fault is only
+ E031
+             alarm       short (F4.10)                             for manual reset)
+
+             On-line                                               1.Be power on again
+ E050     communication 1.Abnormal multi-drive communication       2.Check the parameter of communication
+              error                                                3.Seek for services
+
+
+                        1.The line of keyboard communication       1.Replace the keyboard communication
+            Keyboard
+E098/E0                 is abnormal                                line
+          communication
+  99                    2.Control board is abnormal                2. Replace the keyboard or control board
+             failure
+                        3. Keyboard is abnormal                    3. Seek for services
+                                  Table 5-1-1 Fault codes description
+
+
+
+
+                                                - 49 -
+PDH30 Series
+
+
+5.2 Common Faults and Handling
+
+     The following faults may happen in use. For brief fault analysis, please refer
+to the following methods.
+
+
+
+     5.2.1 No display at power on
+     (1) Check whether the input power is consistent with the nominal voltage of
+the drive with multimeter.
+     (2) Check whether the three-phase rectifier bridge is intact. If the rectifier
+bridge is broken down, please request service.
+
+
+     5.2.2 The power air switch trips off at power on.
+    (1) Check whether there is short circuit or ground connection between input
+power. If yes, please eliminate it.
+    (2) Check whether the rectifier bridge has been broken down. If yes, please
+request service.
+
+
+     5.2.3 The motor doesn’t rotate after the VFD runs.
+     (1) Check whether there is balanced three-phase output among U, V, W. If
+yes, check whether the motor is broken or blocked. If no, please confirm whether
+the motor parameters are set correctly.
+     (2) If there is output but the three-phase power is not balanced, please request
+service.
+     (3) If there is no output voltage, please request service.
+
+
+     5.2.4 It doesn’t stop in no water use.
+
+
+
+                                        - 50 -
+PDH30 Series
+
+     (1) Check whether the feedback pressure displayed on the VFD board is no
+less than set pressure. If the feedback pressure is less than set pressure, please
+check whether the range of the pressure sensor is set correctly, whether the pump
+rotates reversely, whether there is air and whether the inlet is blocked by sundries.
+    (2) If the feedback value change back and forth around the set value, stop the
+VFD manually and check whether the pressure keep declining or not. If yes, it
+needs to change the check valve.
+     5.2.5 It can’t sleep in small amount of water use or leakage
+    If it can’t sleep or the sleep time is too long, please decrease the value of
+F0.04 properly.
+     If it starts and stops frequently, please increase the value of F0.04 properly.
+     5.2.6 It can’t stop to make protection in water shortage.
+     (1) Water shortage protection switch (F4.00) is not enabled.
+
+     (2) The threshold value of water shortage detection (F4.01) is set too low.
+     (3) The current percentage of water shortage detection (F4.04) is set too low.
+
+
+
+
+                                       - 51 -
+  PDH30 Series
+
+
+
+               Chapter 6 Communication Protocol
+
+       PDH30 series provides RS485 communication interfaces (A+/B-), and adopts
+  international standard Mod-Bus communication protocol. Users can realize
+  centralized control by PC/PLC/touch screen and other upper machine to suit for
+  specific application demand. (Setting VFD control command, running frequency,
+  modifying function code parameters, motoring VFD working status and fault
+  information)
+
+
+
+
+  6.1 Command Codes and Communication Data Description
+
+      (1)Address of functions
+
+                  Address
+  Function                                     Data meaning         R/W character
+                 definition
+
+                              0x0001:Forward running
+
+                              0x0002:Reverse running
+
+Communicatio                  0x0003:JOG forward
+  n control
+                 0x2000H      0x0004: JOG reverse                        W
+  command
+                              0x0005: Free stop（emergency stop）
+
+                              0x0006:Deceleration stop
+
+                              0x0007:Fault reset
+
+                              0x0001: Forward running
+
+ VFD status      0x3000H      0x0002: Reverse running                    R
+
+                              0x0003:Stop
+
+
+
+
+                                             - 52 -
+ PDH30 Series
+
+                 Address
+ Function                                      Data meaning                        R/W character
+                definition
+
+                             Communication        setting      value      range
+                             （-10000~10000)
+                             Note: Communication setting value is the
+                             percentage        of         relative        value
+                 0x1000                                                                W/R
+                             （ -100.00%~100.00% ） .Communication write
+                             operation can be made. When it serves as
+                             frequency source setting, the relative value is the
+                             percentage of maximum frequency （F2.07）.
+
+                 0x1001      Running frequency(0.01Hz)                                  R
+
+                 0x1002      Bus voltage（0.1V）                                          R
+
+                 0x1003      Output voltage(1V)                                         R
+
+                 0x1004      Output current(0.01A,>55kW,0.1A)                           R
+
+Stopping or      0x1005      Out power(0.1kW)                                           R
+  running
+                 0x1006      Out torque (0.1%)                                          R
+parameters
+                 0x1007      Running speed(1RPM)                                        R
+
+                 0x1008      Terminal input mark state（0 decimal）                       R
+
+                 0x1009      Terminal output mark state（0 decimal）                      R
+
+                0x100A       AI1 value(0.01V)                                           R
+
+                0x100B       AI2 value(0.01V)                                           R
+
+                0x100C       Cumulative power-on time(1h)                               R
+
+                0x100D       Cumulative running time(1h)                                R
+
+                 0x100E      Cumulative power consumption (1kWh)                        R
+
+                 0x100F      Setting pressure(0.1bar)                                   R
+
+                 0x1010      Feedback pressure(0.1bar)                                  R
+
+                                Table 6-1-1 Address of functions
+
+
+
+
+                                             - 53 -
+PDH30 Series
+
+Notes: When reading parameters, read 12 consecutively.
+
+       Data                                          Fault
+       0x00                                        No faults
+       0x01                                        Reserved
+       0x02                          Over current in acceleration running
+       0x03                          Over current in deceleration running
+       0x04                            Over current in constant running
+       0x05                          Over voltage in acceleration running
+       0x06                          Over voltage in deceleration running
+       0x07                           Over voltage in constant running
+       0x08                                Buffer resistor overload
+       0x09                                    Low bus voltage
+       0x0A                                     VFD overload
+       0x0B                                    Motor overload
+       0x0C                                    Input phase loss
+       0x0D                                   Output phase loss
+       0x0E                                  Module overheating
+       0x0F                                     External fault
+       0x10                                  Communication fault
+       0x11                                        Reserved
+       0x12                           Fault of current detection circuits
+       0x16                               EEPROM read-write fault
+       0x17                           Short circuit protection with earth
+       0x18                            PID feedback broken line fault
+       0x19                                  Power-on time arrival
+       0x1A                                  Running time arrival
+       0x1B                                  Water shortage alarm
+       0x1C                               High water pressure alarm
+       0x1D                               Low water pressure alarm
+
+
+
+                                    - 54 -
+PDH30 Series
+
+         0x1F                                          Burst pipes alarm
+         0x32                                     On-line communication error
+         0x63                                   Keyboard communication failure
+
+                   Table 6-1-2 Comparison of values and actual faults
+Meaning of fault codes
+
+                                        Mod-bus fault codes
+
+ Code                      Name                                       Meaning
+
+                                                  The code written in the code checking address is
+  0x01                   code error
+                                                     different from the code set by FD.00 user
+
+                                                   Function code received from upper machine is
+                           Illegal
+  0x02                                              not allowed operation. Perhaps the slave unit
+                          functions
+                                                       processes such requests in wrong state
+
+                                                     In the frame information sent by the upper
+                                                   machine, when RTU format CRC check bit or
+  0x03               Check error                  ASCII format LRC check bit is different with the
+                                                  check number of lower machine, check error will
+                                                                     be reported.
+
+                                                  Request data address of the upper machine is not
+                         Illegal data
+  0x04                                            allowed address. Especially, the combination of
+                           address
+                                                   register address and transferred byte is invalid.
+
+                                                   Data field received includes not allowed value.
+                         Illegal data                 Note: It does not mean that the data item
+  0x05
+                             value                   submitted for saving in the register has an
+                                                                  unexpected value.
+
+                                                     In the writing command sent by the upper
+                      Parameter
+                                                  machine, the data sent is beyond parameter range
+  0x06               modification
+                                                      or the writing address cannot be written
+                       invalid
+                                                                      currently.
+
+                                                  When the upper machine is reading or writing, if
+                         System is
+  0x07                                              user password is set and password lock is not
+                          locked
+                                                  removed, it will report that the system is locked.
+
+
+
+
+                                             - 55 -
+  PDH30 Series
+
+    0x08             EEPROM is operating              VFD is busy(EPPROM is under saving)
+
+                              Table 6-1-3 Meaning of fault codes
+
+  The example of reading and writing parameters command
+                                High       Low     High bit Low bit Low bit High bit
+            VFD       Comman
+                             address of address of of data of data of CPR of CRC
+           address       d
+                             parameters parameters content content check     check
+
+ Reading
+ comman      01          03         F0           0C          00       02      37       08
+d（F0.12）
+
+ Writing
+ comman      01          06         F0           0C          00       21      BA       D1
+d（F0.12）
+
+
+      Notes: Reading parameters address directly. For example, the read address of
+  F3.15 is 0xF30F; the maximum-continuous units is 12.
+
+       Write parameters and save. The address is the same as the reading address.
+  For example, the writing address of F3.17 is 0xF311
+
+
+
+
+                                           - 56 -
+PDH30 Series
+
+
+
+
+                              Inverter
+
+
+                        Inverter V0.0
+
+
+
+
+               - 57 -
+

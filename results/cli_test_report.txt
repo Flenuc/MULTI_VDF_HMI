@@ -1,0 +1,256 @@
+=== CLI Test Report 2026-08-06T16:26:37.722165 ===
+BANNER:
+> 
+
+--- help ---
+$ help
+help              this help
+ping | status     link + status regs
+dump              read all P0/P1 EEPROM params
+r0 <ii>           read  P0-ii   (ii=0..47)
+w0 <ii> <raw>     write P0-ii
+r1 <ii>           read  P1-ii
+w1 <ii> <raw>     write P1-ii
+raw <addr>        read holding (0xHEX or decimal)
+slave <id>        set Modbus slave id 1..247
+Values are RAW register integers (see manual units).
+> 
+
+--- ping ---
+$ ping
+Status 0x3000 = 3 (STOP)
+Run freq 0x1001 = 0.00 Hz
+Set press 0x100F = 642.2 bar
+Fb  press 0x1010 = 0.0 bar
+Link OK
+> 
+
+--- r0_00 ---
+$ r0 0
+P0-00 @0x0000 = 10 (0x000A)  "Pressure setting"
+> 
+
+--- r0_03 ---
+$ r0 3
+P0-03 @0x0003 = 100 (0x0064)  "Sensor range"
+> 
+
+--- r1_35 ---
+$ r1 35
+P1-35 @0x0123 = 1 (0x0001)  "Local address"
+> 
+
+--- r1_36 ---
+$ r1 36
+P1-36 @0x0124 = 1 (0x0001)  "Baud rate"
+> 
+
+--- raw_status ---
+$ raw 0x3000
+0x3000 = 3 (0x0003) signed=3
+> 
+
+--- raw_freq ---
+$ raw 0x1001
+0x1001 = 0 (0x0000) signed=0
+> 
+
+--- r0_00_before_write ---
+$ r0 0
+P0-00 @0x0000 = 10 (0x000A)  "Pressure setting"
+> 
+
+--- w0_00_delta ---
+$ w0 0 11
+OK write P0-00 @0x0000 = 11
+> 
+
+--- r0_00_after_write ---
+$ r0 0
+P0-00 @0x0000 = 11 (0x000B)  "Pressure setting"
+> 
+
+--- w0_00_restore ---
+$ w0 0 10
+OK write P0-00 @0x0000 = 10
+> 
+
+--- r0_00_restored ---
+$ r0 0
+P0-00 @0x0000 = 10 (0x000A)  "Pressure setting"
+> 
+
+--- bad_index ---
+$ r0 99
+ERR: index 0..47
+> 
+
+--- bad_cmd ---
+$ foobar
+ERR: unknown command — type help
+> 
+
+--- bad_write_syntax ---
+$ w0 0
+usage: w0|w1 <ii> <raw>
+> 
+
+--- dump_all ---
+$ dump
+DUMP begin P0-00..P0-47, P1-00..P1-47
+CSV:param,addr,raw,name
+CSV:P0-00,0x0000,10,"Pressure setting"
+CSV:P0-01,0x0001,4,"Pressure deviation"
+CSV:P0-02,0x0002,1,"Operation direction"
+CSV:P0-03,0x0003,100,"Sensor range"
+CSV:P0-04,0x0004,0,"Sensor feedback type"
+CSV:P0-05,0x0005,1000,"Pressure calib factor"
+CSV:P0-06,0x0006,1200,"Prop gain P"
+CSV:P0-07,0x0007,90,"Integ time I"
+CSV:P0-08,0x0008,1,"PID function select"
+CSV:P0-09,0x0009,10,"PID sleep delay"
+CSV:P0-10,0x000A,0,"PID wake delay"
+CSV:P0-11,0x000B,3880,"PID sleep freq"
+CSV:P0-12,0x000C,0,"PID low-freq hold time"
+CSV:P0-13,0x000D,2,"PID sleep dev press"
+CSV:P0-14,0x000E,1,"Power-on auto start"
+CSV:P0-15,0x000F,1,"Power-on auto delay"
+CSV:P0-16,0x0010,0,"Antifreeze fn"
+CSV:P0-17,0x0011,0,"Antifreeze freq"
+CSV:P0-18,0x0012,0,"Antifreeze run time"
+CSV:P0-19,0x0013,60,"Antifreeze cycle"
+CSV:P0-20,0x0014,50,"Leakage factor"
+CSV:P0-21,0x0015,40,"High press alarm"
+CSV:P0-22,0x0016,1200,"High press alarm delay"
+CSV:P0-23,0x0017,0,"Low press alarm"
+CSV:P0-24,0x0018,1200,"Low press alarm delay"
+CSV:P0-25,0x0019,2,"Water shortage fn"
+CSV:P0-26,0x001A,9,"WS fault threshold"
+CSV:P0-27,0x001B,5800,"WS test frequency"
+CSV:P0-28,0x001C,400,"WS current %"
+CSV:P0-29,0x001D,300,"WS detect time"
+CSV:P0-30,0x001E,5,"WS auto restart delay"
+CSV:P0-31,0x001F,9,"PID sleep rate"
+CSV:P0-32,0x0020,10,"In water detect press"
+CSV:P0-33,0x0021,200,"In water detect time"
+CSV:P0-34,0x0022,200,"AI min input"
+CSV:P0-35,0x0023,1000,"AI max input"
+CSV:P0-36,0x0024,5,"Accel time 1"
+CSV:P0-37,0x0025,5,"Decel time 1"
+CSV:P0-38,0x0026,0,"Param init"
+CSV:P0-39,0x0027,0,"Param lock"
+CSV:P0-40,0x0028,15,"Broken record"
+CSV:P0-41,0x0029,20,"Radiator temp"
+CSV:P0-42,0x002A,3305,"Software version"
+CSV:P0-43,0x002B,8,"Main freq source X"
+CSV:P0-44,0x002C,0,"System working mode"
+CSV:P0-45,0x002D,0,"Pressure display mode"
+CSV:P0-46,0x002E,0,"(reserved)"
+CSV:P0-47,0x002F,0,"App macro select"
+CSV:P1-00,0x0100,0,"Multi slave backup"
+CSV:P1-01,0x0101,0,"Multi network mode"
+CSV:P1-02,0x0102,0,"Num aux machines"
+CSV:P1-03,0x0103,0,"Multi op modes"
+CSV:P1-04,0x0104,240,"Rotation interval"
+CSV:P1-05,0x0105,6000,"Max output freq"
+CSV:P1-06,0x0106,6000,"Upper frequency"
+CSV:P1-07,0x0107,0,"Lower limit freq"
+CSV:P1-08,0x0108,2,"Below lower action"
+CSV:P1-09,0x0109,160,"Carrier frequency"
+CSV:P1-10,0x010A,20,"PID fb loss value"
+CSV:P1-11,0x010B,300,"PID fb loss time"
+CSV:P1-12,0x010C,2,"Motor power select"
+CSV:P1-13,0x010D,22,"Motor rated power"
+CSV:P1-14,0x010E,6000,"Motor rated freq"
+CSV:P1-15,0x010F,220,"(P1-15)"
+CSV:P1-16,0x0110,1000,"(P1-16)"
+CSV:P1-17,0x0111,0,"(P1-17)"
+CSV:P1-18,0x0112,1,"(P1-18)"
+CSV:P1-19,0x0113,10,"(P1-19)"
+CSV:P1-20,0x0114,10,"(P1-20)"
+CSV:P1-21,0x0115,1,"(P1-21)"
+CSV:P1-22,0x0116,10,"(P1-22)"
+CSV:P1-23,0x0117,0,"(P1-23)"
+CSV:P1-24,0x0118,0,"(P1-24)"
+CSV:P1-25,0x0119,5,"(P1-25)"
+CSV:P1-26,0x011A,300,"(P1-26)"
+CSV:P1-27,0x011B,1,"(P1-27)"
+CSV:P1-28,0x011C,0,"Stop mode"
+CSV:P1-29,0x011D,5000,"Keyboard set freq"
+CSV:P1-30,0x011E,0,"PID action dir"
+CSV:P1-31,0x011F,0,"PID low-freq hold"
+CSV:P1-32,0x0120,100,"Sleep detect cycle"
+CSV:P1-33,0x0121,1,"PWM mode"
+CSV:P1-34,0x0122,0,"Command source"
+CSV:P1-35,0x0123,1,"Local address"
+CSV:P1-36,0x0124,1,"Baud rate"
+CSV:P1-37,0x0125,0,"Data format"
+CSV:P1-38,0x0126,2,"Response delay"
+CSV:P1-39,0x0127,0,"(P1-39)"
+CSV:P1-40,0x0128,0,"(P1-40)"
+CSV:P1-41,0x0129,1,"(P1-41)"
+CSV:P1-42,0x012A,0,"Motor type"
+CSV:P1-43,0x012B,100,"SP turns ratio"
+CSV:P1-44,0x012C,1500,"SP current corr"
+CSV:P1-45,0x012D,10,"WS protect reset times"
+CSV:P1-46,0x012E,900,"(P1-46)"
+CSV:P1-47,0x012F,1,"(P1-47)"
+CSV:END
+DUMP done
+> 
+
+============================================================
+SUMMARY: 21 PASS / 0 FAIL / 21 total
+============================================================
+  [PASS] help
+  [PASS] ping
+  [PASS] r0_00
+  [PASS] r0_03
+  [PASS] r1_35
+  [PASS] r1_36
+  [PASS] raw_status
+  [PASS] raw_freq
+  [PASS] r0_00_before_write
+  [PASS] w0_00_delta
+  [PASS] r0_00_after_write
+  [PASS] write_readback_P0-00 — wrote 11 got 11
+  [PASS] w0_00_restore
+  [PASS] r0_00_restored
+  [PASS] restore_P0-00 — want 10 got 10
+  [PASS] bad_index
+  [PASS] bad_cmd
+  [PASS] bad_write_syntax
+  [PASS] dump_all
+  [PASS] dump_row_count — rows=96 expected 96
+  [PASS] dump_readable — ok=96 err=0
+
+Dump CSV: /home/master-pi/Desktop/VF patron/results/cli_dump.csv
+Full log: /home/master-pi/Desktop/VF patron/results/cli_test_report.txt
+
+============================================================
+SUMMARY: 21 PASS / 0 FAIL / 21 total
+============================================================
+  [PASS] help
+  [PASS] ping
+  [PASS] r0_00
+  [PASS] r0_03
+  [PASS] r1_35
+  [PASS] r1_36
+  [PASS] raw_status
+  [PASS] raw_freq
+  [PASS] r0_00_before_write
+  [PASS] w0_00_delta
+  [PASS] r0_00_after_write
+  [PASS] write_readback_P0-00 — wrote 11 got 11
+  [PASS] w0_00_restore
+  [PASS] r0_00_restored
+  [PASS] restore_P0-00 — want 10 got 10
+  [PASS] bad_index
+  [PASS] bad_cmd
+  [PASS] bad_write_syntax
+  [PASS] dump_all
+  [PASS] dump_row_count — rows=96 expected 96
+  [PASS] dump_readable — ok=96 err=0
+
+Dump CSV: /home/master-pi/Desktop/VF patron/results/cli_dump.csv
+Full log: /home/master-pi/Desktop/VF patron/results/cli_test_report.txt

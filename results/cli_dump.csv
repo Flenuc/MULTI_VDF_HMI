@@ -1,0 +1,97 @@
+param,address_hex,raw_value,name
+P0-00,0x0000,10,Pressure setting
+P0-01,0x0001,4,Pressure deviation
+P0-02,0x0002,1,Operation direction
+P0-03,0x0003,100,Sensor range
+P0-04,0x0004,0,Sensor feedback type
+P0-05,0x0005,1000,Pressure calib factor
+P0-06,0x0006,1200,Prop gain P
+P0-07,0x0007,90,Integ time I
+P0-08,0x0008,1,PID function select
+P0-09,0x0009,10,PID sleep delay
+P0-10,0x000A,0,PID wake delay
+P0-11,0x000B,3880,PID sleep freq
+P0-12,0x000C,0,PID low-freq hold time
+P0-13,0x000D,2,PID sleep dev press
+P0-14,0x000E,1,Power-on auto start
+P0-15,0x000F,1,Power-on auto delay
+P0-16,0x0010,0,Antifreeze fn
+P0-17,0x0011,0,Antifreeze freq
+P0-18,0x0012,0,Antifreeze run time
+P0-19,0x0013,60,Antifreeze cycle
+P0-20,0x0014,50,Leakage factor
+P0-21,0x0015,40,High press alarm
+P0-22,0x0016,1200,High press alarm delay
+P0-23,0x0017,0,Low press alarm
+P0-24,0x0018,1200,Low press alarm delay
+P0-25,0x0019,2,Water shortage fn
+P0-26,0x001A,9,WS fault threshold
+P0-27,0x001B,5800,WS test frequency
+P0-28,0x001C,400,WS current %
+P0-29,0x001D,300,WS detect time
+P0-30,0x001E,5,WS auto restart delay
+P0-31,0x001F,9,PID sleep rate
+P0-32,0x0020,10,In water detect press
+P0-33,0x0021,200,In water detect time
+P0-34,0x0022,200,AI min input
+P0-35,0x0023,1000,AI max input
+P0-36,0x0024,5,Accel time 1
+P0-37,0x0025,5,Decel time 1
+P0-38,0x0026,0,Param init
+P0-39,0x0027,0,Param lock
+P0-40,0x0028,15,Broken record
+P0-41,0x0029,20,Radiator temp
+P0-42,0x002A,3305,Software version
+P0-43,0x002B,8,Main freq source X
+P0-44,0x002C,0,System working mode
+P0-45,0x002D,0,Pressure display mode
+P0-46,0x002E,0,(reserved)
+P0-47,0x002F,0,App macro select
+P1-00,0x0100,0,Multi slave backup
+P1-01,0x0101,0,Multi network mode
+P1-02,0x0102,0,Num aux machines
+P1-03,0x0103,0,Multi op modes
+P1-04,0x0104,240,Rotation interval
+P1-05,0x0105,6000,Max output freq
+P1-06,0x0106,6000,Upper frequency
+P1-07,0x0107,0,Lower limit freq
+P1-08,0x0108,2,Below lower action
+P1-09,0x0109,160,Carrier frequency
+P1-10,0x010A,20,PID fb loss value
+P1-11,0x010B,300,PID fb loss time
+P1-12,0x010C,2,Motor power select
+P1-13,0x010D,22,Motor rated power
+P1-14,0x010E,6000,Motor rated freq
+P1-15,0x010F,220,(P1-15)
+P1-16,0x0110,1000,(P1-16)
+P1-17,0x0111,0,(P1-17)
+P1-18,0x0112,1,(P1-18)
+P1-19,0x0113,10,(P1-19)
+P1-20,0x0114,10,(P1-20)
+P1-21,0x0115,1,(P1-21)
+P1-22,0x0116,10,(P1-22)
+P1-23,0x0117,0,(P1-23)
+P1-24,0x0118,0,(P1-24)
+P1-25,0x0119,5,(P1-25)
+P1-26,0x011A,300,(P1-26)
+P1-27,0x011B,1,(P1-27)
+P1-28,0x011C,0,Stop mode
+P1-29,0x011D,5000,Keyboard set freq
+P1-30,0x011E,0,PID action dir
+P1-31,0x011F,0,PID low-freq hold
+P1-32,0x0120,100,Sleep detect cycle
+P1-33,0x0121,1,PWM mode
+P1-34,0x0122,0,Command source
+P1-35,0x0123,1,Local address
+P1-36,0x0124,1,Baud rate
+P1-37,0x0125,0,Data format
+P1-38,0x0126,2,Response delay
+P1-39,0x0127,0,(P1-39)
+P1-40,0x0128,0,(P1-40)
+P1-41,0x0129,1,(P1-41)
+P1-42,0x012A,0,Motor type
+P1-43,0x012B,100,SP turns ratio
+P1-44,0x012C,1500,SP current corr
+P1-45,0x012D,10,WS protect reset times
+P1-46,0x012E,900,(P1-46)
+P1-47,0x012F,1,(P1-47)

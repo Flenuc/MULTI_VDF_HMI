@@ -1,0 +1,52 @@
+Guition full test — post JST/RS485 wiring fix + VDF connected
+Date: 2026-08-12
+Serial: /dev/ttyACM1
+DUT: Guition-JC-ESP32P4-M3-DEV
+VDF: SAJ PDM-30 on onboard RS485 (JST correct port, A/B verified)
+
+================================================================
+OVERALL: PASS (wiring + Modbus + MQTT with VDF)
+================================================================
+
+--- A) Serial CLI ---
+[PASS] help / wifi status / SoftAP advertised / mqtt status
+
+--- B) Modbus / VDF (serial, MQTT disabled during section) ---
+[PASS] ping → status=3 (stop), freq=0, amp=0, vdc=0, Link OK
+[PASS] raw 0x3000 = 3
+[PASS] raw 0x1001 = 0
+[PASS] r0 0 → P0-00 = 2 bar (raw=20)
+[PASS] r1 35 → P1-35 = 1 (local address)
+[PASS] r1 36 → P1-36 = 1 (baud)
+[PASS] w0 0 2.1 → OK write raw=21; restore w0 0 2 → OK
+[PASS] dump full P0/P1 CSV with real eng values (no ERROR rows)
+       sample: CSV:P0-00,0x0000,2,20,bar … CSV:END / DUMP done
+
+--- C) SoftAP ---
+[PASS] ESP advertises SAJ_Diag_Tool @ 192.168.4.1
+[NOTE] PC SoftAP association flaky this session (nmcli profile/psk issues);
+       MQTT revalidated via STA path below.
+
+--- D) MQTT + VDF via STA REDACTED_SSID ---
+PC:  192.168.203.44 (wlan0 ROWA)
+ESP: 192.168.203.17 STA, RSSI ~-62..-65
+Broker: 192.168.203.44:1883
+[PASS] mqtt set/enable → state=connected
+[PASS] serial ping with MQTT ON → Link OK  (coexistence OK after firmware fix)
+[PASS] MQTT cmd help → rsp
+[PASS] MQTT cmd wifi status → STA connected ROWA
+[PASS] MQTT cmd ping → Link OK
+         status=3 (stop) freq=0.00 Hz amp=0.00 A vdc=0.0 V Link OK
+[PASS] MQTT telemetry stream
+         {"freq":0.00,"amp":0.00,"vdc":0.0,"vout":3109,"status":"stop"}
+         (non-zero vout confirms live Modbus reads over MQTT path)
+
+--- Firmware changes applied during this session ---
+1) MB_RESPONSE_TIMEOUT_MS 500 → 1200 (Config.h)
+2) Skip g_net.poll() / telemetry while Modbus busy (main.cpp)
+   Fixes SoftAP/MQTT starving RS485 on Guition C6 hosted stack.
+
+--- Wiring note (user fix) ---
+JST was on UART1 header; moved to RS485 port; A/B polarity checked with DMM.
+
+Script: scripts/guition_full_test.py

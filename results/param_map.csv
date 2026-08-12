@@ -1,0 +1,97 @@
+param,group,index,address_hex,address_dec,raw_value,name
+P0-00,0,0,0x0000,0,10,Pressure setting
+P0-01,0,1,0x0001,1,4,Pressure deviation (wake)
+P0-02,0,2,0x0002,2,1,Operation direction
+P0-03,0,3,0x0003,3,100,Sensor range
+P0-04,0,4,0x0004,4,0,Sensor feedback type
+P0-05,0,5,0x0005,5,1000,Pressure calibration factor
+P0-06,0,6,0x0006,6,1200,Proportional gain P1
+P0-07,0,7,0x0007,7,90,Integration time I1
+P0-08,0,8,0x0008,8,1,PID function selection
+P0-09,0,9,0x0009,9,10,PID sleep delay
+P0-10,0,10,0x000A,10,0,PID wake-up delay
+P0-11,0,11,0x000B,11,3880,PID sleep frequency
+P0-12,0,12,0x000C,12,0,PID low-freq hold run time
+P0-13,0,13,0x000D,13,2,PID sleep deviation pressure
+P0-14,0,14,0x000E,14,1,Power-on automatic start
+P0-15,0,15,0x000F,15,1,Power-on auto start delay
+P0-16,0,16,0x0010,16,0,Antifreeze function
+P0-17,0,17,0x0011,17,0,Antifreeze operating frequency
+P0-18,0,18,0x0012,18,0,Antifreeze running time
+P0-19,0,19,0x0013,19,60,Antifreeze operation cycle
+P0-20,0,20,0x0014,20,50,Leakage size factor
+P0-21,0,21,0x0015,21,40,High pressure alarm value
+P0-22,0,22,0x0016,22,1200,High pressure alarm delay
+P0-23,0,23,0x0017,23,0,Low pressure alarm value
+P0-24,0,24,0x0018,24,1200,Low pressure alarm delay
+P0-25,0,25,0x0019,25,2,Water shortage protection fn
+P0-26,0,26,0x001A,26,9,Water shortage fault threshold
+P0-27,0,27,0x001B,27,5800,Water shortage test frequency
+P0-28,0,28,0x001C,28,400,Water shortage current %
+P0-29,0,29,0x001D,29,300,Water shortage detect time
+P0-30,0,30,0x001E,30,5,Water shortage auto restart delay
+P0-31,0,31,0x001F,31,9,PID sleep rate
+P0-32,0,32,0x0020,32,10,Incoming water detection pressure
+P0-33,0,33,0x0021,33,200,Incoming water detection time
+P0-34,0,34,0x0022,34,200,AI minimum input
+P0-35,0,35,0x0023,35,1000,AI maximum input
+P0-36,0,36,0x0024,36,5,Acceleration time 1
+P0-37,0,37,0x0025,37,5,Deceleration time 1
+P0-38,0,38,0x0026,38,0,Parameter initialization
+P0-39,0,39,0x0027,39,ERROR,Parameter function lock
+P0-40,0,40,0x0028,40,15,Broken record
+P0-41,0,41,0x0029,41,18,Radiator temperature
+P0-42,0,42,0x002A,42,3305,Software version
+P0-43,0,43,0x002B,43,8,Main frequency source X
+P0-44,0,44,0x002C,44,0,System working mode
+P0-45,0,45,0x002D,45,0,Pressure display mode
+P0-46,0,46,0x002E,46,0,(reserved / unknown)
+P0-47,0,47,0x002F,47,0,Application macro selection
+P1-00,1,0,0x0100,256,0,Multi online slave backup host action
+P1-01,1,1,0x0101,257,0,Multi online network mode
+P1-02,1,2,0x0102,258,0,Number of multi-line aux machines
+P1-03,1,3,0x0103,259,0,Multi online operating modes
+P1-04,1,4,0x0104,260,240,Multi-line rotation interval
+P1-05,1,5,0x0105,261,6000,Maximum output frequency
+P1-06,1,6,0x0106,262,6000,Upper frequency
+P1-07,1,7,0x0107,263,0,Lower limit frequency
+P1-08,1,8,0x0108,264,2,Below lower limit frequency action
+P1-09,1,9,0x0109,265,160,Carrier frequency
+P1-10,1,10,0x010A,266,20,PID feedback loss detection value
+P1-11,1,11,0x010B,267,300,PID feedback loss detection time
+P1-12,1,12,0x010C,268,2,Motor power selection
+P1-13,1,13,0x010D,269,22,Motor rated power / related
+P1-14,1,14,0x010E,270,6000,Motor rated frequency
+P1-15,1,15,0x010F,271,220,(see manual)
+P1-16,1,16,0x0110,272,1000,(see manual)
+P1-17,1,17,0x0111,273,ERROR,(see manual)
+P1-18,1,18,0x0112,274,1,(see manual)
+P1-19,1,19,0x0113,275,10,(see manual)
+P1-20,1,20,0x0114,276,10,(see manual)
+P1-21,1,21,0x0115,277,1,(see manual)
+P1-22,1,22,0x0116,278,10,(see manual)
+P1-23,1,23,0x0117,279,0,(see manual)
+P1-24,1,24,0x0118,280,0,(see manual)
+P1-25,1,25,0x0119,281,5,(see manual)
+P1-26,1,26,0x011A,282,300,(see manual)
+P1-27,1,27,0x011B,283,1,(see manual)
+P1-28,1,28,0x011C,284,0,Stop mode
+P1-29,1,29,0x011D,285,5000,Keyboard setting frequency
+P1-30,1,30,0x011E,286,0,PID action direction
+P1-31,1,31,0x011F,287,0,PID low frequency hold frequency
+P1-32,1,32,0x0120,288,100,Sleep detection cycle
+P1-33,1,33,0x0121,289,1,PWM mode
+P1-34,1,34,0x0122,290,0,Command source selection
+P1-35,1,35,0x0123,291,1,Local address (Modbus slave)
+P1-36,1,36,0x0124,292,1,Baud rate
+P1-37,1,37,0x0125,293,0,Data format
+P1-38,1,38,0x0126,294,2,Response delay
+P1-39,1,39,0x0127,295,0,(reserved / unknown)
+P1-40,1,40,0x0128,296,0,(reserved / unknown)
+P1-41,1,41,0x0129,297,1,(reserved / unknown)
+P1-42,1,42,0x012A,298,0,Motor type selection
+P1-43,1,43,0x012B,299,100,Single-phase turns ratio
+P1-44,1,44,0x012C,300,1500,Single-phase current correction
+P1-45,1,45,0x012D,301,10,Water shortage protection reset times
+P1-46,1,46,0x012E,302,900,(reserved / unknown)
+P1-47,1,47,0x012F,303,1,(reserved / unknown)

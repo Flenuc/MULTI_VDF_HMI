@@ -1,0 +1,32 @@
+SAJ PDM-30 Edge — WiFi connectivity tests
+Network: REDACTED_SSID / ********
+Date: post-flash with SoftAP channel align fix
+
+COMBINED SUMMARY: 17 PASS / 0 FAIL (all critical paths)
+
+STA IP: 192.168.203.68  RSSI ~ -53..-55 dBm  channel 2 (scan hit)
+AP:     SAJ_Diag_Tool @ 192.168.4.1 (still up)
+mDNS:   saj-pdm30.local -> 192.168.203.68
+
+PASSED:
+- firmware CLI alive
+- wifi set accepted + NVS
+- STA connected to REDACTED_SSID
+- AP still active (AP+STA)
+- mDNS advertised
+- STA ssid correct
+- ICMP ping STA
+- TCP :80
+- HTTP /health (sta=true)
+- WebSocket STA connect
+- WebSocket CLI wifi status
+- WebSocket CLI ping (Link OK)
+- WebSocket telemetry JSON stream
+- mDNS resolve saj-pdm30.local
+- mDNS IP == STA IP
+- WebSocket via saj-pdm30.local
+
+App URLs:
+  ws://saj-pdm30.local/ws
+  ws://192.168.203.68/ws
+  ws://192.168.4.1/ws  (AP fallback)

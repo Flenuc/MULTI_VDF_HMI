@@ -1,0 +1,643 @@
+{
+  "name": "MAX PRESS 30VF",
+  "description": "",
+  "parameters": [
+    {
+      "group": 0,
+      "index": 0,
+      "value": 26,
+      "notes": "Pressure setting",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 1,
+      "value": 4,
+      "notes": "Deviation of pressure",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 2,
+      "value": 1,
+      "notes": "Operation direction selection\nAdjustable water pumpsteering",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 3,
+      "value": 100,
+      "notes": "Sensor range",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 4,
+      "value": 0,
+      "notes": "Sensor feedback\ntype",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 5,
+      "value": 1000,
+      "notes": "Pressure\ncalibration factor",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 6,
+      "value": 1200,
+      "notes": "Proportional gain P1",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 7,
+      "value": 90,
+      "notes": "Integration time I1",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 8,
+      "value": 1,
+      "notes": "PID function selection",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 9,
+      "value": 10,
+      "notes": "PID sleep delay",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 10,
+      "value": 0,
+      "notes": "PID wake-up delay",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 11,
+      "value": 3880,
+      "notes": "PID sleep frequency",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 12,
+      "value": 0,
+      "notes": "PID low frequency hold frequency running time",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 13,
+      "value": 2,
+      "notes": "PID sleep deviation pressure",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 14,
+      "value": 1,
+      "notes": "Power on automatic start function",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 15,
+      "value": 1,
+      "notes": "Power-on automatic start delay",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 16,
+      "value": 0,
+      "notes": "Antifreeze function",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 17,
+      "value": 0,
+      "notes": "Antifreeze operating frequency",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 18,
+      "value": 0,
+      "notes": "Antifreeze running time",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 19,
+      "value": 60,
+      "notes": "Antifreeze operation cycle",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 20,
+      "value": 50,
+      "notes": "Leakage size factor",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 21,
+      "value": 40,
+      "notes": "High pressure alarm setting value",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 22,
+      "value": 1200,
+      "notes": "High voltage alarm delay time",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 23,
+      "value": 0,
+      "notes": "Low pressure alarm setting value",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 24,
+      "value": 1200,
+      "notes": "Low voltage alarm delay time",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 25,
+      "value": 2,
+      "notes": "Water shortage protection function",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 26,
+      "value": 9,
+      "notes": "Water shortage fault detection threshold",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 27,
+      "value": 5800,
+      "notes": "Water shortage protection testing frequency",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 28,
+      "value": 400,
+      "notes": "Water shortage protection detection current percentage",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 29,
+      "value": 300,
+      "notes": "Water shortage protection detection time",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 30,
+      "value": 5,
+      "notes": "Water shortage protection automatic restart delay",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 31,
+      "value": 9,
+      "notes": "PID sleep rate",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 32,
+      "value": 10,
+      "notes": "Incoming water detection pressure",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 33,
+      "value": 200,
+      "notes": "Incoming water detection time",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 34,
+      "value": 200,
+      "notes": "AI minimum input",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 35,
+      "value": 1000,
+      "notes": "AI maximum input",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 36,
+      "value": 5,
+      "notes": "Acceleration time 1",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 37,
+      "value": 5,
+      "notes": "Deceleration time 1",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 38,
+      "value": 0,
+      "notes": "Parameter initialization | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 0,
+      "index": 39,
+      "value": 0,
+      "notes": "Parameter function lock | SOLO MANUAL",
+      "manual_only": true
+    },
+    {
+      "group": 0,
+      "index": 40,
+      "value": 0,
+      "notes": "Broken record | SOLO LECTURA",
+      "manual_only": true
+    },
+    {
+      "group": 0,
+      "index": 41,
+      "value": 0,
+      "notes": "Radiator temperature | SOLO LECTURA",
+      "manual_only": true
+    },
+    {
+      "group": 0,
+      "index": 42,
+      "value": 10000,
+      "notes": "Software version number | SOLO LECTURA",
+      "manual_only": true
+    },
+    {
+      "group": 0,
+      "index": 43,
+      "value": 8,
+      "notes": "Main frequency source X selection | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 0,
+      "index": 44,
+      "value": 0,
+      "notes": "System working mode | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 0,
+      "index": 45,
+      "value": 0,
+      "notes": "Pressure display mode",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 47,
+      "value": 0,
+      "notes": "Application macro selection  | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 0,
+      "value": 0,
+      "notes": "Multiple online slave backup host action selection",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 1,
+      "value": 0,
+      "notes": "Multiple online network mode selection | SOLO LECTURA",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 2,
+      "value": 0,
+      "notes": "Number of multi-line auxiliary machines | SOLO LECTURA",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 3,
+      "value": 0,
+      "notes": "Multiple online operating modes",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 4,
+      "value": 240,
+      "notes": "Multi-line rotation interval time",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 5,
+      "value": 6000,
+      "notes": "Maximum output frequency  | NO MODIFICABLE",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 6,
+      "value": 6000,
+      "notes": "Upper frequency",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 7,
+      "value": 0,
+      "notes": "Lower limit frequency",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 8,
+      "value": 2,
+      "notes": "Frequency is lower than the lower limit frequency action",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 9,
+      "value": 160,
+      "notes": "Carrier frequency  | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 10,
+      "value": 20,
+      "notes": "PID feedback loss detection value",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 11,
+      "value": 300,
+      "notes": "PID feedback loss detection time",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 12,
+      "value": 2,
+      "notes": "Motor power selection  | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 13,
+      "value": 22,
+      "notes": "Motor rated power  | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 14,
+      "value": 6000,
+      "notes": "Motor rated frequency  | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 15,
+      "value": 220,
+      "notes": "Motor rated voltage  | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 16,
+      "value": 1000,
+      "notes": "Motor rated current  | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 17,
+      "value": 1,
+      "notes": "User password | Contraseña establecer manualmente",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 18,
+      "value": 1,
+      "notes": "DI1 terminal function selection  | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 19,
+      "value": 10,
+      "notes": "DI2 terminal function selection  | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 20,
+      "value": 10,
+      "notes": "DI filter time",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 21,
+      "value": 1,
+      "notes": "DI1 enable delay time",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 22,
+      "value": 10,
+      "notes": "DI2 enable delay time",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 23,
+      "value": 0,
+      "notes": "DI1 disable delay time",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 24,
+      "value": 0,
+      "notes": "DI2 disable delay time",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 25,
+      "value": 5,
+      "notes": "Automatic fault reset times",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 26,
+      "value": 300,
+      "notes": "Automatic fault reset time",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 27,
+      "value": 1,
+      "notes": "Cooling fan control",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 28,
+      "value": 0,
+      "notes": "Stop mode",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 29,
+      "value": 5000,
+      "notes": "Keyboard setting frequency",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 30,
+      "value": 0,
+      "notes": "PID action direction",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 31,
+      "value": 0,
+      "notes": "PID low frequency hold frequency",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 32,
+      "value": 100,
+      "notes": "Sleep detection cycle",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 33,
+      "value": 1,
+      "notes": "PWM mode  | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 34,
+      "value": 0,
+      "notes": "Command source selection",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 35,
+      "value": 1,
+      "notes": "Local address",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 36,
+      "value": 1,
+      "notes": "Baud rate",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 37,
+      "value": 0,
+      "notes": "Data Format",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 38,
+      "value": 2,
+      "notes": "Response delay",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 42,
+      "value": 0,
+      "notes": "Motor type selection  | NO MODIFICABLE",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 43,
+      "value": 100,
+      "notes": "Single-phase motor main and auxiliary winding turns ratio",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 44,
+      "value": 1500,
+      "notes": "Single-phase motor current correction factor",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 45,
+      "value": 10,
+      "notes": "Water shortage protection reset times",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 47,
+      "value": 1,
+      "notes": "Parameter hidden selection",
+      "manual_only": false
+    }
+  ]
+}

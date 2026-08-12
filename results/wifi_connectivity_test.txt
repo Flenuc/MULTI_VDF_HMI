@@ -1,0 +1,110 @@
+
+>>> stream off
+stream OFF
+> 
+
+>>> help
+help | ping | dump | stream on|off
+> r0|r1 <ii>   w0|w1 <ii> <float>   raw <addr>
+> start | stop | estop | reset | set <pct>
+> slave <id>   values are ENGINEERING floats (auto scale)
+> wifi status | wifi set <ssid> <pass> | wifi clear | wifi reconnect
+> mDNS: ws://saj-pdm30.local/ws  AP: ws://192.168.4.1/ws
+> 
+[PASS] firmware CLI alive
+
+>>> wifi set REDACTED_SSID ********
+OK wifi saved ssid=REDACTED_SSID  (connecting…)
+> 
+[PASS] wifi set accepted — OK wifi saved ssid=REDACTED_SSID  (connecting…) | >
+
+>>> wifi status
+
+
+>>> wifi status
+[wifi] scan hit ssid=REDACTED_SSID ch=2 rssi=-52
+[wifi] SoftAP re-started on channel 2
+[wifi] STA connecting to "REDACTED_SSID"…
+wifi AP  ssid=SAJ_Diag_Tool  ip=192.168.4.1  clients=0
+> wifi STA ssid=REDACTED_SSID  phase=connecting  ip=-  rssi=0
+> mdns saj-pdm30.local  (ok)  ws://saj-pdm30.local/ws
+> ws AP   ws://192.168.4.1/ws
+> wifi AP  ssid=SAJ_Diag_Tool  ip=192.168.4.1  clients=0
+> wifi STA ssid=REDACTED_SSID  phase=connecting  ip=-  rssi=0
+> mdns saj-pdm30.local  (ok)  ws://saj-pdm30.local/ws
+> ws AP   ws://192.168.4.1/ws
+> 
+#2 ssid=REDACTED_SSID phase=connecting ip=-
+
+>>> wifi status
+wifi AP  ssid=SAJ_Diag_Tool  ip=192.168.4.1  clients=0
+> wifi STA ssid=REDACTED_SSID  phase=connecting  ip=-  rssi=0
+> mdns saj-pdm30.local  (ok)  ws://saj-pdm30.local/ws
+> ws AP   ws://192.168.4.1/ws
+> 
+#3 ssid=REDACTED_SSID phase=connecting ip=-
+
+>>> wifi status
+wifi AP  ssid=SAJ_Diag_Tool  ip=192.168.4.1  clients=0
+> wifi STA ssid=REDACTED_SSID  phase=connected  ip=192.168.203.68  rssi=-55
+> mdns saj-pdm30.local  (ok)  ws://saj-pdm30.local/ws
+> ws STA  ws://192.168.203.68/ws
+> ws AP   ws://192.168.4.1/ws
+> 
+#4 ssid=REDACTED_SSID phase=connected ip=192.168.203.68
+[PASS] STA connected to REDACTED_SSID — ip=192.168.203.68 phase=connected ssid=REDACTED_SSID
+
+>>> wifi status
+wifi AP  ssid=SAJ_Diag_Tool  ip=192.168.4.1  clients=0
+> wifi STA ssid=REDACTED_SSID  phase=connected  ip=192.168.203.68  rssi=-55
+> mdns saj-pdm30.local  (ok)  ws://saj-pdm30.local/ws
+> ws STA  ws://192.168.203.68/ws
+> ws AP   ws://192.168.4.1/ws
+> 
+[PASS] AP still active — AP+STA
+[PASS] mDNS advertised in status
+[PASS] STA ssid correct — REDACTED_SSID
+PING 192.168.203.68 (192.168.203.68) 56(84) bytes of data.
+64 bytes from 192.168.203.68: icmp_seq=1 ttl=64 time=63.9 ms
+64 bytes from 192.168.203.68: icmp_seq=2 ttl=64 time=24.2 ms
+64 bytes from 192.168.203.68: icmp_seq=3 ttl=64 time=93.9 ms
+
+--- 192.168.203.68 ping statistics ---
+4 packets transmitted, 3 received, 25% packet loss, time 3004ms
+rtt min/avg/max/mdev = 24.218/60.689/93.932/28.552 ms
+
+[PASS] ICMP ping STA IP — 192.168.203.68
+[PASS] TCP :80 open
+/health => {"ok":true,"device":"saj-pdm30","sta":true,"sta_ip":"192.168.203.68","ap_ip":"192.168.4.1"}
+[PASS] HTTP /health — {"ok":true,"device":"saj-pdm30","sta":true,"sta_ip":"192.168.203.68","ap_ip":"192.168.4.1"}
+[PASS] HTTP reports sta=true — True
+WS error: No module named 'websocket'
+[FAIL] WebSocket STA connect — No module named 'websocket'
+[FAIL] WebSocket CLI wifi status — skipped
+[FAIL] WebSocket CLI ping — skipped
+[FAIL] WebSocket telemetry JSON — skipped
+gethostbyname saj-pdm30.local -> 192.168.203.68
+[PASS] mDNS resolve saj-pdm30.local — ip=192.168.203.68
+[PASS] mDNS IP == STA IP — mdns=192.168.203.68 sta=192.168.203.68
+[FAIL] WebSocket via saj-pdm30.local — No module named 'websocket'
+
+============================================================
+SUMMARY: 12 PASS / 5 FAIL / 17 total
+============================================================
+  [PASS] firmware CLI alive
+  [PASS] wifi set accepted — OK wifi saved ssid=REDACTED_SSID  (connecting…) | >
+  [PASS] STA connected to REDACTED_SSID — ip=192.168.203.68 phase=connected ssid=REDACTED_SSID
+  [PASS] AP still active — AP+STA
+  [PASS] mDNS advertised in status
+  [PASS] STA ssid correct — REDACTED_SSID
+  [PASS] ICMP ping STA IP — 192.168.203.68
+  [PASS] TCP :80 open
+  [PASS] HTTP /health — {"ok":true,"device":"saj-pdm30","sta":true,"sta_ip":"192.168.203.68","ap_ip":"192.168.4.1"}
+  [PASS] HTTP reports sta=true — True
+  [FAIL] WebSocket STA connect — No module named 'websocket'
+  [FAIL] WebSocket CLI wifi status — skipped
+  [FAIL] WebSocket CLI ping — skipped
+  [FAIL] WebSocket telemetry JSON — skipped
+  [PASS] mDNS resolve saj-pdm30.local — ip=192.168.203.68
+  [PASS] mDNS IP == STA IP — mdns=192.168.203.68 sta=192.168.203.68
+  [FAIL] WebSocket via saj-pdm30.local — No module named 'websocket'
