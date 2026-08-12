@@ -589,7 +589,8 @@ class EdgeConfiguratorApp(ctk.CTk):
                 if is_ble:
                     devs = list_ble_nus_devices(scan_seconds=6.0)
                 else:
-                    devs = list_bluetooth_devices(scan_seconds=4.0)
+                    # Classic inquiry (~10s): no hace falta emparejar en el SO
+                    devs = list_bluetooth_devices(scan_seconds=10.0)
             except Exception as e:
                 err = str(e)
 
@@ -603,10 +604,11 @@ class EdgeConfiguratorApp(ctk.CTk):
                             "«SAJ-PDM30-Edge». pip install bleak"
                         )
                     else:
-                        labels = ["— (ninguno / emparejá SAJ-PDM30-Edge)"]
+                        labels = ["— (ningún SPP / SAJ-PDM30-Edge)"]
                         hint = (
-                            "No hay SPP. Emparejá «SAJ-PDM30-Edge» "
-                            "(firmware esp32dev Classic)."
+                            "No hay SPP. Encendé el ESP32 (firmware Classic), "
+                            "BT del PC ON, y «Escanear BT» otra vez. "
+                            "No hace falta emparejar a mano en el sistema."
                         )
                     self.bt_menu.configure(values=labels)
                     self.bt_var.set(labels[0])
@@ -620,6 +622,8 @@ class EdgeConfiguratorApp(ctk.CTk):
                     extra = ""
                     if d.get("paired"):
                         extra += " ✓"
+                    elif not is_ble:
+                        extra += " (nuevo)"
                     if d.get("has_nus"):
                         extra += " NUS"
                     if d.get("rssi") is not None:
@@ -632,10 +636,26 @@ class EdgeConfiguratorApp(ctk.CTk):
                     if str(d["address"]).upper() == last:
                         chosen = lab
                         break
+                # Prefer SAJ name even over last non-SAJ
+                for lab, d in zip(labels, devs):
+                    nu = (d.get("name") or "").upper()
+                    if "SAJ" in nu or "PDM" in nu:
+                        if not last or str(d["address"]).upper() == last:
+                            chosen = lab
+                            break
+                        if "SAJ" not in (chosen or "").upper():
+                            chosen = lab
                 self.bt_var.set(chosen)
-                kind = "BLE" if is_ble else "BT"
-                self._set_status(f"{kind}: {len(devs)} dispositivo(s)")
-
+                kind = "BLE" if is_ble else "BT Classic"
+                saj_n = sum(
+                    1
+                    for d in devs
+                    if "SAJ" in (d.get("name") or "").upper()
+                    or "PDM" in (d.get("name") or "").upper()
+                )
+                self._set_status(
+                    f"{kind}: {len(devs)} disp. ({saj_n} SAJ) — podés Conectar sin emparejar a mano"
+                )
             self.after(0, ui)
 
         threading.Thread(target=work, daemon=True).start()
@@ -830,7 +850,8 @@ class EdgeConfiguratorApp(ctk.CTk):
                         )
                     elif "Bluetooth" in mode:
                         self._log(
-                            "BT SPP: mismo CLI que USB. Firmware: env esp32dev."
+                            "BT SPP: mismo CLI que USB. «Escanear BT» lista "
+                            "SAJ-PDM30-Edge sin emparejar a mano (esp32dev)."
                         )
                     self._log(f"Connected via {mode}")
                     # USB open may reset the MCU — delay stream on until CLI is alive
