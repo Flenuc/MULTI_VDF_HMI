@@ -25,8 +25,11 @@ export EXPO_PUBLIC_API_URL=http://127.0.0.1:8765
 
 ## Estructura
 
-- `App.tsx` — pantalla principal (conexión + telemetría + CLI)
+- `App.tsx` — UI completa (paridad CustomTkinter):
+  - **Conexión:** MQTT / USB / BLE / BT SPP / Simulado, telemetría, CLI
+  - **Parámetros:** listas JSON, editor, Sync → VDF, Comparar (dump)
+  - **Edge / Perfiles:** Wi‑Fi y MQTT al Edge, perfiles en PC
 - `src/api/client.ts` — REST + WebSocket
-- `src/api/types.ts` — tipos compartidos con la API
+- `src/lib/params.ts` — modelos de parámetros + parse dump
 
 Ver `../ARCHITECTURE.md` para el diseño completo.

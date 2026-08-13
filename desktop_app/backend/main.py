@@ -16,13 +16,15 @@ import os
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
+from backend import param_api
 from backend.schemas import (
     BtDevice,
     CommandRequest,
@@ -227,6 +229,114 @@ async def ws_events(ws: WebSocket):
         session.unregister_ws(ws)
 
 
+# ---------------------------------------------------------------------------
+# Profiles + parameter lists (parity with CustomTkinter desktop)
+# ---------------------------------------------------------------------------
+
+
+class ProfilesBody(BaseModel):
+    data: Dict[str, Any] = Field(default_factory=dict)
+
+
+class MqttProfileBody(BaseModel):
+    name: str
+    host: str
+    port: int = 1883
+    username: str = ""
+    password: str = ""
+    topic_prefix: str = "saj/pdm30/saj-pdm30"
+    notes: str = ""
+
+
+class WifiProfileBody(BaseModel):
+    name: str
+    ssid: str
+    password: str = ""
+    notes: str = ""
+
+
+class LastsBody(BaseModel):
+    last_mode: Optional[str] = None
+    last_mqtt: Optional[str] = None
+    last_wifi: Optional[str] = None
+    last_serial_port: Optional[str] = None
+    last_serial_baud: Optional[int] = None
+    last_bt_address: Optional[str] = None
+    last_bt_name: Optional[str] = None
+
+
+class ParamListBody(BaseModel):
+    name: str = "Lista"
+    description: str = ""
+    parameters: list = Field(default_factory=list)
+
+
+@app.get("/profiles")
+def api_get_profiles():
+    return param_api.get_profiles()
+
+
+@app.put("/profiles")
+def api_put_profiles(body: Dict[str, Any]):
+    try:
+        return param_api.put_profiles(body)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@app.post("/profiles/mqtt")
+def api_upsert_mqtt(body: MqttProfileBody):
+    try:
+        return param_api.upsert_mqtt_profile(body.model_dump())
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@app.post("/profiles/wifi")
+def api_upsert_wifi(body: WifiProfileBody):
+    try:
+        return param_api.upsert_wifi_profile(body.model_dump())
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@app.patch("/profiles/lasts")
+def api_patch_lasts(body: LastsBody):
+    return param_api.update_lasts(**{k: v for k, v in body.model_dump().items() if v is not None})
+
+
+@app.get("/param-lists")
+def api_list_params():
+    return {"files": param_api.list_param_files()}
+
+
+@app.get("/param-lists/{filename}")
+def api_get_param_list(filename: str):
+    try:
+        return param_api.load_param_list(filename)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="not found") from None
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@app.put("/param-lists/{filename}")
+def api_put_param_list(filename: str, body: ParamListBody):
+    try:
+        return param_api.save_param_list(filename, body.model_dump())
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@app.delete("/param-lists/{filename}")
+def api_del_param_list(filename: str):
+    try:
+        param_api.delete_param_list(filename)
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
 # --- Optional static UI (Expo web export) — registered last so API wins ---
 _UI = _ui_dir()
 if _UI is not None:
@@ -256,6 +366,8 @@ if _UI is not None:
             "docs",
             "openapi.json",
             "redoc",
+            "profiles",
+            "param-lists",
         }:
             raise HTTPException(status_code=404, detail="Not found")
         candidate = (_UI / full_path).resolve()
