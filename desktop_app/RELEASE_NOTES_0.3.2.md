@@ -19,42 +19,43 @@ Aplicación de escritorio para conectar con el módulo de campo (USB, red Wi‑F
 - Avisos de error con **qué hacer** y botón **Reintentar**.
 - Enviar receta sin comparar permitido, con recomendación de comparar antes.
 - Icono y empaquetado de escritorio (Electron + backend Python).
-- Instalador Windows generable desde Linux (mismo método que el flasher).
+- Instalador Windows **Electron nativo** generable desde Linux (sin PC Windows ni CI).
 
 ## Archivos de esta release
 
 | Archivo | Plataforma | Uso |
 |---------|------------|-----|
 | `VarioField-0.3.2-arm64.AppImage` | Linux ARM64 (Raspberry Pi) | Ejecutable portable (Electron) |
-| `VarioField-Setup-0.3.2.exe` | Windows 10/11 **x64** | Instalador de campo (backend Python + UI web) |
-| `VarioField-0.3.2-x64.AppImage` | Linux x86_64 | *Opcional* — cuando se genere en un host x64 o CI |
+| `VarioField-Setup-0.3.2.exe` | Windows 10/11 **x64** | **Instalador principal** — Electron nativo + Python embebido |
+| `VarioField-Electron-Setup-0.3.2.exe` | Windows 10/11 **x64** | Mismo instalador (nombre explícito) |
+| `VarioField-0.3.2-x64.AppImage` | Linux x86_64 | *Opcional* — host x64 o CI |
 
 Descargas: https://github.com/Flenuc/MULTI_VDF_HMI/releases/tag/v0.3.2
 
-## Cómo instalar / ejecutar (Windows)
+## Cómo instalar / ejecutar (Windows — Electron nativo)
 
-### 1. Descargar e instalar
+### Qué incluye el Setup
 
-1. Descargue **`VarioField-Setup-0.3.2.exe`** de la release.
+- **`VarioField.exe`**: shell Electron (Chromium embebido) — ventana de app, no el navegador del sistema.
+- **Python embebido** (`resources/python`) + dependencias Windows ya empaquetadas.
+- **Backend** (`resources/pyapp`) y **UI** (`resources/ui`).
+- **No requiere** Python, Node ni Internet en el PC destino.
+
+Tamaño orientativo del instalador: ~90–100 MB.
+
+### Instalación
+
+1. Descargue **`VarioField-Setup-0.3.2.exe`** (o `VarioField-Electron-Setup-0.3.2.exe`).
 2. Ejecútelo en un PC **Windows 10/11 de 64 bits**.
 3. Si SmartScreen avisa: **Más información → Ejecutar de todas formas**.
-4. Siga el asistente (instalación por usuario, sin permisos de administrador).
+4. Siga el asistente (instalación por usuario, sin administrador).
 
-### 2. Primera instalación (Internet)
-
-- Si el PC **no tiene Python 3.12**, el setup lo instala solo (usuario actual).
-- Luego ejecuta `pip` para instalar dependencias (`fastapi`, `uvicorn`, `pyserial`, `bleak`, etc.).
-- **Hace falta Internet solo la primera vez** (o si re-ejecuta `post_install.bat`).
-
-### 3. Arrancar la app
+### Arranque
 
 1. Atajo de escritorio o menú Inicio → **VarioField**.
-2. Se abre una **ventana de consola** (es normal: es el servicio local).
-3. Se abre el **navegador** en `http://127.0.0.1:8765` con la interfaz.
-4. **Deje la consola abierta** mientras use la app.
-5. **Cierre la consola** para detener el servicio.
-
-### 4. Si no arranca
+2. Se abre la **ventana de la app** (Electron).
+3. El backend local queda en `http://127.0.0.1:8765` (la UI lo usa por dentro).
+4. Cierre la ventana de VarioField para detener el servicio.
 
 Carpeta por defecto:
 
@@ -62,13 +63,26 @@ Carpeta por defecto:
 %LOCALAPPDATA%\MULTI_VDF_HMI\VarioField
 ```
 
-Dentro, ejecute **`post_install.bat`** (con Internet) y vuelva a abrir **VarioField**.
+### Notas técnicas del pack Windows
 
-### Notas del paquete Windows
+| Pieza | Origen |
+|-------|--------|
+| Electron win32-x64 | Binarios oficiales (descargados en el build) |
+| Python 3.12 embed | `python.org` embeddable amd64 |
+| Librerías Python | Wheels `win_amd64` preextraídos en site-packages |
+| UI | Expo web export (production) |
+| Instalador | NSIS (`makensis` en Linux) |
 
-- Es el instalador **alternativo de campo** (igual filosofía que el flasher): fuentes Python + UI web exportada, compilado con NSIS en Linux.
-- **No es** el empaquetado Electron nativo de `electron-builder` (ese requiere Windows o CI desbloqueado).
-- La UI y la API son las de producción 0.3.2; el shell es navegador + backend local.
+Build desde Raspberry Pi / Linux:
+
+```bash
+cd desktop_app
+./build_variofield_windows_electron_setup.sh
+# → dist/windows/VarioField-Setup-0.3.2.exe
+```
+
+> El backend **no** es `multi_vdf_backend.exe` (PyInstaller); es CPython embebido.  
+> El resultado de `electron-builder` en Windows/CI sería equivalente en UX, con backend one-file opcional.
 
 ## Cómo instalar / ejecutar (Linux AppImage)
 
@@ -77,7 +91,7 @@ chmod +x VarioField-0.3.2-arm64.AppImage
 ./VarioField-0.3.2-arm64.AppImage
 ```
 
-Ventana Electron propia (no usa el navegador del sistema).
+Ventana Electron propia (backend PyInstaller embebido en el AppImage).
 
 ## Cómo usar (resumen)
 
@@ -90,10 +104,10 @@ Ayuda → “Ver tutorial otra vez” si lo necesitas.
 
 ## Requisitos del PC
 
-| | Windows (Setup) | Linux (AppImage) |
-|--|-----------------|------------------|
+| | Windows (Setup Electron) | Linux (AppImage) |
+|--|--------------------------|------------------|
 | SO | Windows 10/11 **64-bit** | Linux con soporte AppImage |
-| Primera vez | Internet para pip | No (todo embebido) |
+| Primera vez | Sin Internet (todo embebido) | No |
 | USB | Drivers UART del convertidor | Igual |
 | Bluetooth | Stack de Windows / BLE | BlueZ (Classic) |
 | Red | Broker MQTT alcanzable | Igual |
@@ -101,14 +115,14 @@ Ayuda → “Ver tutorial otra vez” si lo necesitas.
 ## Notas técnicas (para el técnico de planta)
 
 - Backend local en `127.0.0.1:8765` (no expuesto a la red por defecto).
-- En Windows el navegador carga la UI servida por ese backend.
 - Firmwares Edge: release de firmwares del mismo repositorio (`esp32dev`, Guition).
 - Repo: https://github.com/Flenuc/MULTI_VDF_HMI
 
-## Checklist QA de campo (antes de dar por buena la release)
+## Checklist QA de campo
 
-- [ ] Arranque AppImage / instalador sin consola de error
-- [ ] Windows: Setup → pip → Launch → navegador en :8765
+- [ ] Windows: Setup → VarioField.exe abre ventana Electron
+- [ ] Windows: UI carga y responde (home / conectar)
+- [ ] Linux AppImage: arranque sin error
 - [ ] Tutorial: saltar y reabrir desde Ayuda
 - [ ] Conexión USB + telemetría
 - [ ] Conexión MQTT + ping / stream
@@ -117,21 +131,22 @@ Ayuda → “Ver tutorial otra vez” si lo necesitas.
 - [ ] Buscar parámetro en la receta
 - [ ] Comparar con variador
 - [ ] Enviar receta (con y sin comparar previo)
-- [ ] Perfil Wi‑Fi / MQTT al módulo (instrucciones visibles)
-- [ ] Banner de error con reintento (ej. sin cable USB)
+- [ ] Banner de error con reintento
 
 ## Compilar de nuevo
 
 ```bash
-# Linux AppImage (en el host de la arquitectura deseada)
+# Linux AppImage (arquitectura del host)
 cd desktop_app
 ./build_desktop_linux.sh
 
-# Windows Setup.exe desde Linux (Raspberry Pi / x64) — no necesita Windows
+# Windows Setup Electron nativo (desde Linux, incl. Raspberry Pi)
 cd desktop_app
-./build_variofield_windows_setup.sh
-# → dist/windows/VarioField-Setup-0.3.2.exe
+./build_variofield_windows_electron_setup.sh
 
-# Windows Electron nativo (solo en PC Windows x64 o CI)
+# Windows Setup ligero (solo navegador + pip; sin Electron)
+./build_variofield_windows_setup.sh
+
+# Windows electron-builder nativo (solo en PC Windows x64 o CI)
 build_desktop_windows.bat
 ```
