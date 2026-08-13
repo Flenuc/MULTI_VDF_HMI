@@ -27,8 +27,22 @@
 | `VarioField-0.3.3-arm64.AppImage` | Linux ARM64 (Raspberry Pi) | Ejecutable portable (Electron) |
 | `VarioField-Setup-0.3.3.exe` | Windows 10/11 x64 | Instalador Electron + Python embed + scripts Mosquitto |
 | `VarioField-Electron-Setup-0.3.3.exe` | Windows 10/11 x64 | Mismo instalador (nombre explícito) |
+| `MULTI_VDF_HMI-firmware-0.3.3.zip` | ESP32 / Guition P4 | Edge firmware para el **Flasher** (multi-VDF / PDH) |
 
-Descargas: https://github.com/Flenuc/MULTI_VDF_HMI/releases/tag/v0.3.3
+Descargas: https://github.com/Flenuc/MULTI_VDF_HMI/releases/tag/v0.3.3  
+
+Firmware (release dedicada): https://github.com/Flenuc/MULTI_VDF_HMI/releases/tag/firmware-0.3.3
+
+### Flasheo Edge (otras PC)
+
+1. Instalar **MULTI_VDF_HMI Flasher** (Setup Windows o binario Linux).
+2. **Buscar último firmware** → descarga `MULTI_VDF_HMI-firmware-0.3.3.zip`.
+3. Elegir placa:
+   - `esp32dev` — DevKit + RS485 externo (BT Classic)
+   - `guition_jc_esp32p4_m3` — Guition P4 (USB ACM + RS485)
+4. Puerto COM / `/dev/ttyACM0` → Flashear.
+
+Empaquetado local: `python3 scripts/package_firmware.py --version 0.3.3`
 
 ## Mosquitto (broker local)
 
