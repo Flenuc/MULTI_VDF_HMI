@@ -545,70 +545,199 @@ def list_bluetooth_devices(scan_seconds: float = 10.0) -> List[dict]:
     """
     if sys.platform == "win32":
         return _list_bluetooth_windows(scan_seconds)
-    return _list_bluetooth_linux(scan_seconds)
+    try:
+        return _list_bluetooth_linux(scan_seconds)
+    finally:
+        # Leave adapter idle so a following Connect does not hit ENOMEM
+        _run(["bluetoothctl", "scan", "off"], timeout=4.0)
+
+
+def _btctl_is_paired(address: str) -> bool:
+    rc, info = _run(["bluetoothctl", "info", address], timeout=6.0)
+    if rc != 0:
+        return False
+    return "Paired: yes" in info or "Bonded: yes" in info
+
+
+def prepare_linux_rfcomm(address: str, timeout: float = 35.0) -> str:
+    """
+    Make the device ready for RFCOMM on BlueZ.
+
+    ENOMEM / flaky RFCOMM usually means: discovery still running, device not
+    in cache, or passkey confirm left hanging. Flow:
+
+      1) power + agent that can answer Confirm passkey with «yes»
+      2) scan until the MAC is known
+      3) trust + pair (auto-yes on agent prompts)
+      4) stop discovery (critical before RFCOMM)
+      5) do NOT bluetoothctl connect — BlueZ has no SPP client profile;
+         the app opens RFCOMM itself.
+    """
+    address = _normalize_mac(address) or address.upper()
+    if not shutil.which("bluetoothctl"):
+        return "no-bluetoothctl"
+
+    log: List[str] = []
+    try:
+        import select as _select
+    except ImportError:
+        _select = None  # type: ignore
+
+    p = subprocess.Popen(
+        ["bluetoothctl"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+    assert p.stdin is not None and p.stdout is not None
+
+    def send(cmd: str, wait: float = 0.25) -> None:
+        log.append(f">>>{cmd}")
+        try:
+            p.stdin.write(cmd + "\n")
+            p.stdin.flush()
+        except Exception as e:
+            log.append(f"send-err {e}")
+        time.sleep(wait)
+
+    def drain(seconds: float) -> str:
+        end = time.time() + seconds
+        chunks: List[str] = []
+        while time.time() < end:
+            if _select is not None:
+                r, _, _ = _select.select([p.stdout], [], [], 0.2)
+                if p.stdout not in r:
+                    continue
+            line = p.stdout.readline()
+            if not line:
+                break
+            chunks.append(line)
+            low = line.lower()
+            # Auto-accept SSP / passkey / PIN prompts on the host agent
+            if (
+                "confirm passkey" in low
+                or "confirm value" in low
+                or "[agent] confirm" in low
+                or ("yes/no" in low and "agent" in low)
+                or "authorization request" in low
+            ):
+                send("yes", 0.2)
+            if "enter pin" in low or "passkey request" in low:
+                # Firmware default PIN
+                send("1234", 0.2)
+        return "".join(chunks)
+
+    try:
+        send("power on", 0.4)
+        # DisplayYesNo can answer Confirm passkey; NoInputNoOutput often cannot
+        send("agent DisplayYesNo", 0.4)
+        send("default-agent", 0.3)
+        send("pairable on", 0.3)
+        send("scan on", 0.5)
+
+        deadline = time.time() + min(max(timeout, 15.0), 45.0)
+        seen = _btctl_is_paired(address)
+        while time.time() < deadline:
+            out = drain(1.0)
+            if address in out or "SAJ-PDM30" in out:
+                seen = True
+                break
+            # Already in cache from previous inquiry
+            rc, info = _run(["bluetoothctl", "info", address], timeout=4.0)
+            if rc == 0 and "not available" not in info.lower():
+                seen = True
+                break
+
+        if not seen:
+            log.append("device-not-seen-in-scan")
+        else:
+            send(f"trust {address}", 0.4)
+            if not _btctl_is_paired(address):
+                send(f"pair {address}", 0.5)
+                pair_deadline = time.time() + 18.0
+                while time.time() < pair_deadline:
+                    out = drain(1.0)
+                    if "paired: yes" in out.lower() or "pairing successful" in out.lower():
+                        break
+                    if _btctl_is_paired(address):
+                        break
+                    if "failed" in out.lower() and "pair" in out.lower():
+                        log.append("pair-failed-line")
+                        break
+
+        # Always stop discovery before RFCOMM (avoids ENOMEM on many adapters)
+        send("scan off", 0.4)
+        drain(0.5)
+        send("quit", 0.2)
+        try:
+            p.communicate(timeout=4)
+        except Exception:
+            p.kill()
+    except Exception as e:
+        log.append(f"exc:{e}")
+        try:
+            p.kill()
+        except Exception:
+            pass
+
+    paired = _btctl_is_paired(address)
+    return f"paired={paired};" + ";".join(log[-12:])
 
 
 def ensure_paired(address: str, timeout: float = 25.0) -> None:
-    """
-    Best-effort trust + pair.
-
-    Linux: bluetoothctl Just Works agent.
-    Windows: pairing is done by the OS; we no-op (device should already
-    appear in Settings → Bluetooth).
-    """
-    address = address.upper()
+    """Back-compat wrapper."""
     if sys.platform == "win32":
         return
-    _run(["bluetoothctl", "power", "on"], timeout=5.0)
-    try:
-        p = subprocess.Popen(
-            ["bluetoothctl"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-        )
-        assert p.stdin is not None
-        for line in (
-            "agent NoInputNoOutput",
-            "default-agent",
-            "pairable on",
-            f"trust {address}",
-            f"pair {address}",
-        ):
-            p.stdin.write(line + "\n")
-        p.stdin.flush()
-        time.sleep(min(timeout, 18.0))
-        p.stdin.write("quit\n")
-        p.stdin.flush()
-        try:
-            p.communicate(timeout=5)
-        except subprocess.TimeoutExpired:
-            p.kill()
-    except Exception:
-        _run(["bluetoothctl", "trust", address], timeout=8.0)
-        _run(["bluetoothctl", "pair", address], timeout=timeout)
+    prepare_linux_rfcomm(address, timeout=timeout)
 
 
 def find_spp_com_port(address: str) -> Optional[str]:
     """Locate Windows Bluetooth SPP virtual COM port for a MAC."""
     address = _normalize_mac(address)
-    if not address:
-        return None
-    flat = address.replace(":", "")
+    flat = address.replace(":", "") if address else ""
     try:
         from serial.tools import list_ports
     except Exception:
         return None
+
+    bt_ports = []
     for p in list_ports.comports():
-        hwid = (getattr(p, "hwid", None) or "") + " " + (p.description or "")
-        h = hwid.upper().replace(":", "").replace("-", "")
-        if flat in h and re.search(r"BTH|BLUETOOTH", h, re.I):
+        desc = (p.description or "") + " " + (p.manufacturer or "")
+        hwid = (getattr(p, "hwid", None) or "") + " " + desc
+        is_bt = bool(re.search(r"bth|bluetooth|bt_", hwid, re.I)) or (
+            "bluetooth" in desc.lower()
+        )
+        if not is_bt:
+            continue
+        bt_ports.append(p)
+        if flat:
+            h = hwid.upper().replace(":", "").replace("-", "")
+            if flat in h:
+                return p.device
+
+    # If exactly one BT serial port exists, use it (common after pairing one Edge)
+    if len(bt_ports) == 1:
+        return bt_ports[0].device
+    # Prefer description mentioning SAJ / SPP / Standard Serial
+    for p in bt_ports:
+        d = (p.description or "").upper()
+        if any(x in d for x in ("SAJ", "PDM", "STANDARD SERIAL", "SPP")):
             return p.device
-        if flat in h and "COM" in (p.device or "").upper():
-            return p.device
-    # Second pass: any BTH port if only one BT serial exists and list was empty of match
     return None
+
+
+def _open_rfcomm(address: str, channel: int, timeout: float = 20.0):
+    sock = socket.socket(
+        socket.AF_BLUETOOTH,
+        socket.SOCK_STREAM,
+        socket.BTPROTO_RFCOMM,  # type: ignore[attr-defined]
+    )
+    sock.settimeout(timeout)
+    sock.connect((address, int(channel)))
+    sock.settimeout(0.3)
+    return sock
 
 
 class BluetoothClient(CommsClient):
@@ -616,7 +745,8 @@ class BluetoothClient(CommsClient):
     Classic Bluetooth SPP client.
 
     Byte stream is line-oriented CLI identical to USB Serial.
-    On Windows may fall back to the paired SPP COM port.
+    Windows: prefer the OS SPP COM port (avoids double-connect / peer close).
+    Linux: prepare BlueZ then RFCOMM ch1.
     """
 
     def __init__(self) -> None:
@@ -628,7 +758,7 @@ class BluetoothClient(CommsClient):
         self._write_lock = threading.Lock()
         self._address = ""
         self._channel = DEFAULT_RFCOMM_CHANNEL
-        self._via = ""  # "rfcomm" | "com"
+        self._via = ""  # "rfcomm" | "com:COMx"
 
     def connect(
         self,
@@ -649,36 +779,13 @@ class BluetoothClient(CommsClient):
             f"BT SPP {address} ch{self._channel}…",
         )
 
-        if pair and sys.platform != "win32":
-            try:
-                ensure_paired(address)
-            except Exception as e:
-                self._emit_error(f"BT pair aviso: {e}")
-
         last_err: Optional[Exception] = None
+        prep_note = ""
 
-        # 1) Native RFCOMM (Linux always; Windows when stack allows)
-        if hasattr(socket, "AF_BLUETOOTH") and hasattr(socket, "BTPROTO_RFCOMM"):
-            try:
-                sock = socket.socket(
-                    socket.AF_BLUETOOTH,
-                    socket.SOCK_STREAM,
-                    socket.BTPROTO_RFCOMM,  # type: ignore[attr-defined]
-                )
-                sock.settimeout(20.0)
-                sock.connect((address, self._channel))
-                sock.settimeout(0.2)
-                self._sock = sock
-                self._via = "rfcomm"
-            except Exception as e:
-                last_err = e
-                self._sock = None
-
-        # 2) Windows: SPP virtual serial port after system pairing
-        if self._sock is None and sys.platform == "win32":
+        # ----- Windows: COM first (stack already holds SPP after pairing) -----
+        if sys.platform == "win32":
             com = find_spp_com_port(address)
             if not com:
-                # Refresh discovery once to pick up COM mapping
                 try:
                     _list_bluetooth_windows(2.0)
                 except Exception:
@@ -688,12 +795,80 @@ class BluetoothClient(CommsClient):
                 try:
                     import serial
 
-                    ser = serial.Serial(com, baudrate=115200, timeout=0.2)
+                    # Exclusive open; 115200 is ignored by most BT SPP drivers
+                    ser = serial.Serial(
+                        port=com,
+                        baudrate=115200,
+                        timeout=0.25,
+                        write_timeout=2.0,
+                    )
                     self._serial = ser
                     self._via = f"com:{com}"
                 except Exception as e:
                     last_err = e
                     self._serial = None
+
+            # RFCOMM only if no COM — dual open drops the peer on ESP32
+            if self._serial is None and hasattr(socket, "AF_BLUETOOTH"):
+                try:
+                    self._sock = _open_rfcomm(address, self._channel, 20.0)
+                    self._via = "rfcomm"
+                except Exception as e:
+                    last_err = e
+                    self._sock = None
+
+        # ----- Linux / other: RFCOMM (pair only if first attempts fail) -----
+        else:
+            # Discovery left running after «Buscar equipos» often yields ENOMEM
+            _run(["bluetoothctl", "scan", "off"], timeout=4.0)
+            time.sleep(0.35)
+
+            channels: List[int] = []
+            for ch in (self._channel, 1, 2):
+                if int(ch) not in channels:
+                    channels.append(int(ch))
+
+            def try_rfcomm_once() -> bool:
+                nonlocal last_err
+                if not (
+                    hasattr(socket, "AF_BLUETOOTH")
+                    and hasattr(socket, "BTPROTO_RFCOMM")
+                ):
+                    last_err = RuntimeError(
+                        "Este Python/SO no expone AF_BLUETOOTH (¿BlueZ?)"
+                    )
+                    return False
+                for ch in channels:
+                    try:
+                        self._sock = _open_rfcomm(address, ch, timeout=18.0)
+                        self._channel = ch
+                        self._via = f"rfcomm:ch{ch}"
+                        last_err = None
+                        return True
+                    except Exception as e:
+                        last_err = e
+                        self._sock = None
+                return False
+
+            # 1) Direct RFCOMM — works for ESP32 SPP without a full bond
+            if not try_rfcomm_once():
+                # 2) Soft prep (scan→trust→pair+auto-yes) then retry
+                if pair:
+                    try:
+                        prep_note = prepare_linux_rfcomm(address, timeout=30.0)
+                        print(f"[bt] prep: {prep_note}", flush=True)
+                    except Exception as e:
+                        prep_note = str(e)
+                        print(f"[bt] pair aviso: {e}", flush=True)
+                    _run(["bluetoothctl", "scan", "off"], timeout=4.0)
+                    time.sleep(0.4)
+                    try_rfcomm_once()
+
+            # 3) Last chance after brief pause (adapter recovering from ENOMEM)
+            if self._sock is None:
+                time.sleep(0.8)
+                _run(["bluetoothctl", "scan", "off"], timeout=3.0)
+                try_rfcomm_once()
 
         if self._sock is None and self._serial is None:
             self._set_state(ConnectionState.ERROR, str(last_err or "BT open failed"))
@@ -704,16 +879,25 @@ class BluetoothClient(CommsClient):
                     f"Detalle: {detail}\n\n"
                     "En Windows:\n"
                     "1) Emparejá el ESP32 en Configuración → Bluetooth "
-                    "(nombre típico SAJ-PDM30-Edge).\n"
-                    "2) Volvé a «Buscar equipos» en VarioField.\n"
-                    "3) Si aparece un puerto COM Bluetooth, también podés "
-                    "usar el modo USB/Serial con ese COM.\n"
+                    "(SAJ-PDM30-Edge).\n"
+                    "2) Abrí «Más opciones Bluetooth» y comprobá que exista "
+                    "un puerto serie (COM) «Standard Serial over Bluetooth».\n"
+                    "3) Volvé a Buscar equipos y conectar.\n"
+                    "4) Alternativa: modo USB/Serial eligiendo ese COM.\n"
                 ) from last_err
+            hint_enomem = ""
+            if "12" in detail or "Cannot allocate memory" in detail or "ENOMEM" in detail:
+                hint_enomem = (
+                    "\nENOMEM suele indicar emparejamiento incompleto o scan activo.\n"
+                    "Probalo: bluetoothctl → scan off → trust MAC → pair MAC "
+                    "(confirmá passkey) → luego conectar de nuevo en la app.\n"
+                )
             raise RuntimeError(
                 f"No se pudo abrir SPP con {address}.\n"
-                f"Detalle: {detail}\n\n"
-                "Comprobá: Edge con firmware BT (ESP32 classic), "
-                "visible al escanear «SAJ-PDM30-Edge», y BT del PC encendido.\n"
+                f"Detalle: {detail}\n"
+                f"{hint_enomem}\n"
+                "Comprobá: módulo encendido, BT del PC activo, cerca del PC.\n"
+                f"(prep: {prep_note})\n"
             ) from last_err
 
         self._stop.clear()
@@ -725,7 +909,8 @@ class BluetoothClient(CommsClient):
             ConnectionState.CONNECTED,
             f"BT SPP {address} ({self._via})",
         )
-        time.sleep(0.2)
+        # Let banner ("SAJ-PDM30-Edge SPP ready") arrive before host commands
+        time.sleep(0.35)
 
     def disconnect(self) -> None:
         self._stop.set()
@@ -760,12 +945,20 @@ class BluetoothClient(CommsClient):
                 return
             raise RuntimeError("Bluetooth no conectado")
 
-    def _recv_chunk(self) -> bytes:
+    def _recv_chunk(self) -> Optional[bytes]:
+        """
+        Read some bytes. Returns:
+          - bytes: data (may be empty only for serial poll with nothing waiting)
+          - None: soft wait (timeout / no data yet) — NOT a disconnect
+        Raises OSError on hard socket errors; empty bytes from RFCOMM = peer closed.
+        """
         if self._sock is not None:
             try:
-                return self._sock.recv(512)
+                data = self._sock.recv(512)
             except socket.timeout:
-                return b""
+                return None  # still connected, just idle
+            # RFCOMM: b"" means orderly shutdown by peer
+            return data
         if self._serial is not None:
             try:
                 n = self._serial.in_waiting
@@ -773,9 +966,10 @@ class BluetoothClient(CommsClient):
                 n = 0
             if n:
                 return self._serial.read(min(n, 512))
-            # blocking-ish poll
-            return self._serial.read(1) or b""
-        return b""
+            # short non-blocking poll
+            b = self._serial.read(1)
+            return b if b else None
+        return None
 
     def _rx_loop(self) -> None:
         buf = ""
@@ -785,25 +979,22 @@ class BluetoothClient(CommsClient):
                     break
                 try:
                     chunk = self._recv_chunk()
-                except socket.timeout:
-                    continue
                 except Exception as e:
                     if not self._stop.is_set():
                         self._emit_error(f"BT RX: {e}")
                     break
-                if not chunk:
-                    if self._serial is not None:
-                        time.sleep(0.05)
-                        continue
-                    # empty recv on socket often means closed
-                    if self._sock is not None:
-                        if not self._stop.is_set():
-                            self._emit_error("BT: conexión cerrada por el peer")
-                            self._set_state(
-                                ConnectionState.DISCONNECTED, "BT peer closed"
-                            )
-                        break
+                if chunk is None:
+                    # idle — keep link open
+                    time.sleep(0.02)
                     continue
+                if chunk == b"":
+                    # only RFCOMM uses empty as EOF; serial returns None when idle
+                    if self._sock is not None and not self._stop.is_set():
+                        self._emit_error("BT: conexión cerrada por el peer")
+                        self._set_state(
+                            ConnectionState.DISCONNECTED, "BT peer closed"
+                        )
+                    break
                 buf += chunk.decode("utf-8", errors="replace")
                 while "\n" in buf:
                     line, buf = buf.split("\n", 1)

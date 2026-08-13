@@ -326,7 +326,24 @@ export function classifyError(
     return makeError("BT_SCAN", raw);
   }
   if (ctx === "bt" || s.includes("bluetooth") || s.includes("rfcomm") || s.includes("spp")) {
-    if (s.includes("seleccion") || s.includes("escanea") || s.includes("dispositivo")) {
+    // Prefer connect errors over "no device" — long messages mention "dispositivo"
+    if (
+      s.includes("no se pudo abrir") ||
+      s.includes("cannot allocate") ||
+      s.includes("enomem") ||
+      s.includes("errno 12") ||
+      s.includes("conexión cerrada") ||
+      s.includes("conexion cerrada") ||
+      s.includes("peer")
+    ) {
+      return makeError("BT_CONNECT", raw);
+    }
+    if (
+      s.includes("seleccioná") ||
+      s.includes("selecciona") ||
+      s.includes("ningún dispositivo") ||
+      s.includes("ningun dispositivo")
+    ) {
       return makeError("NO_BT_DEVICE", raw);
     }
     return makeError("BT_CONNECT", raw);
