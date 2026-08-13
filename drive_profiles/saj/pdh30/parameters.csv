@@ -1,0 +1,152 @@
+id,group_code,index,register,name,unit,scale,access,default
+F0.00,F0,0,0xF000,Pre-set pressure,bar,10,rw,
+F0.01,F0,1,0xF001,Startup pressure deviation,bar,10,rw,0.3
+F0.02,F0,2,0xF002,Motor rotation direction,,1,rw_stop,0.0
+F0.03,F0,3,0xF003,Antifreeze function,,1,rw,0.0
+F0.04,F0,4,0xF004,Water leakage coefficient,,1,rw,2.5
+F0.05,F0,5,0xF005,Start/stop signal option,"0.05
+           s",1,rw,0.0
+F0.06,F0,6,0xF006,Auto-starting option,,1,rw,0.0
+F0.07,F0,7,0xF007,Auto-starting delay time,s,10,rw,5.0
+F0.08,F0,8,0xF008,Sensor range,bar,10,rw,16.0
+F0.09,F0,9,0xF009,Sensor feedback channel,bar,10,rw,2.0
+F0.10,F0,10,0xF00A,High pressure alarm value,bar,10,rw,3.0
+F0.11,F0,11,0xF00B,Low pressure alarm value,bar,10,rw,0.0
+F0.12,F0,12,0xF00C,"pressure 0.0Bar～ Bar 3.5Bar Effective when =3, the",bar,10,rw,3.5
+F0.13,F0,13,0xF00D,starting 0.0Bar～ Bar 2.5Bar pressure is greater than pressure .The inlet pressure,bar,10,rw,2.5
+F0.14,F0,14,0xF00E,feedback 0:AI1 1:AI2 0 0 as signal detection.,,1,rw,0.0
+F0.15,F0,15,0xF00F,Working mode of VFD,,1,rw,0.0
+F0.16,F0,16,0xF010,Product number,,1,ro,
+F0.17,F0,17,0xF011,Software version,,1,ro,
+F0.18,F0,18,0xF012,Acceleration time,s,10,rw,5.0
+F0.19,F0,19,0xF013,Deceleration time,s,10,rw,5.0
+F0.20,F0,20,0xF014,Macro function,,1,rw_stop,0.0
+F1.00,F1,0,0xF100,communicati 0-5 \ 0 drives. The address of host on address drive is 0. 0: auxiliaries shut down after,,1,ro,0.0
+F1.01,F1,1,0xF101,standby host(auxiliar speed,,1,rw,0.0
+F1.02,F1,2,0xF102,communicati 0~1 \ 0 0: CAN was set to auxiliary 1: CAN was set to host on network,,1,ro,0.0
+F1.03,F1,3,0xF103,the auxiliary 0~5 Set 0 Note: This parameter only drives serves as PID frequency source and is only set in CAN,,1,ro,0.0
+F1.04,F1,4,0xF104,"operation control \ 0 enough, host and auxiliary",,1,rw_stop,0.0
+F1.05,F1,5,0xF105,time 0~3600 min 240 0: Cancel the alternating,min,10,rw,240.0
+F1.06,F1,6,0xF106,small pump 0~6 \ 6 auxiliary drives. 0 means that,,1,rw,6.0
+F1.07,F1,7,0xF107,of adding ~ s adding pumps when the pumps pressure is not enough. 0：Controlled,s,10,rw,5.0
+F1.17,F1,17,0xF111,command start signal 1 1 parameters to choose how to,,1,rw,1.0
+F1.18,F1,18,0xF112,command 1：Multi-line 1 1 parameter to select the,,1,rw,1.0
+F2.00,F2,0,0xF200,feedback 0-2 / 0 2: -4.5V,,1,rw,0.0
+F2.01,F2,1,0xF201,correction - signal deviation coefficient Selection of 0:4-20mA,,1,rw,1.0
+F2.02,F2,2,0xF202,feedback 0-2 / 1 2: -4.5V,,1,rw,1.0
+F2.03,F2,3,0xF203,correction - signal deviation coefficient Motor,,1,rw,1.0
+F2.04,F2,4,0xF204,control 1：VF 1 1 1：AM-VF；,,1,rw_stop,1.0
+F2.05,F2,5,0xF205,source water supply / 8 Choose 5 for emergent,s,10,rw_stop,8.0
+F2.06,F2,6,0xF206,Lower limit of running frequency,Hz,100,rw,50.0
+F2.07,F2,7,0xF207,Maximum output frequency,Hz,100,rw,50.0
+F2.08,F2,8,0xF208,Upper limit of running frequency,Hz,100,rw,50.0
+F2.09,F2,9,0xF209,reaches the frequency \ 2,,1,rw,2.0
+F2.10,F2,10,0xF20A,Carrier frequency,kHz,10,rw,
+F2.11,F2,11,0xF20B,mode 1: Running \ 0,,1,rw,0.0
+F2.12,F2,12,0xF20C,the halt 1:Stop \ 0 mode of VFD.,,1,rw,0.0
+F2.13,F2,13,0xF20D,automatic 0~5 \ 3 E031) These are not affected reset failures by this function.,,1,rw,3.0
+F2.14,F2,14,0xF20E,carrier of the output 1001 0 improved,,1,rw,0.0
+F2.15,F2,15,0xF20F,0~ % % operating frequency of host(auxiliar constant speed mode.,0.0          %,1,rw,
+F3.00,F3,0,0xF300,Proportional gain,0.0     %,10,rw,20.0
+F3.01,F3,1,0xF301,Integral time,s,100,rw,1.0
+F3.02,F3,2,0xF302,time ~ s Start-up time,s,10,rw,0.0
+F3.03,F3,3,0xF303,of PID ~ s Deviation,s,10,rw,0.1
+F3.04,F3,4,0xF304,limit of PID ~ % control PID source 0: setting by keyboard,0.0      %,1,rw,0.0
+F3.05,F3,5,0xF305,setting 0~2 \ 0 1: setting by AI1 choice 2: setting by AI2,,1,rw,0.0
+F3.06,F3,6,0xF306,characteristi Tens: \ 0000 increases. c choice Reserved 0001: Negative control: When Hundreds: the feedback signal is bi,,1,rw,0.0
+F3.07,F3,7,0xF307,"detection ~ s still 0, the PID feedback time of PID disconnection fault is feedback reported. This function is",s,10,rw,30.0
+F3.08,F3,8,0xF308,function 1: Sleep mode 1 \ 1 pressure holding detection option 2: Sleep mode 2 time and the sleep rate are,,1,rw,1.0
+F3.09,F3,9,0xF309,detection ~ s PID wakeup detection delay delay,s,10,rw,3.0
+F3.10,F3,10,0xF30A,"detection ~ s value. If it enters standby in delay advance or it is started and stopped frequently, increase",s,10,rw,0.5
+F3.11,F3,11,0xF30B,deviation ~ bar within standby deviation,bar,10,rw,0.1
+F3.12,F3,12,0xF30C,"hold ~ Hz duration, PID enters standby",Hz,100,rw,20.0
+F3.13,F3,13,0xF30D,"hold ~ Hz duration, PID enters standby frequency status.",Hz,100,rw,20.0
+F3.14,F3,14,0xF30E,"operation 0~ s sleep, the running time of PID",s,10,rw,3.0
+F3.15,F3,15,0xF30F,Sleep detection (see manual),Hz,100,rw,
+F3.16,F3,16,0xF310,pumping ~ (%) the parameter is reused in the,,1,rw,30.0
+F3.17,F3,17,0xF311,Ratio 0~30 \ 9 Set bigger make sleep quicker,,1,rw,9.0
+F3.18,F3,18,0xF312,disconnected 0~ V the system. It is judged by the detection voltage. value,V,1,rw,0.2
+F3.19,F3,19,0xF313,gain 2 ~ % Integral time,0.0     %,1,rw,20.0
+F3.20,F3,20,0xF314,~ s,s,10,rw,2.0
+F4.00,F4,0,0xF400,"shortage 0~2 \ 2 frequency, pressure and current protection 2: Enabled. Judge by outlet pressure",bar,10,rw,2.0
+F4.01,F4,1,0xF401,~ bar only need to set parameters of,bar,10,rw,3.0
+F4.02,F4,2,0xF402,"water 0~ Hz When running frequency is shortage bigger than this frequency, it is protection judged as water shortage.",Hz,100,rw,48.0
+F4.03,F4,3,0xF403,water ~ s fault will be reported after this shortage time.,s,10,rw,60.0
+F4.04,F4,4,0xF404,shortage 0~ % current. When running current,0.0      %,1,rw,40.0
+F4.05,F4,5,0xF405,of water 0~9999 min 15 reset water shortage faults. If it shortage is not the “Set 0” protection,min,10,rw,15.0
+F4.06,F4,6,0xF406,"of water 0~9999 \ 10 reaches reset times, water shortage shortage fault can’t be cleared protection automatically. Press",,1,rw,10.0
+F4.07,F4,7,0xF407,pressure 0~ bar When the VFD detection,bar,10,rw,1.0
+F4.08,F4,8,0xF408,detect time 0~ s reset to E027. This is,s,10,rw,20.0
+F4.09,F4,9,0xF409,abnormal ~ s pressure alarm and failure pressure alarm alarm,s,10,rw,3.0
+F4.10,F4,10,0xF40A,operation Hz frequency frequency,Hz,100,rw,10.0
+F4.11,F4,11,0xF40B,running time 65000s/min s/min 60 .When the interval is set,s,10,rw,60.0
+F4.12,F4,12,0xF40C,operation 65000s/min s/min 300,s,10,rw,300.0
+F4.13,F4,13,0xF40D,time of burst 0~1000 s 0 starting pressure. It will report pipes E030 fault after the time of,s,10,rw,0.0
+F4.15,F4,15,0xF40F,Set“0”: The detection of burst pipes is invalid.,,1,rw,
+F5.00,F5,0,0xF500,The motor type 0～2 1 0 synchronous motor (PM) 2: Single-phase motor value of,,1,rw_stop,0.0
+F5.01,F5,1,0xF501,power ~ kW correspo nameplate.,kW,10,rw_stop,
+F5.02,F5,2,0xF502,voltage 1~440 V correspo nameplate. nding motor,V,100,rw_stop,
+F5.03,F5,3,0xF503,current 0.01A～50A / correspo nameplate.,0.01A,100,rw_stop,
+F5.04,F5,4,0xF504,frequency ~ Hz correspo nameplate.,Hz,100,rw_stop,
+F5.05,F5,5,0xF505,speed 1~36000 rpm correspo nameplate.,,1,rw_stop,
+F5.06,F5,6,0xF506,motor 2～48 4 Motor no-load,,1,rw_stop,4.0
+F5.07,F5,7,0xF507,current ～50.0A,0.0A,1,rw_stop,
+F5.08,F5,8,0xF508,Motor stator resistance,,1,rw_stop,
+F5.09,F5,9,0xF509,Motor rotor resistance,,1,rw_stop,
+F5.10,F5,10,0xF50A,Motor stator inductance,,1,rw_stop,
+F5.11,F5,11,0xF50B,rotor mutual inductance 6500.0mH,,1,rw_stop,
+F5.12,F5,12,0xF50C,parameters self-tuning,,1,rw_stop,0.0
+F7.00,F7,0,0xF700,input terminal,,1,rw_stop,1.0
+F7.01,F7,1,0xF701,input terminal resetting 11,,1,rw_stop,11.0
+F7.02,F7,2,0xF702,input terminal,,1,rw_stop,18.0
+F7.07,F7,7,0xF707,terminal 1 0: No function 1 2,,1,rw_stop,2.0
+F7.08,F7,8,0xF708,1 1 selection,,1,rw_stop,1.0
+F8.00,F8,0,0xF800,Communication address,,1,rw,1.0
+F8.01,F8,1,0xF801,Communication baud rate,,1,rw,5.0
+F8.02,F8,2,0xF802,"Data bit 2: Odd check \ 3 must be the same as check setting (8 ,0 ,1) the data bit check 3: No check setting of the PC.",,1,rw,3.0
+F8.03,F8,3,0xF803,Response 0~20 ms 2 delay RS485,ms,10,rw,2.0
+F8.04,F8,4,0xF804,Time out ~ s : The function is disabled. fault time,s,10,rw,0.0
+F8.05,F8,5,0xF805,current 0: 0.01A 1: 0.1A,0.01A,100,rw,0.0
+F9.00,F9,0,0xF900,Temperature of radiator,,1,ro,0.0
+F9.01,F9,1,0xF901,time of this 0~65535 min 0 VFD. (this is the VFD statistical time). Running,min,10,rw,0.0
+F9.12,F9,12,0xF90C,time of this 0~65535 min host drives The time is,min,10,ro,65535.0
+F9.13,F9,13,0xF90D,time of No. 0~65535 min the host and count the running time of each machine and 1 auxiliary auxiliary,min,10,ro,
+F9.14,F9,14,0xF90E,time of No. 0~65535 min 2 auxiliary,min,10,ro,65535.0
+F9.15,F9,15,0xF90F,time of No. 0~65535 min 3 auxiliary Running,min,10,ro,65535.0
+F9.16,F9,16,0xF910,time of No. 0~65535 min 4 auxiliary Running,min,10,ro,65535.0
+F9.17,F9,17,0xF911,time of No. 0~65535 min 5 auxiliary,min,10,ro,65535.0
+FD.00,FD,0,0xFD00,Password of the agent (group FD),,1,rw,0.0
+FD.01,FD,1,0xFD01,Restore factory defaults,,1,rw_stop,0.0
+FD.02,FD,2,0xFD02,Parameter locked,,1,rw,0.0
+FE.00,FE,0,0xFE00,Password (group FE),,1,rw,0.0
+FE.01,FE,1,0xFE01,Fault record display times,h,10,rw,0.0
+FE.02,FE,2,0xFE02,Power-on arrival time setting,h,10,rw,0.0
+FE.03,FE,3,0xFE03,Run time arrival setting,h,10,rw,0.0
+D0.00,D0,0,0x1001,Operating frequency,Hz,100,rw,
+D0.01,D0,1,0x1000,Setting frequency,Hz,100,rw,
+D0.02,D0,2,0x1002,Bus voltage 0.1V,0.1V,10,rw,
+D0.03,D0,3,0x1003,Output voltage 1V,,1,rw,
+D0.04,D0,4,0x1004,Output current 0.01A（>55Kw，0.1A）,0.01A,100,rw,
+D0.05,D0,5,0x1005,Output Power 0.1kW,0.1kW,10,rw,
+D0.06,D0,6,0x1006,Output torque %,0.1%,10,rw,
+D0.07,D0,7,0x1008,DI input status 1,,1,rw,
+D0.08,D0,8,0x1009,DO output status 1,,1,rw,
+D0.09,D0,9,0x100A,AI1 voltage 0.01V - 43 -,0.09                             A,1,rw,
+D0.10,D0,10,0x100B,AI2 voltage 0.01V,0.10                              A,10,rw,
+D0.11,D0,11,0x100C,Cumulative power-on time 1H,,1,rw,
+D0.12,D0,12,0x100D,Cumulative running time 1H,,1,rw,
+D0.13,D0,13,0x100E,Cumulative power consumption 1kWh,,1,rw,
+D0.14,D0,14,0x1007,Load speed 1RPM,,1,rw,
+D0.15,D0,15,0x100F,PID setting,0.1Bar,10,rw,
+D0.16,D0,16,0x1010,PID feedback,0.1Bar,10,rw,
+E0.00,E0,0,0xE000,Last fault type,,1,rw,
+E0.01,E0,1,0xE001,Frequency at the last fault,,1,rw,
+E0.02,E0,2,0xE002,Current at the last fault,,1,rw,
+E0.03,E0,3,0xE003,Bus voltage at the last fault,,1,ro,
+E0.04,E0,4,0xE004,input terminal status at the last fault,,1,rw,
+E0.05,E0,5,0xE005,Output terminal status at the last fault,,1,rw,
+E0.06,E0,6,0xE006,VFD status at the last fault,0.06                    V,1,rw,
+E0.07,E0,7,0xE007,Failure time at the last fault (Starting from this power-on) - 44 -,,1,rw,
+E0.08,E0,8,0xE008,Failure time at the last fault (Starting from the run),,1,rw,
+E0.09,E0,9,0xE009,Reserved,,1,rw,
+E0.10,E0,10,0xE00A,Reserved - 45 -,,1,rw,
