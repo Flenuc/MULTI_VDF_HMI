@@ -84,3 +84,16 @@ Electron define `MULTI_VDF_UI_DIR` al arrancar el backend.
 - BT Classic en Linux requiere BlueZ en el host (no va dentro del binario).
 - Drivers USB-UART del SO para modo USB.
 - AppImage: `chmod +x MULTI_VDF_HMI-*.AppImage && ./MULTI_VDF_HMI-*.AppImage`
+
+## Import / export JSON (listas de parámetros)
+
+En el pack Electron, la UI usa diálogos nativos vía `preload` + IPC:
+
+| Acción UI | Comportamiento desktop |
+|-----------|------------------------|
+| **Abrir JSON…** | `dialog.showOpenDialog` → lee `.json` del disco |
+| **Guardar como…** | `dialog.showSaveDialog` → escribe `.json` |
+| **Guardar en servidor** | API `PUT /param-lists/…` (carpeta `param_lists/`) |
+| **Export + servidor** | Guarda en disco y copia a `param_lists/` |
+
+En navegador (sin Electron): file picker HTML + descarga.

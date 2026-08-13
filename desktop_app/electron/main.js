@@ -5,11 +5,12 @@
  * 2) Waits for GET /health
  * 3) Opens BrowserWindow → http://127.0.0.1:8765 (API + static UI)
  */
-const { app, BrowserWindow, shell, dialog } = require("electron");
+const { app, BrowserWindow, shell, dialog, ipcMain } = require("electron");
 const { spawn } = require("child_process");
 const http = require("http");
 const path = require("path");
 const fs = require("fs");
+const fsp = fs.promises;
 
 const HOST = process.env.MULTI_VDF_HOST || "127.0.0.1";
 const PORT = parseInt(process.env.MULTI_VDF_PORT || "8765", 10);
@@ -176,6 +177,44 @@ function stopBackend() {
   backendProc = null;
 }
 
+function registerIpc() {
+  ipcMain.handle("dialog:openJson", async () => {
+    const win = BrowserWindow.getFocusedWindow() || mainWindow;
+    const res = await dialog.showOpenDialog(win || undefined, {
+      title: "Abrir lista de parámetros JSON",
+      filters: [
+        { name: "JSON", extensions: ["json"] },
+        { name: "Todos", extensions: ["*"] },
+      ],
+      properties: ["openFile"],
+    });
+    if (res.canceled || !res.filePaths?.[0]) return null;
+    const filePath = res.filePaths[0];
+    const text = await fsp.readFile(filePath, "utf8");
+    return { path: filePath, text };
+  });
+
+  ipcMain.handle("dialog:saveJson", async (_evt, opts = {}) => {
+    const win = BrowserWindow.getFocusedWindow() || mainWindow;
+    const defaultPath = opts.defaultPath || "lista.json";
+    const res = await dialog.showSaveDialog(win || undefined, {
+      title: "Guardar lista de parámetros JSON",
+      defaultPath: defaultPath.endsWith(".json")
+        ? defaultPath
+        : `${defaultPath}.json`,
+      filters: [
+        { name: "JSON", extensions: ["json"] },
+        { name: "Todos", extensions: ["*"] },
+      ],
+    });
+    if (res.canceled || !res.filePath) return null;
+    let out = res.filePath;
+    if (!out.toLowerCase().endsWith(".json")) out += ".json";
+    await fsp.writeFile(out, String(opts.content ?? ""), "utf8");
+    return { path: out };
+  });
+}
+
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
   app.quit();
@@ -189,6 +228,7 @@ if (!gotLock) {
 
   app.whenReady().then(async () => {
     try {
+      registerIpc();
       // Ensure UI dir exists for env (may be empty in pure-API dev)
       const ui = uiDir();
       if (!fs.existsSync(ui)) {
