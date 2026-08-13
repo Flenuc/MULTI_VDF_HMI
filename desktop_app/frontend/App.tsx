@@ -1,7 +1,6 @@
 /**
- * MULTI_VDF_HMI — React Native UI (parity with CustomTkinter)
- *
- * Backend: ./run_backend.sh  → http://127.0.0.1:8765
+ * VarioField — UI de producción (operarios de campo)
+ * Backend local Python: USB / red / Bluetooth → variador
  */
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -28,6 +27,14 @@ import {
   type ProfilesStore,
 } from "./src/api/client";
 import type { BtDevice, PortInfo, Telemetry, Transport } from "./src/api/types";
+import { BRAND } from "./src/config/brand";
+import { isProductionUi, setDevToolsUnlocked, showDevTools } from "./src/config/env";
+import { t } from "./src/i18n/es";
+import {
+  exportParamListJson,
+  importParamListJson,
+  isDesktopShell,
+} from "./src/lib/jsonFile";
 import {
   applyCompare,
   clearCompare,
@@ -41,41 +48,71 @@ import {
   validateParam,
   writable,
 } from "./src/lib/params";
-import {
-  exportParamListJson,
-  importParamListJson,
-  isDesktopShell,
-} from "./src/lib/jsonFile";
+import { isTutorialDone, setTutorialDone } from "./src/lib/prefs";
 
-type Tab = "connect" | "params" | "edge";
+type Tab = "connect" | "params" | "edge" | "help";
 type Mode = "mqtt" | "serial" | "bluetooth" | "ble" | "dummy";
 
-const MODES: { id: Mode; label: string; transport: Transport }[] = [
-  { id: "mqtt", label: "MQTT", transport: "mqtt" },
-  { id: "serial", label: "USB", transport: "serial" },
-  { id: "ble", label: "BLE NUS", transport: "ble" },
-  { id: "bluetooth", label: "BT SPP", transport: "bluetooth" },
-  { id: "dummy", label: "Simulado", transport: "dummy" },
+const MODE_DEFS: {
+  id: Mode;
+  label: string;
+  transport: Transport;
+  prod: boolean;
+}[] = [
+  { id: "mqtt", label: t.modeMqtt, transport: "mqtt", prod: true },
+  { id: "serial", label: t.modeUsb, transport: "serial", prod: true },
+  { id: "ble", label: t.modeBle, transport: "ble", prod: true },
+  { id: "bluetooth", label: t.modeBt, transport: "bluetooth", prod: true },
+  { id: "dummy", label: t.modeDummy, transport: "dummy", prod: false },
 ];
 
-const QUICK = [
-  "help",
-  "ping",
-  "stream on",
-  "stream off",
-  "wifi status",
-  "mqtt status",
-  "bt status",
-  "start",
-  "stop",
-];
+function userLogLine(raw: string): string | null {
+  const s = raw.trim();
+  if (!s) return null;
+  if (s.startsWith("CSV:")) return null; // dump noise
+  if (s === "WS backend OK" || s.startsWith("WS:")) return null;
+  if (s.startsWith("OK connected via")) {
+    return "Equipo conectado.";
+  }
+  if (s.startsWith("→ stream on") || s === "stream on") return "Lectura en vivo activada.";
+  if (s.startsWith("→ stream off")) return "Lectura en vivo en pausa.";
+  if (s.startsWith("→ dump")) return "Leyendo parámetros del variador…";
+  if (s.includes("Link OK")) return "El variador responde correctamente.";
+  if (s.includes("PING FAIL") || s.includes("Timeout")) {
+    return "El módulo responde, pero el variador no contesta (revisa el bus RS485).";
+  }
+  if (s.startsWith("ERR:")) return `Atención: ${s.replace(/^ERR:\s*/, "")}`;
+  if (s.startsWith("→ w")) return `Enviando ${s.slice(2).trim()}…`;
+  if (s.startsWith("→ ")) return s.slice(2);
+  if (s.startsWith("Import JSON") || s.startsWith("Export JSON") || s.startsWith("Guardado")) {
+    return s;
+  }
+  // Hide pure CLI dumps in production unless dev tools
+  if (showDevTools()) return s;
+  if (s.startsWith("help |") || s.startsWith("board=") || s.startsWith("mqtt enabled")) {
+    return s.length > 120 ? s.slice(0, 117) + "…" : s;
+  }
+  if (s.startsWith("status=") || s.startsWith("freq=") || s.startsWith("P0-") || s.startsWith("P1-")) {
+    return s;
+  }
+  if (s.startsWith("DUMP") || s.startsWith("stream ON") || s.startsWith("stream OFF")) {
+    return s.includes("ON")
+      ? "Lectura en vivo activada."
+      : s.includes("OFF")
+        ? "Lectura en vivo en pausa."
+        : s;
+  }
+  return s.length > 160 ? s.slice(0, 157) + "…" : s;
+}
 
 export default function App() {
+  const dev = showDevTools();
+  const [devTick, setDevTick] = useState(0); // re-render when unlocking dev tools
   const [tab, setTab] = useState<Tab>("connect");
   const [backendOk, setBackendOk] = useState<boolean | null>(null);
   const [wsState, setWsState] = useState<"open" | "close" | "error" | "idle">("idle");
   const [connected, setConnected] = useState(false);
-  const [statusMsg, setStatusMsg] = useState("Desconectado");
+  const [statusMsg, setStatusMsg] = useState(t.statusOffline);
   const [mode, setMode] = useState<Mode>("mqtt");
   const [ports, setPorts] = useState<PortInfo[]>([]);
   const [port, setPort] = useState("");
@@ -89,13 +126,12 @@ export default function App() {
   const [telemetry, setTelemetry] = useState<Telemetry>({});
   const [log, setLog] = useState<string[]>([]);
   const [cmd, setCmd] = useState("");
+  const [showAdvancedCmd, setShowAdvancedCmd] = useState(false);
 
-  // profiles
   const [profiles, setProfiles] = useState<ProfilesStore | null>(null);
   const [mqttName, setMqttName] = useState("");
   const [wifiName, setWifiName] = useState("");
 
-  // param list
   const [plist, setPlist] = useState<ParameterList>(emptyList());
   const [listFile, setListFile] = useState("ejemplo_pdm30.json");
   const [listFiles, setListFiles] = useState<ParamFileInfo[]>([]);
@@ -106,14 +142,10 @@ export default function App() {
   const [edNotes, setEdNotes] = useState("");
   const [edManual, setEdManual] = useState(false);
 
-  // compare dump
-  const dumpActive = useRef(false);
-  const dumpMap = useRef<Record<string, number>>({});
-  const dumpCount = useRef(0);
-  const logRef = useRef<ScrollView>(null);
-
-  // profile modal forms
   const [showProfiles, setShowProfiles] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const [showAbout, setShowAbout] = useState(false);
   const [mForm, setMForm] = useState({
     name: "Local",
     host: "127.0.0.1",
@@ -122,12 +154,23 @@ export default function App() {
     username: "",
     password: "",
   });
-  const [wForm, setWForm] = useState({ name: "home", ssid: "", password: "" });
+  const [wForm, setWForm] = useState({ name: "planta", ssid: "", password: "" });
+
+  const dumpActive = useRef(false);
+  const dumpMap = useRef<Record<string, number>>({});
+  const dumpCount = useRef(0);
+  const logRef = useRef<ScrollView>(null);
+  const plistRef = useRef(plist);
+  useEffect(() => {
+    plistRef.current = plist;
+  }, [plist]);
 
   const pushLog = useCallback((line: string) => {
+    const pretty = userLogLine(line);
+    if (pretty == null) return;
     setLog((prev) => {
-      const next = [...prev, line];
-      return next.length > 500 ? next.slice(-500) : next;
+      const next = [...prev, pretty];
+      return next.length > 200 ? next.slice(-200) : next;
     });
   }, []);
 
@@ -142,19 +185,18 @@ export default function App() {
   const beginOp = useCallback(
     (name: string) => {
       if (busy) {
-        Alert.alert("Ocupado", `Operación en curso: ${opName}`);
+        Alert.alert("Ocupado", `Hay una operación en curso: ${opName}`);
         return false;
       }
       setBusy(true);
       setOpName(name);
       setProgress(0.05);
-      setStatusMsg(`Operación: ${name}…`);
+      setStatusMsg(`Trabajando: ${name}…`);
       return true;
     },
     [busy, opName]
   );
 
-  // --- backend + ws ---
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -169,11 +211,13 @@ export default function App() {
           if (pr.last_serial_port) setPort(pr.last_serial_port);
           if (pr.last_bt_address) setBtAddress(pr.last_bt_address);
           const m = (pr.last_mode || "").toLowerCase();
-          if (m.includes("usb") || m.includes("serial")) setMode("serial");
-          else if (m.includes("ble") || m.includes("nus") || m.includes("le"))
+          if (m.includes("usb") || m.includes("serial") || m.includes("cable"))
+            setMode("serial");
+          else if (m.includes("ble") || m.includes("nus") || m.includes("pantalla"))
             setMode("ble");
           else if (m.includes("spp") || m.includes("bluetooth")) setMode("bluetooth");
-          else if (m.includes("simul") || m.includes("dummy")) setMode("dummy");
+          else if (m.includes("simul") || m.includes("dummy") || m.includes("prueba"))
+            setMode(showDevTools() ? "dummy" : "mqtt");
           else setMode("mqtt");
         }
         const files = await api.paramListFiles();
@@ -189,7 +233,14 @@ export default function App() {
           }
         }
       } catch {
-        if (!cancelled) setBackendOk(false);
+        if (!cancelled) {
+          setBackendOk(false);
+          setStatusMsg(t.statusServiceError);
+        }
+      }
+      if (!cancelled && !isTutorialDone()) {
+        setShowTutorial(true);
+        setTutorialStep(0);
       }
     })();
 
@@ -201,8 +252,8 @@ export default function App() {
           if (dumpActive.current) {
             if (line.startsWith("ERR:")) {
               dumpActive.current = false;
-              endOp(`Comparar abortado: ${line}`);
-              Alert.alert("Comparar", line);
+              endOp("No se pudo leer el variador.");
+              Alert.alert("Comparar", "El equipo reportó un error al leer parámetros.");
               return;
             }
             const parsed = parseDumpCsvLine(line);
@@ -210,19 +261,28 @@ export default function App() {
               dumpMap.current[`${parsed.group}:${parsed.index}`] = parsed.eng;
               dumpCount.current += 1;
               setProgress(Math.min(0.95, 0.1 + dumpCount.current / 100));
-              setOpName(`compare ${dumpCount.current}/96`);
+              setOpName(`Leyendo ${dumpCount.current}…`);
             }
             if (line.includes("DUMP done") || line.startsWith("CSV:END")) {
               dumpActive.current = false;
-              const { list, mismatches } = applyCompare(plistRef.current, dumpMap.current);
+              const { list, mismatches } = applyCompare(
+                plistRef.current,
+                dumpMap.current
+              );
               setPlist(list);
               setProgress(1);
               endOp(
-                `Comparación: ${mismatches} dif. / ${list.parameters.length} (${Object.keys(dumpMap.current).length} leídos)`
+                mismatches === 0
+                  ? "Receta y variador coinciden."
+                  : `${mismatches} diferencia(s) respecto al variador.`
               );
               Alert.alert(
-                "Comparar con VDF",
-                `${mismatches} diferencias o no leídos / ${list.parameters.length}\nRegistros dump: ${Object.keys(dumpMap.current).length}`
+                "Comparación terminada",
+                mismatches === 0
+                  ? "Todo coincide con la receta."
+                  : `Hay ${mismatches} diferencia(s) o valores sin lectura.\n` +
+                      `Leídos del variador: ${Object.keys(dumpMap.current).length}.\n` +
+                      "Las filas en rojo marcan problemas."
               );
             }
           }
@@ -232,39 +292,39 @@ export default function App() {
           const st = String(ev.payload || "");
           const msg = String((ev.meta && ev.meta.message) || "");
           setConnected(st === "connected");
-          if (msg) setStatusMsg(msg);
-          if (st !== "connected" && busy) {
-            endOp(`Conexión: ${st}`);
-          }
+          if (st === "connected") setStatusMsg(msg || t.statusOnline);
+          else if (msg) setStatusMsg(msg);
+          else setStatusMsg(t.statusOffline);
+          if (st !== "connected" && busy) endOp("Se perdió la conexión con el equipo.");
         } else if (ev.type === "error") {
           pushLog(`ERR: ${String(ev.payload)}`);
-          if (busy) endOp(`Error: ${ev.payload}`);
-        } else if (ev.type === "hello") {
-          pushLog("WS backend OK");
+          if (busy) endOp("Error de comunicación.");
         }
       },
-      (s) => setWsState(s)
+      (s) => {
+        setWsState(s);
+        if (s === "error" || s === "close") {
+          if (isProductionUi() && !showDevTools()) {
+            /* soft: backend badge handles it */
+          }
+        }
+      }
     );
     return () => {
       cancelled = true;
       ws.close();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // keep latest plist for dump finish callback
-  const plistRef = useRef(plist);
-  useEffect(() => {
-    plistRef.current = plist;
-  }, [plist]);
+  }, [devTick]);
 
   const refreshPorts = useCallback(async () => {
     try {
       const list = await api.ports();
       setPorts(list);
-      if (list.length && !port) setPort(list[0].device);
+      if (list.length === 1) setPort(list[0].device);
+      else if (list.length && !port) setPort(list[0].device);
     } catch (e) {
-      pushLog(`ports: ${e}`);
+      pushLog(`No se pudieron listar cables: ${e}`);
     }
   }, [port, pushLog]);
 
@@ -272,19 +332,33 @@ export default function App() {
     if (mode === "serial") refreshPorts();
   }, [mode, refreshPorts]);
 
+  const modesVisible = useMemo(
+    () => MODE_DEFS.filter((m) => m.prod || dev),
+    [dev]
+  );
+
+  const linkLabel = useMemo(() => {
+    if (backendOk === false) return t.statusServiceError;
+    if (wsState === "error") return t.statusLinkError;
+    if (connected) return t.statusOnline;
+    return t.statusOffline;
+  }, [backendOk, wsState, connected]);
+
   const scanBt = async () => {
     setScanning(true);
-    pushLog(mode === "ble" ? "Escaneando BLE…" : "Escaneando BT Classic…");
+    pushLog("Buscando equipos Bluetooth…");
     try {
       const devs = mode === "ble" ? await api.btBle(8) : await api.btClassic(10);
       setBtDevices(devs);
       if (devs.length) {
-        const saj = devs.find((d) => /SAJ|PDM/i.test(d.name)) || devs[0];
+        const saj = devs.find((d) => /SAJ|PDM|VARIO|EDGE/i.test(d.name)) || devs[0];
         setBtAddress(saj.address);
-        pushLog(`BT: ${devs.length} dispositivo(s)`);
-      } else pushLog("BT: ninguno");
+        pushLog(`Encontrados ${devs.length} equipo(s).`);
+      } else {
+        pushLog("No se encontró ningún equipo. Acércalo y vuelve a buscar.");
+      }
     } catch (e) {
-      pushLog(`BT: ${e}`);
+      pushLog(`Búsqueda Bluetooth: ${e}`);
     } finally {
       setScanning(false);
     }
@@ -292,14 +366,17 @@ export default function App() {
 
   const doConnect = async () => {
     setBusy(true);
-    setOpName("connect");
+    setOpName("Conectar");
     try {
-      const m = MODES.find((x) => x.id === mode)!;
+      const m = MODE_DEFS.find((x) => x.id === mode)!;
       let body: Parameters<typeof api.connect>[0];
       if (mode === "serial") {
+        if (!port || port === "—") {
+          throw new Error("No hay cable detectado. Conéctalo y pulsa Actualizar cables.");
+        }
         body = {
           transport: "serial",
-          port: port || "/dev/ttyACM0",
+          port,
           baud: parseInt(baud, 10) || 115200,
         };
         await api.patchLasts({
@@ -311,7 +388,11 @@ export default function App() {
         const pr = profiles || (await api.profiles());
         const mp =
           pr.mqtt_profiles.find((p) => p.name === mqttName) || pr.mqtt_profiles[0];
-        if (!mp?.host) throw new Error("Crea un perfil MQTT (pestaña Edge)");
+        if (!mp?.host) {
+          throw new Error(
+            "Falta un perfil de red. Ve a “Red del equipo” y crea uno con la IP del broker."
+          );
+        }
         body = {
           transport: "mqtt",
           host: mp.host,
@@ -322,7 +403,9 @@ export default function App() {
         };
         await api.patchLasts({ last_mode: "MQTT", last_mqtt: mp.name });
       } else if (mode === "bluetooth" || mode === "ble") {
-        if (!btAddress) throw new Error("Escanea y elige un dispositivo BT");
+        if (!btAddress) {
+          throw new Error("Pulsa “Buscar equipos” y elige el módulo en la lista.");
+        }
         body = { transport: m.transport, address: btAddress, pair: true };
         await api.patchLasts({
           last_mode: mode === "ble" ? "Bluetooth LE (NUS)" : "Bluetooth (SPP)",
@@ -332,11 +415,10 @@ export default function App() {
         body = { transport: "dummy" };
         await api.patchLasts({ last_mode: "Simulado (Dummy)" });
       }
-      const r = await api.connect(body);
-      pushLog(`OK ${r.detail}`);
+      await api.connect(body);
+      pushLog("OK connected via ok");
       setConnected(true);
-      setStatusMsg("Conectado — stream on…");
-      // delayed stream on (USB may reset MCU)
+      setStatusMsg(t.statusOnline);
       const delay =
         mode === "serial" ? 2500 : mode === "bluetooth" || mode === "ble" ? 1500 : 800;
       setTimeout(async () => {
@@ -344,12 +426,12 @@ export default function App() {
           await api.command("stream on");
           pushLog("→ stream on");
         } catch (e) {
-          pushLog(`stream on: ${e}`);
+          pushLog(`No se pudo activar la lectura en vivo: ${e}`);
         }
       }, delay);
     } catch (e) {
-      pushLog(`Connect: ${e}`);
-      Alert.alert("Conexión", String(e));
+      pushLog(String(e));
+      Alert.alert("No se pudo conectar", String(e));
       setConnected(false);
     } finally {
       setBusy(false);
@@ -366,10 +448,10 @@ export default function App() {
       }
       await api.disconnect();
       setConnected(false);
-      setStatusMsg("Desconectado");
-      pushLog("Desconectado");
+      setStatusMsg(t.statusOffline);
+      pushLog("Desconectado del equipo.");
     } catch (e) {
-      pushLog(`Disconnect: ${e}`);
+      pushLog(String(e));
     }
   };
 
@@ -377,7 +459,7 @@ export default function App() {
     const text = (line ?? cmd).trim();
     if (!text) return;
     if (!connected) {
-      Alert.alert("Sin conexión", "Conecta primero.");
+      Alert.alert("Sin conexión", "Conecta el equipo primero.");
       return;
     }
     pushLog(`→ ${text}`);
@@ -385,7 +467,7 @@ export default function App() {
       await api.command(text);
       if (!line) setCmd("");
     } catch (e) {
-      pushLog(`cmd: ${e}`);
+      pushLog(String(e));
     }
   };
 
@@ -395,9 +477,9 @@ export default function App() {
       setListFile(r.filename);
       setPlist(r.list);
       setSelectedKey(null);
-      setStatusMsg(`Cargado ${r.filename}`);
+      setStatusMsg(`Receta cargada: ${r.list.name || r.filename}`);
     } catch (e) {
-      Alert.alert("Abrir lista", String(e));
+      Alert.alert("Abrir receta", String(e));
     }
   };
 
@@ -407,16 +489,14 @@ export default function App() {
       const r = await api.putParamList(name, plist);
       setListFile(r.filename);
       setPlist(r.list);
-      const files = await api.paramListFiles();
-      setListFiles(files.files);
-      setStatusMsg(`Guardado en servidor: ${r.filename}`);
-      pushLog(`Guardado servidor ${r.filename}`);
+      setListFiles((await api.paramListFiles()).files);
+      setStatusMsg(`Receta guardada en el PC: ${r.filename}`);
+      pushLog(`Guardado ${r.filename}`);
     } catch (e) {
       Alert.alert("Guardar", String(e));
     }
   };
 
-  /** Import JSON from disk (Electron dialog or browser file picker). */
   const importJson = async () => {
     try {
       const r = await importParamListJson();
@@ -424,25 +504,13 @@ export default function App() {
       setPlist(r.list);
       setListFile(r.filename.endsWith(".json") ? r.filename : `${r.filename}.json`);
       setSelectedKey(null);
-      setStatusMsg(
-        r.path
-          ? `Importado ${r.path}`
-          : `Importado ${r.filename} (${r.list.parameters.length} params)`
-      );
-      pushLog(
-        `Import JSON: ${r.filename} — ${r.list.parameters.length} parámetros` +
-          (r.path ? ` (${r.path})` : "")
-      );
+      setStatusMsg(`Archivo abierto: ${r.filename}`);
+      pushLog(`Import JSON: ${r.filename} — ${r.list.parameters.length} parámetros`);
     } catch (e) {
-      Alert.alert("Importar JSON", String(e));
+      Alert.alert("Abrir archivo", String(e));
     }
   };
 
-  /**
-   * Export / Guardar como JSON en disco.
-   * Desktop: native save dialog. Web: download del navegador.
-   * Optionally also copies into backend param_lists/.
-   */
   const exportJson = async (alsoServer = false) => {
     try {
       const defaultName =
@@ -452,25 +520,21 @@ export default function App() {
       if (r.path) {
         const base = r.path.split(/[/\\]/).pop() || defaultName;
         setListFile(base);
-        setStatusMsg(`Exportado a ${r.path}`);
+        setStatusMsg(`Guardado en: ${r.path}`);
         pushLog(`Export JSON → ${r.path}`);
       } else if (r.downloaded) {
-        setStatusMsg(`Descarga JSON: ${defaultName}`);
+        setStatusMsg(`Descarga iniciada: ${defaultName}`);
         pushLog(`Export JSON (descarga) ${defaultName}`);
       }
       if (alsoServer) {
         const name =
-          (r.path && r.path.split(/[/\\]/).pop()) ||
-          listFile ||
-          defaultName;
+          (r.path && r.path.split(/[/\\]/).pop()) || listFile || defaultName;
         await api.putParamList(name, plist);
-        const files = await api.paramListFiles();
-        setListFiles(files.files);
+        setListFiles((await api.paramListFiles()).files);
         setListFile(name);
-        pushLog(`También guardado en servidor: ${name}`);
       }
     } catch (e) {
-      Alert.alert("Exportar JSON", String(e));
+      Alert.alert("Guardar como", String(e));
     }
   };
 
@@ -485,9 +549,9 @@ export default function App() {
       };
       validateParam(p);
       setPlist((pl) => upsertParam(pl, p));
-      setStatusMsg(`Guardado ${paramId(p)} = ${p.value}`);
+      setStatusMsg(`Parámetro ${paramId(p)} actualizado`);
     } catch (e) {
-      Alert.alert("Validación", String(e));
+      Alert.alert("Dato no válido", String(e));
     }
   };
 
@@ -515,17 +579,17 @@ export default function App() {
     setEdManual(!!p.manual_only);
   };
 
-  const syncVfd = async () => {
+  const runSync = async () => {
     if (!connected) {
-      Alert.alert("Sync", "Sin conexión");
+      Alert.alert("Sin conexión", "Conecta el equipo primero.");
       return;
     }
     const items = writable(plist);
     if (!items.length) {
-      Alert.alert("Sync", "No hay parámetros enviables");
+      Alert.alert("Nada que enviar", "No hay parámetros enviables en esta receta.");
       return;
     }
-    if (!beginOp("sync")) return;
+    if (!beginOp("Enviar receta")) return;
     try {
       const total = items.length;
       for (let i = 0; i < total; i++) {
@@ -534,26 +598,52 @@ export default function App() {
         await api.command(c);
         pushLog(`→ ${c}`);
         setProgress((i + 1) / total);
-        setStatusMsg(`Sync ${i + 1}/${total}`);
+        setStatusMsg(`Enviando ${i + 1} de ${total}…`);
         await sleep(150);
       }
-      endOp("Sincronización enviada");
+      endOp("Receta enviada al variador.");
+      Alert.alert("Listo", "Los parámetros se enviaron al variador.");
     } catch (e) {
-      endOp(`Sync error: ${e}`);
-      Alert.alert("Sync", String(e));
+      endOp("El envío se interrumpió.");
+      Alert.alert("Envío interrumpido", String(e));
     }
+  };
+
+  /** Sync allowed without compare — soft recommendation dialog */
+  const syncVfd = () => {
+    if (!connected) {
+      Alert.alert("Sin conexión", "Conecta el equipo primero.");
+      return;
+    }
+    const items = writable(plist);
+    const skipped = plist.parameters.length - items.length;
+    Alert.alert(t.syncTitle, t.syncBody(items.length, skipped), [
+      { text: t.syncCancel, style: "cancel" },
+      {
+        text: t.syncRecommendCompare,
+        onPress: () => {
+          compareVfd();
+        },
+      },
+      {
+        text: t.syncSendAnyway,
+        onPress: () => {
+          runSync();
+        },
+      },
+    ]);
   };
 
   const compareVfd = async () => {
     if (!connected) {
-      Alert.alert("Comparar", "Sin conexión");
+      Alert.alert("Sin conexión", "Conecta el equipo primero.");
       return;
     }
     if (!plist.parameters.length) {
-      Alert.alert("Comparar", "Lista vacía");
+      Alert.alert("Receta vacía", "Abre o crea una receta antes de comparar.");
       return;
     }
-    if (!beginOp("compare")) return;
+    if (!beginOp("Comparar")) return;
     dumpActive.current = true;
     dumpMap.current = {};
     dumpCount.current = 0;
@@ -563,40 +653,107 @@ export default function App() {
       pushLog("→ stream off");
       await api.command("dump");
       pushLog("→ dump");
-      setStatusMsg("Comparando (dump en curso)…");
-      // safety timeout 120s
+      setStatusMsg("Leyendo el variador para comparar…");
       setTimeout(() => {
         if (dumpActive.current) {
           dumpActive.current = false;
-          const { list, mismatches } = applyCompare(plistRef.current, dumpMap.current);
+          const { list, mismatches } = applyCompare(
+            plistRef.current,
+            dumpMap.current
+          );
           setPlist(list);
           endOp(
-            `Timeout compare: ${mismatches} dif. / ${Object.keys(dumpMap.current).length} leídos`
+            `Comparación incompleta: ${mismatches} diferencia(s), ${Object.keys(dumpMap.current).length} leídos.`
           );
           Alert.alert(
-            "Timeout",
-            "El dump no terminó a tiempo. Se aplicó comparación parcial."
+            "Tiempo agotado",
+            "La lectura no terminó a tiempo. Se muestran las diferencias parciales. Puedes reintentar."
           );
         }
       }, 120000);
     } catch (e) {
       dumpActive.current = false;
-      endOp(`No se pudo iniciar dump: ${e}`);
+      endOp("No se pudo iniciar la comparación.");
       Alert.alert("Comparar", String(e));
     }
   };
 
-  const reloadProfiles = async () => {
+  const applyWifiToEdge = async () => {
+    if (!connected) {
+      Alert.alert("Sin conexión", "Conecta el módulo primero (cable, red o Bluetooth).");
+      return;
+    }
+    const pr = profiles || (await api.profiles());
+    const wp = pr.wifi_profiles.find((p) => p.name === wifiName) || pr.wifi_profiles[0];
+    if (!wp) {
+      Alert.alert("Falta perfil Wi‑Fi", "Crea uno en “Crear o editar perfiles”.");
+      return;
+    }
+    if (/\s/.test(wp.ssid) || (wp.password && /\s/.test(wp.password))) {
+      Alert.alert(
+        "Revisa el perfil",
+        "El nombre de red (SSID) y la contraseña no deben tener espacios."
+      );
+      return;
+    }
+    const pwd = wp.password || '""';
     try {
-      const pr = await api.profiles();
-      setProfiles(pr);
+      await api.command(`wifi profile save ${wp.name} ${wp.ssid} ${pwd}`);
+      await api.command(`wifi profile use ${wp.name}`);
+      pushLog(`→ wifi profile use ${wp.name}`);
+      await api.patchLasts({ last_wifi: wp.name });
+      Alert.alert(
+        "Wi‑Fi enviado",
+        `El módulo intentará unirse a “${wp.ssid}”.\nEspera unos segundos y revisa el estado Wi‑Fi.`
+      );
     } catch (e) {
-      pushLog(`profiles: ${e}`);
+      Alert.alert("No se pudo enviar el Wi‑Fi", String(e));
+    }
+  };
+
+  const applyMqttToEdge = async () => {
+    if (!connected) {
+      Alert.alert("Sin conexión", "Conecta el módulo primero.");
+      return;
+    }
+    const pr = profiles || (await api.profiles());
+    const mp = pr.mqtt_profiles.find((p) => p.name === mqttName) || pr.mqtt_profiles[0];
+    if (!mp) {
+      Alert.alert("Falta perfil de red", "Crea un perfil MQTT en “Crear o editar perfiles”.");
+      return;
+    }
+    if (mp.host === "127.0.0.1" || mp.host === "localhost") {
+      Alert.alert(
+        "Revisa la dirección",
+        "Desde el módulo, “localhost” es el propio módulo, no este PC.\n" +
+          "Usa la IP del PC o del servidor en la red de planta (ej. 192.168.x.x)."
+      );
+      // still allow continue after dismiss — user may know better; we only warn
+    }
+    try {
+      await api.command(`mqtt set ${mp.host} ${mp.port}`);
+      if (mp.username) {
+        await api.command(`mqtt user ${mp.username} ${mp.password || '""'}`);
+      }
+      await api.command("mqtt enable");
+      pushLog(`→ mqtt set ${mp.host}:${mp.port}`);
+      await api.patchLasts({ last_mqtt: mp.name });
+      Alert.alert(
+        "Red MQTT enviada",
+        `Broker “${mp.name}” (${mp.host}:${mp.port}) configurado en el módulo.\n` +
+          "Luego puedes conectar la app en modo “Por red (Wi‑Fi)” con el mismo perfil."
+      );
+    } catch (e) {
+      Alert.alert("No se pudo configurar la red", String(e));
     }
   };
 
   const saveMqttProfile = async () => {
     try {
+      if (!mForm.host.trim()) {
+        Alert.alert("Falta el host", "Indica la IP o nombre del broker.");
+        return;
+      }
       const pr = await api.upsertMqtt({
         name: mForm.name.trim() || "mqtt",
         host: mForm.host.trim(),
@@ -607,14 +764,22 @@ export default function App() {
       });
       setProfiles(pr);
       setMqttName(mForm.name.trim() || "mqtt");
-      Alert.alert("MQTT", "Perfil guardado");
+      Alert.alert("Perfil guardado", "Ya puedes usarlo al conectar o enviarlo al módulo.");
     } catch (e) {
-      Alert.alert("MQTT", String(e));
+      Alert.alert("No se pudo guardar", String(e));
     }
   };
 
   const saveWifiProfile = async () => {
     try {
+      if (!wForm.ssid.trim()) {
+        Alert.alert("Falta el SSID", "Indica el nombre exacto de la red Wi‑Fi.");
+        return;
+      }
+      if (/\s/.test(wForm.ssid) || (wForm.password && /\s/.test(wForm.password))) {
+        Alert.alert("Sin espacios", "SSID y contraseña no deben llevar espacios.");
+        return;
+      }
       const pr = await api.upsertWifi({
         name: wForm.name.trim() || "wifi",
         ssid: wForm.ssid.trim(),
@@ -622,103 +787,108 @@ export default function App() {
       });
       setProfiles(pr);
       setWifiName(wForm.name.trim() || "wifi");
-      Alert.alert("Wi‑Fi", "Perfil guardado en PC");
+      Alert.alert("Perfil Wi‑Fi guardado", "Úsalo en “Enviar Wi‑Fi al módulo”.");
     } catch (e) {
-      Alert.alert("Wi‑Fi", String(e));
+      Alert.alert("No se pudo guardar", String(e));
     }
   };
 
-  const applyWifiToEdge = async () => {
-    if (!connected) {
-      Alert.alert("Edge", "Conecta primero");
-      return;
-    }
-    const pr = profiles || (await api.profiles());
-    const wp = pr.wifi_profiles.find((p) => p.name === wifiName) || pr.wifi_profiles[0];
-    if (!wp) {
-      Alert.alert("Wi‑Fi", "Crea un perfil Wi‑Fi");
-      return;
-    }
-    const pwd = wp.password || '""';
-    try {
-      await api.command(`wifi profile save ${wp.name} ${wp.ssid} ${pwd}`);
-      await api.command(`wifi profile use ${wp.name}`);
-      pushLog(`→ wifi profile use ${wp.name}`);
-      await api.patchLasts({ last_wifi: wp.name });
-      Alert.alert("OK", `Wi‑Fi «${wp.name}» enviado al Edge`);
-    } catch (e) {
-      Alert.alert("Error", String(e));
-    }
+  const openTutorial = () => {
+    setTutorialStep(0);
+    setShowTutorial(true);
   };
 
-  const applyMqttToEdge = async () => {
-    if (!connected) {
-      Alert.alert("Edge", "Conecta primero");
-      return;
-    }
-    const pr = profiles || (await api.profiles());
-    const mp = pr.mqtt_profiles.find((p) => p.name === mqttName) || pr.mqtt_profiles[0];
-    if (!mp) {
-      Alert.alert("MQTT", "Crea un perfil MQTT");
-      return;
-    }
-    try {
-      await api.command(`mqtt set ${mp.host} ${mp.port}`);
-      if (mp.username) {
-        await api.command(`mqtt user ${mp.username} ${mp.password || '""'}`);
-      }
-      await api.command("mqtt enable");
-      pushLog(`→ mqtt set ${mp.host}:${mp.port}`);
-      await api.patchLasts({ last_mqtt: mp.name });
-      Alert.alert("OK", `Broker «${mp.name}» en el Edge`);
-    } catch (e) {
-      Alert.alert("Error", String(e));
-    }
+  const finishTutorial = (markDone: boolean) => {
+    if (markDone) setTutorialDone(true);
+    setShowTutorial(false);
   };
 
   const telCards = useMemo(
     () => [
-      { k: "freq", label: "Freq", u: "Hz", v: telemetry.freq },
-      { k: "amp", label: "I", u: "A", v: telemetry.amp },
-      { k: "vdc", label: "Vbus", u: "V", v: telemetry.vdc },
-      { k: "vout", label: "Vout", u: "V", v: telemetry.vout },
-      { k: "pfb", label: "P real", u: "bar", v: telemetry.pfb },
-      { k: "pset", label: "P set", u: "bar", v: telemetry.pset },
-      { k: "status", label: "Estado", u: "", v: telemetry.status },
+      { k: "freq", label: t.telFreq, u: "Hz", v: telemetry.freq },
+      { k: "amp", label: t.telAmp, u: "A", v: telemetry.amp },
+      { k: "vdc", label: t.telVdc, u: "V", v: telemetry.vdc },
+      { k: "vout", label: t.telVout, u: "V", v: telemetry.vout },
+      { k: "pfb", label: t.telPfb, u: "bar", v: telemetry.pfb },
+      { k: "pset", label: t.telPset, u: "bar", v: telemetry.pset },
+      { k: "status", label: t.telStatus, u: "", v: telemetry.status },
     ],
     [telemetry]
   );
+
+  const quickActions = [
+    { label: t.actCheckDrive, cmd: "ping" },
+    { label: t.actLiveOn, cmd: "stream on" },
+    { label: t.actLiveOff, cmd: "stream off" },
+    { label: t.actStart, cmd: "start" },
+    { label: t.actStop, cmd: "stop" },
+    { label: t.actWifiInfo, cmd: "wifi status" },
+    { label: t.actMqttInfo, cmd: "mqtt status" },
+  ];
+
+  // force re-read showDevTools after unlock
+  void devTick;
 
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar style="light" />
       <View style={styles.header}>
-        <Text style={styles.title}>MULTI_VDF_HMI</Text>
-        <Text style={styles.sub}>{apiBase()}</Text>
-        <View style={styles.row}>
-          <Badge ok={backendOk === true} label={backendOk ? "API" : "API off"} />
-          <Badge ok={wsState === "open"} label={`WS ${wsState}`} />
-          <Badge ok={connected} label={connected ? "Link" : "Offline"} />
-          {busy ? <Badge ok={false} label={opName || "…"} /> : null}
+        <View style={styles.brandRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>{BRAND.name}</Text>
+            <Text style={styles.tagline}>{BRAND.tagline}</Text>
+          </View>
+          <Pressable style={styles.helpBtn} onPress={() => setTab("help")}>
+            <Text style={styles.helpBtnText}>?</Text>
+          </Pressable>
         </View>
-        <Text style={styles.muted}>{statusMsg}</Text>
+
+        <View style={styles.row}>
+          <Badge
+            ok={connected}
+            warn={backendOk === false || wsState === "error"}
+            label={
+              connected
+                ? "● Equipo conectado"
+                : backendOk === false
+                  ? "● Servicio no disponible"
+                  : "● Sin conexión al equipo"
+            }
+          />
+          {busy ? <Badge ok={false} warn label={`⏳ ${opName || "…"}`} /> : null}
+        </View>
+        <Text style={styles.statusLine} numberOfLines={2}>
+          {statusMsg || linkLabel}
+        </Text>
+        {dev ? (
+          <Text style={styles.devHint}>
+            Diagnóstico: {apiBase()} · WS {wsState}
+          </Text>
+        ) : null}
+
         {busy ? (
           <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
+            <View
+              style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]}
+            />
           </View>
         ) : null}
+
         <View style={styles.tabs}>
           {(
             [
-              ["connect", "Conexión"],
-              ["params", "Parámetros"],
-              ["edge", "Edge / Perfiles"],
+              ["connect", t.tabConnect],
+              ["params", t.tabParams],
+              ["edge", t.tabEdge],
+              ["help", t.tabHelp],
             ] as const
           ).map(([id, lab]) => (
             <Pressable
               key={id}
               onPress={() => setTab(id)}
               style={[styles.tab, tab === id && styles.tabOn]}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: tab === id }}
             >
               <Text style={styles.tabText}>{lab}</Text>
             </Pressable>
@@ -733,9 +903,9 @@ export default function App() {
       >
         {tab === "connect" && (
           <>
-            <Text style={styles.section}>Modo</Text>
+            <Text style={styles.section}>¿Cómo te conectas al módulo?</Text>
             <View style={styles.chips}>
-              {MODES.map((m) => (
+              {modesVisible.map((m) => (
                 <Chip
                   key={m.id}
                   label={m.label}
@@ -748,44 +918,57 @@ export default function App() {
 
             {mode === "serial" && (
               <View style={styles.block}>
-                <Text style={styles.label}>Puerto / baud</Text>
+                <Text style={styles.label}>{t.portLabel}</Text>
                 <View style={styles.row}>
                   <TextInput
                     style={[styles.input, { flex: 1 }]}
                     value={port}
                     onChangeText={setPort}
-                    placeholder="/dev/ttyACM0"
+                    placeholder="Se detecta solo si hay un cable"
                     placeholderTextColor="#6b7280"
                     editable={!connected}
                   />
-                  <Pressable style={styles.btnSec} onPress={refreshPorts}>
-                    <Text style={styles.btnText}>↻</Text>
+                  <Pressable
+                    style={styles.btnSec}
+                    onPress={refreshPorts}
+                    accessibilityLabel={t.refreshPorts}
+                  >
+                    <Text style={styles.btnText}>{t.refreshPorts}</Text>
                   </Pressable>
                 </View>
                 {ports.map((p) => (
                   <Pressable key={p.device} onPress={() => setPort(p.device)}>
                     <Text style={styles.hint}>
-                      {p.device} — {p.description}
+                      {p.device}
+                      {p.description ? ` — ${p.description}` : ""}
                     </Text>
                   </Pressable>
                 ))}
-                <View style={styles.chips}>
-                  {["9600", "115200"].map((b) => (
-                    <Chip
-                      key={b}
-                      label={b}
-                      active={baud === b}
-                      disabled={connected}
-                      onPress={() => setBaud(b)}
-                    />
-                  ))}
-                </View>
+                {dev ? (
+                  <>
+                    <Text style={styles.label}>{t.baudLabel}</Text>
+                    <View style={styles.chips}>
+                      {["9600", "115200"].map((b) => (
+                        <Chip
+                          key={b}
+                          label={b}
+                          active={baud === b}
+                          disabled={connected}
+                          onPress={() => setBaud(b)}
+                        />
+                      ))}
+                    </View>
+                  </>
+                ) : null}
               </View>
             )}
 
             {mode === "mqtt" && (
               <View style={styles.block}>
-                <Text style={styles.label}>Perfil MQTT</Text>
+                <Text style={styles.label}>{t.mqttProfileLabel}</Text>
+                <Text style={styles.hint}>
+                  Elige el perfil de esta planta. Si no hay ninguno, créalo en “Red del equipo”.
+                </Text>
                 <View style={styles.chips}>
                   {(profiles?.mqtt_profiles || []).map((p) => (
                     <Chip
@@ -797,16 +980,13 @@ export default function App() {
                     />
                   ))}
                 </View>
-                <Pressable style={styles.btnSec} onPress={() => setShowProfiles(true)}>
-                  <Text style={styles.btnText}>Editar perfiles…</Text>
-                </Pressable>
               </View>
             )}
 
             {(mode === "bluetooth" || mode === "ble") && (
               <View style={styles.block}>
                 <View style={styles.row}>
-                  <Text style={[styles.label, { flex: 1 }]}>Dispositivo</Text>
+                  <Text style={[styles.label, { flex: 1 }]}>{t.btDeviceLabel}</Text>
                   <Pressable
                     style={styles.btnSec}
                     onPress={scanBt}
@@ -815,29 +995,31 @@ export default function App() {
                     {scanning ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <Text style={styles.btnText}>Escanear BT</Text>
+                      <Text style={styles.btnText}>{t.scanBt}</Text>
                     )}
                   </Pressable>
                 </View>
-                <TextInput
-                  style={styles.input}
-                  value={btAddress}
-                  onChangeText={setBtAddress}
-                  placeholder="AA:BB:CC:DD:EE:FF"
-                  placeholderTextColor="#6b7280"
-                  editable={!connected}
-                  autoCapitalize="characters"
-                />
+                {dev ? (
+                  <TextInput
+                    style={styles.input}
+                    value={btAddress}
+                    onChangeText={setBtAddress}
+                    placeholder="Dirección del equipo"
+                    placeholderTextColor="#6b7280"
+                    editable={!connected}
+                    autoCapitalize="characters"
+                  />
+                ) : btAddress ? (
+                  <Text style={styles.hint}>Seleccionado: {btAddress}</Text>
+                ) : (
+                  <Text style={styles.hint}>Pulsa “Buscar equipos” y elige uno de la lista.</Text>
+                )}
                 {btDevices.map((d) => (
                   <Pressable key={d.address} onPress={() => setBtAddress(d.address)}>
                     <Text
-                      style={[
-                        styles.hint,
-                        d.address === btAddress && styles.hintOn,
-                      ]}
+                      style={[styles.hint, d.address === btAddress && styles.hintOn]}
                     >
-                      {d.name} [{d.address}]
-                      {d.paired ? " ✓" : " (nuevo)"}
+                      {d.name || "Equipo"} {d.paired ? "✓" : ""}
                     </Text>
                   </Pressable>
                 ))}
@@ -847,26 +1029,25 @@ export default function App() {
             <View style={styles.row}>
               {!connected ? (
                 <Pressable
-                  style={[styles.btnPri, busy && styles.dis]}
+                  style={[styles.btnPri, styles.btnLarge, busy && styles.dis]}
                   onPress={doConnect}
                   disabled={busy}
+                  accessibilityRole="button"
                 >
-                  <Text style={styles.btnText}>Conectar</Text>
+                  <Text style={styles.btnTextLarge}>{t.connect}</Text>
                 </Pressable>
               ) : (
-                <Pressable style={styles.btnDanger} onPress={doDisconnect}>
-                  <Text style={styles.btnText}>Desconectar</Text>
+                <Pressable
+                  style={[styles.btnDanger, styles.btnLarge]}
+                  onPress={doDisconnect}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.btnTextLarge}>{t.disconnect}</Text>
                 </Pressable>
               )}
-              <Pressable
-                style={styles.btnSec}
-                onPress={() => setShowProfiles(true)}
-              >
-                <Text style={styles.btnText}>Perfiles…</Text>
-              </Pressable>
             </View>
 
-            <Text style={styles.section}>Telemetría</Text>
+            <Text style={styles.section}>{t.telTitle}</Text>
             <View style={styles.telGrid}>
               {telCards.map((c) => (
                 <View key={c.k} style={styles.telCard}>
@@ -883,12 +1064,19 @@ export default function App() {
               ))}
             </View>
 
-            <Text style={styles.section}>CLI / acciones rápidas</Text>
+            <Text style={styles.section}>Acciones rápidas</Text>
             <View style={styles.chips}>
-              {QUICK.map((c) => (
-                <Chip key={c} label={c} onPress={() => sendCmd(c)} disabled={!connected} />
+              {quickActions.map((a) => (
+                <Chip
+                  key={a.cmd}
+                  label={a.label}
+                  onPress={() => sendCmd(a.cmd)}
+                  disabled={!connected}
+                />
               ))}
             </View>
+
+            <Text style={styles.section}>{t.activity}</Text>
             <View style={styles.logBox}>
               <ScrollView
                 ref={logRef}
@@ -897,7 +1085,7 @@ export default function App() {
                 }
               >
                 {log.length === 0 ? (
-                  <Text style={styles.muted}>Sin mensajes…</Text>
+                  <Text style={styles.muted}>{t.activityEmpty}</Text>
                 ) : (
                   log.map((l, i) => (
                     <Text key={`${i}-${l.slice(0, 8)}`} style={styles.logLine}>
@@ -907,38 +1095,45 @@ export default function App() {
                 )}
               </ScrollView>
             </View>
-            <View style={styles.row}>
-              <TextInput
-                style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                value={cmd}
-                onChangeText={setCmd}
-                placeholder="comando…"
-                placeholderTextColor="#6b7280"
-                onSubmitEditing={() => sendCmd()}
-                editable={connected}
-              />
-              <Pressable
-                style={[styles.btnPri, !connected && styles.dis]}
-                onPress={() => sendCmd()}
-                disabled={!connected}
-              >
-                <Text style={styles.btnText}>Enviar</Text>
+
+            {dev || showAdvancedCmd ? (
+              <View style={styles.row}>
+                <TextInput
+                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                  value={cmd}
+                  onChangeText={setCmd}
+                  placeholder={t.cmdPlaceholder}
+                  placeholderTextColor="#6b7280"
+                  onSubmitEditing={() => sendCmd()}
+                  editable={connected}
+                />
+                <Pressable
+                  style={[styles.btnPri, !connected && styles.dis]}
+                  onPress={() => sendCmd()}
+                  disabled={!connected}
+                >
+                  <Text style={styles.btnText}>{t.send}</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <Pressable onPress={() => setShowAdvancedCmd(true)}>
+                <Text style={styles.linkMuted}>Mostrar comando técnico (avanzado)</Text>
               </Pressable>
-            </View>
+            )}
           </>
         )}
 
         {tab === "params" && (
           <>
             <Text style={styles.section}>
-              Lista: {plist.name} ({plist.parameters.length})
+              {t.recipesTitle}: {plist.name} ({plist.parameters.length})
             </Text>
-            <Text style={styles.label}>Archivo en servidor (param_lists/)</Text>
+            <Text style={styles.label}>{t.recipesServer}</Text>
             <View style={styles.chips}>
               {listFiles.map((f) => (
                 <Chip
                   key={f.filename}
-                  label={`${f.stem} (${f.count})`}
+                  label={`${f.name || f.stem}`}
                   active={listFile === f.filename}
                   onPress={() => loadList(f.filename)}
                 />
@@ -946,52 +1141,46 @@ export default function App() {
             </View>
             <Text style={styles.hint}>
               {isDesktopShell()
-                ? "Desktop: diálogos nativos Abrir/Guardar JSON"
-                : "Web: selector de archivo / descarga del navegador"}
+                ? "Puedes abrir o guardar archivos JSON en tu PC."
+                : "Puedes importar o descargar un archivo JSON de receta."}
             </Text>
             <View style={styles.row}>
               <Pressable style={styles.btnSec} onPress={importJson}>
-                <Text style={styles.btnText}>Abrir JSON…</Text>
+                <Text style={styles.btnText}>{t.openJson}</Text>
               </Pressable>
               <Pressable style={styles.btnSec} onPress={() => exportJson(false)}>
-                <Text style={styles.btnText}>Guardar como…</Text>
+                <Text style={styles.btnText}>{t.saveAs}</Text>
               </Pressable>
               <Pressable style={styles.btnSec} onPress={saveList}>
-                <Text style={styles.btnText}>Guardar en servidor</Text>
-              </Pressable>
-              <Pressable
-                style={styles.btnSec}
-                onPress={() => exportJson(true)}
-              >
-                <Text style={styles.btnText}>Export + servidor</Text>
+                <Text style={styles.btnText}>{t.saveServer}</Text>
               </Pressable>
             </View>
             <View style={styles.row}>
               <Pressable
-                style={styles.btnPri}
+                style={[styles.btnPri, styles.btnLarge, (!connected || busy) && styles.dis]}
                 onPress={syncVfd}
                 disabled={!connected || busy}
               >
-                <Text style={styles.btnText}>Sync → VDF</Text>
+                <Text style={styles.btnTextLarge}>{t.sendToDrive}</Text>
               </Pressable>
               <Pressable
-                style={styles.btnPri}
+                style={[styles.btnPri, (!connected || busy) && styles.dis]}
                 onPress={compareVfd}
                 disabled={!connected || busy}
               >
-                <Text style={styles.btnText}>Comparar</Text>
+                <Text style={styles.btnText}>{t.compareDrive}</Text>
               </Pressable>
               {busy ? (
                 <Pressable style={styles.btnWarn} onPress={() => endOp("Cancelado")}>
-                  <Text style={styles.btnText}>Cancelar</Text>
+                  <Text style={styles.btnText}>{t.cancelOp}</Text>
                 </Pressable>
               ) : null}
             </View>
 
             <View style={styles.tableHead}>
               <Text style={[styles.th, { flex: 1 }]}>ID</Text>
-              <Text style={[styles.th, { flex: 1 }]}>Valor</Text>
-              <Text style={[styles.th, { flex: 1 }]}>VDF</Text>
+              <Text style={[styles.th, { flex: 1 }]}>Receta</Text>
+              <Text style={[styles.th, { flex: 1 }]}>Variador</Text>
               <Text style={[styles.th, { flex: 2 }]}>Notas</Text>
             </View>
             {plist.parameters.map((p) => {
@@ -1016,19 +1205,19 @@ export default function App() {
                     {p.live_value == null ? "—" : p.live_value}
                   </Text>
                   <Text style={[styles.td, { flex: 2 }]} numberOfLines={1}>
-                    {p.manual_only ? "MAN " : ""}
+                    {p.manual_only ? "Manual · " : ""}
                     {p.notes}
                   </Text>
                 </Pressable>
               );
             })}
 
-            <Text style={styles.section}>Editor</Text>
+            <Text style={styles.section}>{t.editor}</Text>
             <View style={styles.chips}>
-              <Chip label="P0" active={edGroup === "P0"} onPress={() => setEdGroup("P0")} />
-              <Chip label="P1" active={edGroup === "P1"} onPress={() => setEdGroup("P1")} />
+              <Chip label="Grupo 0" active={edGroup === "P0"} onPress={() => setEdGroup("P0")} />
+              <Chip label="Grupo 1" active={edGroup === "P1"} onPress={() => setEdGroup("P1")} />
             </View>
-            <Text style={styles.label}>Índice 0–47</Text>
+            <Text style={styles.label}>{t.indexLabel}</Text>
             <TextInput
               style={styles.input}
               value={edIdx}
@@ -1036,7 +1225,7 @@ export default function App() {
               keyboardType="numeric"
               placeholderTextColor="#6b7280"
             />
-            <Text style={styles.label}>Valor (ingeniería)</Text>
+            <Text style={styles.label}>{t.valueLabel}</Text>
             <TextInput
               style={styles.input}
               value={edVal}
@@ -1044,7 +1233,7 @@ export default function App() {
               keyboardType="decimal-pad"
               placeholderTextColor="#6b7280"
             />
-            <Text style={styles.label}>Notas</Text>
+            <Text style={styles.label}>{t.notesLabel}</Text>
             <TextInput
               style={[styles.input, { minHeight: 64 }]}
               value={edNotes}
@@ -1054,14 +1243,14 @@ export default function App() {
             />
             <View style={styles.row}>
               <Switch value={edManual} onValueChange={setEdManual} />
-              <Text style={styles.hint}>Manual (ignorar en sync RS485)</Text>
+              <Text style={styles.hint}>{t.manualFlag}</Text>
             </View>
             <View style={styles.row}>
               <Pressable style={styles.btnPri} onPress={addParam}>
-                <Text style={styles.btnText}>Añadir / Actualizar</Text>
+                <Text style={styles.btnText}>{t.addUpdate}</Text>
               </Pressable>
               <Pressable style={styles.btnDanger} onPress={delParam}>
-                <Text style={styles.btnText}>Eliminar</Text>
+                <Text style={styles.btnText}>{t.remove}</Text>
               </Pressable>
             </View>
           </>
@@ -1069,8 +1258,11 @@ export default function App() {
 
         {tab === "edge" && (
           <>
-            <Text style={styles.section}>Aplicar al Edge (Serial/MQTT/BT)</Text>
-            <Text style={styles.label}>Perfil Wi‑Fi → Edge</Text>
+            <Text style={styles.section}>{t.edgeTitle}</Text>
+            <View style={styles.cardInfo}>
+              <Text style={styles.cardInfoText}>{t.edgeWifiHint}</Text>
+            </View>
+            <Text style={styles.label}>Perfil Wi‑Fi</Text>
             <View style={styles.chips}>
               {(profiles?.wifi_profiles || []).map((p) => (
                 <Chip
@@ -1082,14 +1274,17 @@ export default function App() {
               ))}
             </View>
             <Pressable
-              style={[styles.btnPri, !connected && styles.dis]}
+              style={[styles.btnPri, styles.btnLarge, !connected && styles.dis]}
               onPress={applyWifiToEdge}
               disabled={!connected}
             >
-              <Text style={styles.btnText}>Aplicar Wi‑Fi al Edge</Text>
+              <Text style={styles.btnTextLarge}>{t.applyWifi}</Text>
             </Pressable>
 
-            <Text style={[styles.label, { marginTop: 16 }]}>Perfil MQTT → Edge</Text>
+            <View style={[styles.cardInfo, { marginTop: 20 }]}>
+              <Text style={styles.cardInfoText}>{t.edgeMqttHint}</Text>
+            </View>
+            <Text style={styles.label}>Perfil de red (MQTT)</Text>
             <View style={styles.chips}>
               {(profiles?.mqtt_profiles || []).map((p) => (
                 <Chip
@@ -1101,44 +1296,99 @@ export default function App() {
               ))}
             </View>
             <Pressable
-              style={[styles.btnPri, !connected && styles.dis]}
+              style={[styles.btnPri, styles.btnLarge, !connected && styles.dis]}
               onPress={applyMqttToEdge}
               disabled={!connected}
             >
-              <Text style={styles.btnText}>Aplicar MQTT al Edge</Text>
+              <Text style={styles.btnTextLarge}>{t.applyMqtt}</Text>
             </Pressable>
+
             <View style={styles.row}>
-              <Chip label="wifi status" onPress={() => sendCmd("wifi status")} disabled={!connected} />
-              <Chip label="mqtt status" onPress={() => sendCmd("mqtt status")} disabled={!connected} />
+              <Chip
+                label={t.actWifiInfo}
+                onPress={() => sendCmd("wifi status")}
+                disabled={!connected}
+              />
+              <Chip
+                label={t.actMqttInfo}
+                onPress={() => sendCmd("mqtt status")}
+                disabled={!connected}
+              />
             </View>
 
-            <Pressable style={[styles.btnSec, { marginTop: 16 }]} onPress={() => setShowProfiles(true)}>
-              <Text style={styles.btnText}>Crear / editar perfiles en PC…</Text>
+            <Pressable
+              style={[styles.btnSec, { marginTop: 20 }]}
+              onPress={() => setShowProfiles(true)}
+            >
+              <Text style={styles.btnText}>{t.editProfiles}</Text>
             </Pressable>
-            <Pressable style={styles.btnSec} onPress={reloadProfiles}>
-              <Text style={styles.btnText}>Recargar perfiles</Text>
+            <Pressable
+              style={styles.btnSec}
+              onPress={async () => setProfiles(await api.profiles())}
+            >
+              <Text style={styles.btnText}>{t.reloadProfiles}</Text>
             </Pressable>
           </>
         )}
 
-        <Text style={styles.footer}>
-          Paridad CTk · {Platform.OS} · listas en backend/param_lists
-        </Text>
+        {tab === "help" && (
+          <>
+            <Text style={styles.section}>Ayuda</Text>
+            <Pressable style={[styles.btnPri, styles.btnLarge]} onPress={openTutorial}>
+              <Text style={styles.btnTextLarge}>{t.tutorialAgain}</Text>
+            </Pressable>
+            <View style={styles.cardInfo}>
+              <Text style={styles.cardInfoText}>
+                Flujo recomendado:{"\n"}
+                1) Conecta el módulo (Equipo){"\n"}
+                2) Abre una receta{"\n"}
+                3) Compara con el variador{"\n"}
+                4) Envía la receta si hace falta{"\n\n"}
+                Puedes enviar sin comparar: la app te lo recordará.
+              </Text>
+            </View>
+            <Pressable style={styles.btnSec} onPress={() => setShowAbout(true)}>
+              <Text style={styles.btnText}>{t.about}</Text>
+            </Pressable>
+            <Pressable
+              style={styles.btnSec}
+              onPress={() => {
+                const next = !showDevTools();
+                setDevToolsUnlocked(next);
+                setDevTick((x) => x + 1);
+                Alert.alert(
+                  t.diagnostics,
+                  next
+                    ? "Herramientas técnicas visibles (CLI, simulado, URL)."
+                    : "Herramientas técnicas ocultas."
+                );
+              }}
+            >
+              <Text style={styles.btnText}>
+                {showDevTools() ? t.diagnosticsLock : t.diagnosticsUnlock}
+              </Text>
+            </Pressable>
+          </>
+        )}
       </ScrollView>
 
+      {/* Profiles modal */}
       <Modal visible={showProfiles} animationType="slide" transparent>
         <View style={styles.modalBg}>
           <ScrollView style={styles.modalCard} contentContainerStyle={{ padding: 16 }}>
-            <Text style={styles.title}>Perfiles PC</Text>
-            <Text style={styles.section}>MQTT</Text>
+            <Text style={styles.title}>{t.profilesTitle}</Text>
+            <View style={styles.cardInfo}>
+              <Text style={styles.cardInfoText}>{t.profilesMqttHelp}</Text>
+            </View>
+            <Text style={styles.section}>Perfil de red (MQTT)</Text>
             {(
               [
-                ["name", "Nombre"],
-                ["host", "Host"],
-                ["port", "Puerto"],
-                ["topic_prefix", "Topic prefix"],
-                ["username", "Usuario"],
-                ["password", "Password"],
+                ["name", "Nombre del perfil (ej. Planta-1)"],
+                ["host", "IP o nombre del broker"],
+                ["port", "Puerto (1883)"],
+                ["topic_prefix", "Prefijo de temas (técnico)"],
+                ["username", "Usuario (opcional)"],
+                ["password", "Contraseña (opcional)"],
               ] as const
             ).map(([k, lab]) => (
               <View key={k}>
@@ -1146,22 +1396,25 @@ export default function App() {
                 <TextInput
                   style={styles.input}
                   value={mForm[k]}
-                  onChangeText={(t) => setMForm((f) => ({ ...f, [k]: t }))}
+                  onChangeText={(v) => setMForm((f) => ({ ...f, [k]: v }))}
                   secureTextEntry={k === "password"}
                   placeholderTextColor="#6b7280"
                 />
               </View>
             ))}
             <Pressable style={styles.btnPri} onPress={saveMqttProfile}>
-              <Text style={styles.btnText}>Guardar perfil MQTT</Text>
+              <Text style={styles.btnText}>{t.saveMqttProfile}</Text>
             </Pressable>
 
-            <Text style={styles.section}>Wi‑Fi (para enviar al Edge)</Text>
+            <View style={[styles.cardInfo, { marginTop: 16 }]}>
+              <Text style={styles.cardInfoText}>{t.profilesWifiHelp}</Text>
+            </View>
+            <Text style={styles.section}>Perfil Wi‑Fi</Text>
             {(
               [
-                ["name", "Nombre"],
-                ["ssid", "SSID"],
-                ["password", "Password"],
+                ["name", "Nombre del perfil"],
+                ["ssid", "Nombre de la red (SSID)"],
+                ["password", "Contraseña Wi‑Fi"],
               ] as const
             ).map(([k, lab]) => (
               <View key={k}>
@@ -1169,22 +1422,91 @@ export default function App() {
                 <TextInput
                   style={styles.input}
                   value={wForm[k]}
-                  onChangeText={(t) => setWForm((f) => ({ ...f, [k]: t }))}
+                  onChangeText={(v) => setWForm((f) => ({ ...f, [k]: v }))}
                   secureTextEntry={k === "password"}
                   placeholderTextColor="#6b7280"
                 />
               </View>
             ))}
             <Pressable style={styles.btnPri} onPress={saveWifiProfile}>
-              <Text style={styles.btnText}>Guardar perfil Wi‑Fi</Text>
+              <Text style={styles.btnText}>{t.saveWifiProfile}</Text>
             </Pressable>
             <Pressable
-              style={[styles.btnSec, { marginTop: 12 }]}
+              style={[styles.btnSec, { marginTop: 12, marginBottom: 24 }]}
               onPress={() => setShowProfiles(false)}
             >
-              <Text style={styles.btnText}>Cerrar</Text>
+              <Text style={styles.btnText}>{t.close}</Text>
             </Pressable>
           </ScrollView>
+        </View>
+      </Modal>
+
+      {/* Tutorial */}
+      <Modal visible={showTutorial} animationType="fade" transparent>
+        <View style={styles.modalBg}>
+          <View style={styles.tutorialCard}>
+            <Text style={styles.tutorialKicker}>
+              {tutorialStep + 1} / {t.tutorialSteps.length}
+            </Text>
+            <Text style={styles.tutorialTitle}>
+              {t.tutorialSteps[tutorialStep].title}
+            </Text>
+            <Text style={styles.tutorialBody}>
+              {t.tutorialSteps[tutorialStep].body}
+            </Text>
+            <View style={styles.row}>
+              <Pressable
+                style={styles.btnSec}
+                onPress={() => finishTutorial(true)}
+              >
+                <Text style={styles.btnText}>{t.tutorialSkip}</Text>
+              </Pressable>
+              {tutorialStep > 0 ? (
+                <Pressable
+                  style={styles.btnSec}
+                  onPress={() => setTutorialStep((s) => s - 1)}
+                >
+                  <Text style={styles.btnText}>{t.tutorialPrev}</Text>
+                </Pressable>
+              ) : null}
+              {tutorialStep < t.tutorialSteps.length - 1 ? (
+                <Pressable
+                  style={styles.btnPri}
+                  onPress={() => setTutorialStep((s) => s + 1)}
+                >
+                  <Text style={styles.btnText}>{t.tutorialNext}</Text>
+                </Pressable>
+              ) : (
+                <Pressable
+                  style={styles.btnPri}
+                  onPress={() => finishTutorial(true)}
+                >
+                  <Text style={styles.btnText}>{t.tutorialFinish}</Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* About */}
+      <Modal visible={showAbout} animationType="fade" transparent>
+        <View style={styles.modalBg}>
+          <View style={styles.tutorialCard}>
+            <Text style={styles.tutorialTitle}>{BRAND.fullName}</Text>
+            <Text style={styles.tutorialBody}>
+              Versión {BRAND.version}
+              {"\n"}
+              {BRAND.tagline}
+              {"\n\n"}
+              Multi-variador: el módulo de campo puede ampliarse a distintos equipos.
+              {"\n\n"}
+              {dev ? `Interno: ${BRAND.codename} · ${apiBase()}` : ""}
+            </Text>
+            <Pressable style={styles.btnPri} onPress={() => setShowAbout(false)}>
+              <Text style={styles.btnText}>{t.close}</Text>
+            </Pressable>
+          </View>
         </View>
       </Modal>
     </SafeAreaView>
@@ -1195,9 +1517,18 @@ function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-function Badge({ ok, label }: { ok: boolean; label: string }) {
+function Badge({
+  ok,
+  warn,
+  label,
+}: {
+  ok: boolean;
+  warn?: boolean;
+  label: string;
+}) {
+  const bg = warn ? "#7c2d12" : ok ? "#14532d" : "#7f1d1d";
   return (
-    <View style={[styles.badge, ok ? styles.badgeOk : styles.badgeBad]}>
+    <View style={[styles.badge, { backgroundColor: bg }]}>
       <Text style={styles.badgeText}>{label}</Text>
     </View>
   );
@@ -1219,6 +1550,8 @@ function Chip({
       onPress={onPress}
       disabled={disabled}
       style={[styles.chip, active && styles.chipOn, disabled && styles.dis]}
+      accessibilityRole="button"
+      accessibilityState={{ selected: !!active, disabled: !!disabled }}
     >
       <Text style={styles.chipText}>{label}</Text>
     </Pressable>
@@ -1226,144 +1559,208 @@ function Chip({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0f172a" },
-  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
-  pad: { padding: 16, paddingBottom: 48 },
-  title: { color: "#f8fafc", fontSize: 20, fontWeight: "700" },
-  sub: { color: "#94a3b8", fontSize: 11, marginBottom: 6 },
-  section: {
-    color: "#e2e8f0",
-    fontSize: 15,
-    fontWeight: "600",
-    marginTop: 16,
-    marginBottom: 8,
+  root: { flex: 1, backgroundColor: "#0b1220" },
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#1e293b",
   },
-  row: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8, marginVertical: 6 },
+  brandRow: { flexDirection: "row", alignItems: "center" },
+  title: { color: "#f8fafc", fontSize: 22, fontWeight: "800", letterSpacing: 0.3 },
+  tagline: { color: "#94a3b8", fontSize: 12, marginTop: 2 },
+  helpBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#1e3a5f",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  helpBtnText: { color: "#e2e8f0", fontSize: 20, fontWeight: "700" },
+  statusLine: { color: "#cbd5e1", fontSize: 13, marginTop: 6 },
+  devHint: { color: "#64748b", fontSize: 10, marginTop: 4, fontFamily: "monospace" },
+  pad: { padding: 16, paddingBottom: 56 },
+  section: {
+    color: "#f1f5f9",
+    fontSize: 16,
+    fontWeight: "700",
+    marginTop: 18,
+    marginBottom: 10,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+    marginVertical: 6,
+  },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
     backgroundColor: "#1e293b",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: "#334155",
+    minHeight: 44,
+    justifyContent: "center",
   },
-  chipOn: { backgroundColor: "#1d4ed8", borderColor: "#3b82f6" },
-  chipText: { color: "#f1f5f9", fontSize: 12 },
-  tabs: { flexDirection: "row", gap: 8, marginTop: 10 },
+  chipOn: { backgroundColor: "#1d4ed8", borderColor: "#60a5fa" },
+  chipText: { color: "#f8fafc", fontSize: 13, fontWeight: "600" },
+  tabs: { flexDirection: "row", gap: 6, marginTop: 12 },
   tab: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 12,
+    borderRadius: 12,
     backgroundColor: "#1e293b",
     alignItems: "center",
+    minHeight: 48,
+    justifyContent: "center",
   },
   tabOn: { backgroundColor: "#2563eb" },
-  tabText: { color: "#f8fafc", fontWeight: "600", fontSize: 12 },
+  tabText: { color: "#f8fafc", fontWeight: "700", fontSize: 12, textAlign: "center" },
   block: { marginTop: 8 },
-  label: { color: "#cbd5e1", marginBottom: 4, marginTop: 6, fontSize: 12 },
+  label: { color: "#e2e8f0", marginBottom: 6, marginTop: 8, fontSize: 13, fontWeight: "600" },
   input: {
     backgroundColor: "#1e293b",
     borderColor: "#334155",
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     color: "#f8fafc",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     marginBottom: 8,
+    minHeight: 48,
+    fontSize: 15,
   },
   btnPri: {
     backgroundColor: "#2563eb",
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: 12,
+    minHeight: 48,
+    justifyContent: "center",
   },
+  btnLarge: { paddingVertical: 16, minHeight: 56 },
   btnSec: {
     backgroundColor: "#334155",
     paddingHorizontal: 14,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: 12,
+    minHeight: 48,
+    justifyContent: "center",
   },
   btnDanger: {
     backgroundColor: "#b91c1c",
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: 12,
+    minHeight: 48,
+    justifyContent: "center",
   },
   btnWarn: {
     backgroundColor: "#b45309",
     paddingHorizontal: 14,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: 12,
+    minHeight: 48,
+    justifyContent: "center",
   },
-  btnText: { color: "#fff", fontWeight: "600", fontSize: 13 },
-  dis: { opacity: 0.45 },
-  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  badgeOk: { backgroundColor: "#14532d" },
-  badgeBad: { backgroundColor: "#7f1d1d" },
-  badgeText: { color: "#f8fafc", fontSize: 10 },
-  muted: { color: "#64748b", fontSize: 12 },
-  hint: { color: "#94a3b8", fontSize: 12, marginBottom: 3 },
-  hintOn: { color: "#93c5fd" },
+  btnText: { color: "#fff", fontWeight: "700", fontSize: 14, textAlign: "center" },
+  btnTextLarge: { color: "#fff", fontWeight: "800", fontSize: 16, textAlign: "center" },
+  dis: { opacity: 0.4 },
+  badge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  badgeText: { color: "#f8fafc", fontSize: 12, fontWeight: "600" },
+  muted: { color: "#64748b", fontSize: 13 },
+  hint: { color: "#94a3b8", fontSize: 13, marginBottom: 4, lineHeight: 18 },
+  hintOn: { color: "#93c5fd", fontWeight: "600" },
+  linkMuted: { color: "#64748b", fontSize: 12, textDecorationLine: "underline", marginTop: 8 },
   progressTrack: {
-    height: 4,
+    height: 5,
     backgroundColor: "#1e293b",
-    borderRadius: 2,
-    marginTop: 6,
+    borderRadius: 3,
+    marginTop: 8,
     overflow: "hidden",
   },
-  progressFill: { height: 4, backgroundColor: "#fbbf24" },
+  progressFill: { height: 5, backgroundColor: "#fbbf24" },
   telGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   telCard: {
     backgroundColor: "#1e293b",
-    borderRadius: 12,
-    padding: 10,
-    minWidth: 88,
+    borderRadius: 14,
+    padding: 12,
+    minWidth: 96,
     flexGrow: 1,
   },
-  telLabel: { color: "#94a3b8", fontSize: 10 },
-  telValue: { color: "#f8fafc", fontSize: 16, fontWeight: "700", marginTop: 2 },
+  telLabel: { color: "#94a3b8", fontSize: 11, fontWeight: "600" },
+  telValue: { color: "#f8fafc", fontSize: 18, fontWeight: "800", marginTop: 4 },
   logBox: {
     backgroundColor: "#020617",
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: "#1e293b",
-    height: 160,
-    padding: 8,
+    height: 140,
+    padding: 10,
     marginVertical: 8,
   },
   logLine: {
     color: "#cbd5e1",
-    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-    fontSize: 10,
+    fontSize: 12,
+    marginBottom: 3,
+    lineHeight: 16,
   },
   tableHead: {
     flexDirection: "row",
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: "#334155",
   },
   th: { color: "#94a3b8", fontWeight: "700", fontSize: 11 },
   tr: {
     flexDirection: "row",
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    borderRadius: 6,
-    marginTop: 3,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    borderRadius: 8,
+    marginTop: 4,
+    minHeight: 44,
   },
-  td: { color: "#e2e8f0", fontSize: 11 },
+  td: { color: "#e2e8f0", fontSize: 12 },
+  cardInfo: {
+    backgroundColor: "#172554",
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#1e3a8a",
+    marginBottom: 10,
+  },
+  cardInfoText: { color: "#bfdbfe", fontSize: 13, lineHeight: 20 },
   modalBg: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: "rgba(0,0,0,0.75)",
     justifyContent: "center",
     padding: 16,
   },
   modalCard: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#0b1220",
     borderRadius: 16,
-    maxHeight: "90%",
+    maxHeight: "92%",
     borderWidth: 1,
     borderColor: "#334155",
   },
-  footer: { color: "#475569", fontSize: 11, marginTop: 24, textAlign: "center" },
+  tutorialCard: {
+    backgroundColor: "#0b1220",
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#334155",
+  },
+  tutorialKicker: { color: "#60a5fa", fontWeight: "700", marginBottom: 8 },
+  tutorialTitle: {
+    color: "#f8fafc",
+    fontSize: 20,
+    fontWeight: "800",
+    marginBottom: 12,
+  },
+  tutorialBody: { color: "#cbd5e1", fontSize: 15, lineHeight: 22, marginBottom: 20 },
 });
