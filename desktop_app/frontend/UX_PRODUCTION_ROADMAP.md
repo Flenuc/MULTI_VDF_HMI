@@ -266,14 +266,24 @@ Modo **Avanzado / Diagnóstico** (oculto): CLI, log raw, URL API, simulado, WS.
 
 ---
 
-## 9. Decisión pendiente (producto)
+## 9. Decisiones de producto (cerradas)
 
-1. ¿Un solo perfil MQTT/Wi‑Fi por planta (operario no edita) o edición libre?  
-2. ¿Sync permitido sin “Comparar” previo?  
-3. ¿Nombre comercial de la app en UI (MULTI_VDF_HMI vs “Gestor SAJ / ROWA”)?  
-4. ¿Tutorial obligatorio la primera vez o opcional?
+| # | Tema | Decisión |
+|---|------|----------|
+| 1 | Perfiles Wi‑Fi/MQTT | El **operario puede editarlos**, con instrucciones claras en la UI. |
+| 2 | Enviar sin comparar | **Permitido**, con confirmación suave y **recomendación** de comparar. |
+| 3 | Nombre comercial | **VarioField** — multi-marca, no atado a una empresa; escalable a otros variadores. |
+| 4 | Tutorial | **Se puede saltar**; en Ayuda: **“Ver tutorial otra vez”**. |
 
-Con esas respuestas se puede bajar el roadmap a issues/tareas concretas en el repo.
+### Marca
+- **VarioField** — *Recetas y enlace a variadores en campo*
+- Código interno / repo: `MULTI_VDF_HMI` (solo diagnóstico)
+
+### Implementación (v0.3)
+- UI producción por defecto (sin URL API / WS / CLI a la vista).
+- Tutorial 5 pasos + saltar + repetir.
+- Sync con diálogo: Comparar primero | Enviar sin comparar | Cancelar.
+- Pestaña Ayuda + Diagnóstico opcional (herramientas técnicas).
 
 ---
 
