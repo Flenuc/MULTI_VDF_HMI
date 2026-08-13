@@ -1,9 +1,10 @@
 # Packages downloaded as win_amd64 / py3 wheels on the build host (Linux OK).
-# Use with: pip download --no-deps --platform win_amd64 --python-version 312 ...
+# IMPORTANT: use --no-deps, so pin packages that must stay in lockstep
+# (especially pydantic + pydantic-core).
 fastapi
 uvicorn
-pydantic
-pydantic-core
+pydantic==2.13.4
+pydantic-core==2.46.4
 starlette
 anyio
 sniffio
