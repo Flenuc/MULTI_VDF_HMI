@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Modal,
   Platform,
   Pressable,
@@ -49,6 +50,7 @@ import {
   writable,
 } from "./src/lib/params";
 import { isTutorialDone, setTutorialDone } from "./src/lib/prefs";
+import { colors, font, radius, space, touchMin } from "./src/theme";
 
 type Tab = "home" | "connect" | "params" | "more";
 type Mode = "mqtt" | "serial" | "bluetooth" | "ble" | "dummy";
@@ -143,6 +145,10 @@ export default function App() {
   const [edVal, setEdVal] = useState("0");
   const [edNotes, setEdNotes] = useState("");
   const [edManual, setEdManual] = useState(false);
+  const [recipeSearch, setRecipeSearch] = useState("");
+  const [recipeFilter, setRecipeFilter] = useState<
+    "all" | "diff" | "manual" | "ok"
+  >("all");
 
   const [showProfiles, setShowProfiles] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -821,6 +827,28 @@ export default function App() {
     [telemetry]
   );
 
+  const filteredParams = useMemo(() => {
+    const q = recipeSearch.trim().toLowerCase();
+    return plist.parameters.filter((p) => {
+      if (recipeFilter === "diff" && !p.mismatch) return false;
+      if (recipeFilter === "manual" && !p.manual_only) return false;
+      if (recipeFilter === "ok" && (p.mismatch || p.manual_only)) return false;
+      if (!q) return true;
+      const id = paramId(p).toLowerCase();
+      const notes = (p.notes || "").toLowerCase();
+      const val = String(p.value);
+      const live = p.live_value != null ? String(p.live_value) : "";
+      return (
+        id.includes(q) ||
+        notes.includes(q) ||
+        val.includes(q) ||
+        live.includes(q) ||
+        `p${p.group}`.includes(q) ||
+        String(p.index).includes(q)
+      );
+    });
+  }, [plist.parameters, recipeSearch, recipeFilter]);
+
   const quickActions = [
     { label: t.actCheckDrive, cmd: "ping" },
     { label: t.actLiveOn, cmd: "stream on" },
@@ -839,6 +867,11 @@ export default function App() {
       <StatusBar style="light" />
       <View style={styles.header}>
         <View style={styles.brandRow}>
+          <Image
+            source={require("./assets/icon.png")}
+            style={styles.brandLogo}
+            accessibilityLabel={BRAND.name}
+          />
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>{BRAND.name}</Text>
             <Text style={styles.tagline}>{BRAND.tagline}</Text>
@@ -1274,7 +1307,14 @@ export default function App() {
         {tab === "params" && (
           <>
             <Text style={styles.section}>
-              {t.recipesTitle}: {plist.name} ({plist.parameters.length})
+              {t.recipesTitle}: {plist.name}{" "}
+              <Text style={styles.sectionCount}>
+                ({filteredParams.length}
+                {filteredParams.length !== plist.parameters.length
+                  ? ` de ${plist.parameters.length}`
+                  : ""}
+                )
+              </Text>
             </Text>
             <Text style={styles.label}>{t.recipesServer}</Text>
             <View style={styles.chips}>
@@ -1325,40 +1365,86 @@ export default function App() {
               ) : null}
             </View>
 
+            <Text style={styles.label}>Buscar en la receta</Text>
+            <TextInput
+              style={styles.input}
+              value={recipeSearch}
+              onChangeText={setRecipeSearch}
+              placeholder="ID, valor o notas… (ej. P0-00, presión, 1.5)"
+              placeholderTextColor={colors.textDim}
+              accessibilityLabel="Buscar parámetros en la receta"
+              clearButtonMode="while-editing"
+            />
+            <View style={styles.chips}>
+              {(
+                [
+                  ["all", "Todos"],
+                  ["diff", "Diferentes"],
+                  ["ok", "Coinciden"],
+                  ["manual", "Solo manual"],
+                ] as const
+              ).map(([id, lab]) => (
+                <Chip
+                  key={id}
+                  label={lab}
+                  active={recipeFilter === id}
+                  onPress={() => setRecipeFilter(id)}
+                />
+              ))}
+            </View>
+            {recipeSearch || recipeFilter !== "all" ? (
+              <Pressable
+                onPress={() => {
+                  setRecipeSearch("");
+                  setRecipeFilter("all");
+                }}
+              >
+                <Text style={styles.linkMuted}>Limpiar búsqueda y filtros</Text>
+              </Pressable>
+            ) : null}
+
             <View style={styles.tableHead}>
               <Text style={[styles.th, { flex: 1 }]}>ID</Text>
               <Text style={[styles.th, { flex: 1 }]}>Receta</Text>
               <Text style={[styles.th, { flex: 1 }]}>Variador</Text>
               <Text style={[styles.th, { flex: 2 }]}>Notas</Text>
             </View>
-            {plist.parameters.map((p) => {
-              const key = `${p.group}:${p.index}`;
-              const sel = selectedKey === key;
-              const bg = p.mismatch
-                ? "#7f1d1d"
-                : p.manual_only
-                  ? "#422006"
-                  : sel
-                    ? "#1e3a5f"
-                    : "#1e293b";
-              return (
-                <Pressable
-                  key={key}
-                  onPress={() => selectParam(p)}
-                  style={[styles.tr, { backgroundColor: bg }]}
-                >
-                  <Text style={[styles.td, { flex: 1 }]}>{paramId(p)}</Text>
-                  <Text style={[styles.td, { flex: 1 }]}>{p.value}</Text>
-                  <Text style={[styles.td, { flex: 1 }]}>
-                    {p.live_value == null ? "—" : p.live_value}
-                  </Text>
-                  <Text style={[styles.td, { flex: 2 }]} numberOfLines={1}>
-                    {p.manual_only ? "Manual · " : ""}
-                    {p.notes}
-                  </Text>
-                </Pressable>
-              );
-            })}
+            {filteredParams.length === 0 ? (
+              <Text style={styles.muted}>
+                Ningún parámetro coincide con la búsqueda.
+              </Text>
+            ) : (
+              filteredParams.map((p) => {
+                const key = `${p.group}:${p.index}`;
+                const sel = selectedKey === key;
+                const bg = p.mismatch
+                  ? colors.dangerBg
+                  : p.manual_only
+                    ? colors.warningSoft
+                    : sel
+                      ? colors.primarySoft
+                      : colors.surface;
+                return (
+                  <Pressable
+                    key={key}
+                    onPress={() => selectParam(p)}
+                    style={[styles.tr, { backgroundColor: bg }]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${paramId(p)} valor ${p.value}`}
+                  >
+                    <Text style={[styles.td, { flex: 1 }]}>{paramId(p)}</Text>
+                    <Text style={[styles.td, { flex: 1 }]}>{p.value}</Text>
+                    <Text style={[styles.td, { flex: 1 }]}>
+                      {p.live_value == null ? "—" : p.live_value}
+                    </Text>
+                    <Text style={[styles.td, { flex: 2 }]} numberOfLines={1}>
+                      {p.manual_only ? "Manual · " : ""}
+                      {p.notes}
+                    </Text>
+                  </Pressable>
+                );
+              })
+            )}
 
             <Text style={styles.section}>{t.editor}</Text>
             <View style={styles.chips}>
@@ -1697,7 +1783,7 @@ function Badge({
   warn?: boolean;
   label: string;
 }) {
-  const bg = warn ? "#7c2d12" : ok ? "#14532d" : "#7f1d1d";
+  const bg = warn ? colors.warningSoft : ok ? colors.successBg : colors.dangerBg;
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
       <Text style={styles.badgeText}>{label}</Text>
@@ -1792,221 +1878,289 @@ function StepCard({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0b1220" },
+  root: { flex: 1, backgroundColor: colors.bg },
   header: {
-    paddingHorizontal: 16,
+    paddingHorizontal: space.lg,
     paddingTop: 10,
-    paddingBottom: 6,
+    paddingBottom: space.sm,
     borderBottomWidth: 1,
-    borderBottomColor: "#1e293b",
+    borderBottomColor: colors.surface,
   },
-  brandRow: { flexDirection: "row", alignItems: "center" },
-  title: { color: "#f8fafc", fontSize: 22, fontWeight: "800", letterSpacing: 0.3 },
-  tagline: { color: "#94a3b8", fontSize: 12, marginTop: 2 },
+  brandRow: { flexDirection: "row", alignItems: "center", gap: space.md },
+  brandLogo: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+  },
+  title: {
+    color: colors.text,
+    fontSize: font.h1,
+    fontWeight: font.weightBlack,
+    letterSpacing: 0.3,
+  },
+  tagline: { color: colors.textMuted, fontSize: font.sm, marginTop: 2 },
   helpBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#1e3a5f",
+    width: touchMin,
+    height: touchMin,
+    borderRadius: touchMin / 2,
+    backgroundColor: colors.primarySoft,
     alignItems: "center",
     justifyContent: "center",
   },
-  helpBtnText: { color: "#e2e8f0", fontSize: 20, fontWeight: "700" },
-  statusLine: { color: "#cbd5e1", fontSize: 13, marginTop: 6 },
-  devHint: { color: "#64748b", fontSize: 10, marginTop: 4, fontFamily: "monospace" },
-  pad: { padding: 16, paddingBottom: 56 },
+  helpBtnText: { color: colors.textSecondary, fontSize: 20, fontWeight: font.weightBold },
+  statusLine: { color: colors.textSecondary, fontSize: font.md, marginTop: 6 },
+  devHint: {
+    color: colors.textDim,
+    fontSize: font.xs,
+    marginTop: 4,
+    fontFamily: "monospace",
+  },
+  pad: { padding: space.lg, paddingBottom: 56 },
   section: {
-    color: "#f1f5f9",
-    fontSize: 16,
-    fontWeight: "700",
+    color: colors.text,
+    fontSize: font.xl,
+    fontWeight: font.weightBold,
     marginTop: 18,
     marginBottom: 10,
   },
+  sectionCount: { color: colors.textMuted, fontWeight: font.weightSemi, fontSize: font.body },
   row: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
-    gap: 8,
+    gap: space.sm,
     marginVertical: 6,
   },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
   chip: {
-    backgroundColor: "#1e293b",
+    backgroundColor: colors.surface,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 999,
+    borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: colors.border,
     minHeight: 44,
     justifyContent: "center",
   },
-  chipOn: { backgroundColor: "#1d4ed8", borderColor: "#60a5fa" },
-  chipText: { color: "#f8fafc", fontSize: 13, fontWeight: "600" },
-  tabs: { flexDirection: "row", gap: 6, marginTop: 12 },
+  chipOn: { backgroundColor: colors.primaryHover, borderColor: colors.borderFocus },
+  chipText: { color: colors.text, fontSize: font.md, fontWeight: font.weightSemi },
+  tabs: { flexDirection: "row", gap: 6, marginTop: space.md },
   tab: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: "#1e293b",
+    paddingVertical: space.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
     alignItems: "center",
-    minHeight: 48,
+    minHeight: touchMin,
     justifyContent: "center",
   },
-  tabOn: { backgroundColor: "#2563eb" },
-  tabText: { color: "#f8fafc", fontWeight: "700", fontSize: 12, textAlign: "center" },
-  block: { marginTop: 8 },
-  label: { color: "#e2e8f0", marginBottom: 6, marginTop: 8, fontSize: 13, fontWeight: "600" },
+  tabOn: { backgroundColor: colors.primary },
+  tabText: {
+    color: colors.text,
+    fontWeight: font.weightBold,
+    fontSize: font.sm,
+    textAlign: "center",
+  },
+  block: { marginTop: space.sm },
+  label: {
+    color: colors.textSecondary,
+    marginBottom: 6,
+    marginTop: space.sm,
+    fontSize: font.md,
+    fontWeight: font.weightSemi,
+  },
   input: {
-    backgroundColor: "#1e293b",
-    borderColor: "#334155",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 12,
-    color: "#f8fafc",
+    borderRadius: radius.md,
+    color: colors.text,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 8,
-    minHeight: 48,
-    fontSize: 15,
+    paddingVertical: space.md,
+    marginBottom: space.sm,
+    minHeight: touchMin,
+    fontSize: font.lg,
   },
   btnPri: {
-    backgroundColor: "#2563eb",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    minHeight: 48,
+    backgroundColor: colors.primary,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    borderRadius: radius.md,
+    minHeight: touchMin,
     justifyContent: "center",
   },
-  btnLarge: { paddingVertical: 16, minHeight: 56 },
+  btnLarge: { paddingVertical: space.lg, minHeight: 56 },
   btnSec: {
-    backgroundColor: "#334155",
+    backgroundColor: colors.surfaceHover,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 12,
-    minHeight: 48,
+    paddingVertical: space.md,
+    borderRadius: radius.md,
+    minHeight: touchMin,
     justifyContent: "center",
   },
   btnDanger: {
-    backgroundColor: "#b91c1c",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    minHeight: 48,
+    backgroundColor: colors.danger,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    borderRadius: radius.md,
+    minHeight: touchMin,
     justifyContent: "center",
   },
   btnWarn: {
-    backgroundColor: "#b45309",
+    backgroundColor: colors.warningBg,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 12,
-    minHeight: 48,
+    paddingVertical: space.md,
+    borderRadius: radius.md,
+    minHeight: touchMin,
     justifyContent: "center",
   },
-  btnText: { color: "#fff", fontWeight: "700", fontSize: 14, textAlign: "center" },
-  btnTextLarge: { color: "#fff", fontWeight: "800", fontSize: 16, textAlign: "center" },
+  btnText: {
+    color: "#fff",
+    fontWeight: font.weightBold,
+    fontSize: font.body,
+    textAlign: "center",
+  },
+  btnTextLarge: {
+    color: "#fff",
+    fontWeight: font.weightBlack,
+    fontSize: font.xl,
+    textAlign: "center",
+  },
   dis: { opacity: 0.4 },
-  badge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
-  badgeText: { color: "#f8fafc", fontSize: 12, fontWeight: "600" },
-  muted: { color: "#64748b", fontSize: 13 },
-  hint: { color: "#94a3b8", fontSize: 13, marginBottom: 4, lineHeight: 18 },
-  hintOn: { color: "#93c5fd", fontWeight: "600" },
-  linkMuted: { color: "#64748b", fontSize: 12, textDecorationLine: "underline", marginTop: 8 },
+  badge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: radius.sm },
+  badgeText: { color: colors.text, fontSize: font.sm, fontWeight: font.weightSemi },
+  muted: { color: colors.textDim, fontSize: font.md },
+  hint: {
+    color: colors.textMuted,
+    fontSize: font.md,
+    marginBottom: 4,
+    lineHeight: 18,
+  },
+  hintOn: { color: colors.accentSoft, fontWeight: font.weightSemi },
+  linkMuted: {
+    color: colors.textDim,
+    fontSize: font.sm,
+    textDecorationLine: "underline",
+    marginTop: space.sm,
+  },
   progressTrack: {
     height: 5,
-    backgroundColor: "#1e293b",
+    backgroundColor: colors.surface,
     borderRadius: 3,
-    marginTop: 8,
+    marginTop: space.sm,
     overflow: "hidden",
   },
-  progressFill: { height: 5, backgroundColor: "#fbbf24" },
-  telGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  progressFill: { height: 5, backgroundColor: colors.warning },
+  telGrid: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
   telCard: {
-    backgroundColor: "#1e293b",
-    borderRadius: 14,
-    padding: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: space.md,
     minWidth: 96,
     flexGrow: 1,
   },
-  telLabel: { color: "#94a3b8", fontSize: 11, fontWeight: "600" },
-  telValue: { color: "#f8fafc", fontSize: 18, fontWeight: "800", marginTop: 4 },
+  telLabel: { color: colors.textMuted, fontSize: 11, fontWeight: font.weightSemi },
+  telValue: {
+    color: colors.text,
+    fontSize: font.display,
+    fontWeight: font.weightBlack,
+    marginTop: 4,
+  },
   logBox: {
     backgroundColor: "#020617",
-    borderRadius: 14,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: colors.surface,
     height: 140,
     padding: 10,
-    marginVertical: 8,
+    marginVertical: space.sm,
   },
   logLine: {
-    color: "#cbd5e1",
-    fontSize: 12,
+    color: colors.textSecondary,
+    fontSize: font.sm,
     marginBottom: 3,
     lineHeight: 16,
   },
   tableHead: {
     flexDirection: "row",
-    paddingVertical: 8,
+    paddingVertical: space.sm,
     borderBottomWidth: 1,
-    borderBottomColor: "#334155",
+    borderBottomColor: colors.border,
+    marginTop: space.sm,
   },
-  th: { color: "#94a3b8", fontWeight: "700", fontSize: 11 },
+  th: { color: colors.textMuted, fontWeight: font.weightBold, fontSize: 11 },
   tr: {
     flexDirection: "row",
-    paddingVertical: 12,
+    paddingVertical: space.md,
     paddingHorizontal: 6,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     marginTop: 4,
     minHeight: 44,
   },
-  td: { color: "#e2e8f0", fontSize: 12 },
+  td: { color: colors.textSecondary, fontSize: font.sm },
   cardInfo: {
-    backgroundColor: "#172554",
-    borderRadius: 12,
+    backgroundColor: colors.infoBg,
+    borderRadius: radius.md,
     padding: 14,
     borderWidth: 1,
-    borderColor: "#1e3a8a",
+    borderColor: colors.infoBorder,
     marginBottom: 10,
   },
-  cardInfoText: { color: "#bfdbfe", fontSize: 13, lineHeight: 20 },
+  cardInfoText: { color: colors.infoText, fontSize: font.md, lineHeight: 20 },
   modalBg: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.75)",
     justifyContent: "center",
-    padding: 16,
+    padding: space.lg,
   },
   modalCard: {
-    backgroundColor: "#0b1220",
-    borderRadius: 16,
+    backgroundColor: colors.bg,
+    borderRadius: radius.xl,
     maxHeight: "92%",
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: colors.border,
   },
   tutorialCard: {
-    backgroundColor: "#0b1220",
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: colors.bg,
+    borderRadius: radius.xl,
+    padding: space.xl,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: colors.border,
   },
-  tutorialKicker: { color: "#60a5fa", fontWeight: "700", marginBottom: 8 },
+  tutorialKicker: {
+    color: colors.borderFocus,
+    fontWeight: font.weightBold,
+    marginBottom: space.sm,
+  },
   tutorialTitle: {
-    color: "#f8fafc",
-    fontSize: 20,
-    fontWeight: "800",
-    marginBottom: 12,
+    color: colors.text,
+    fontSize: font.h2,
+    fontWeight: font.weightBlack,
+    marginBottom: space.md,
   },
-  tutorialBody: { color: "#cbd5e1", fontSize: 15, lineHeight: 22, marginBottom: 20 },
+  tutorialBody: {
+    color: colors.textSecondary,
+    fontSize: font.lg,
+    lineHeight: 22,
+    marginBottom: space.xl,
+  },
   stepCard: {
-    backgroundColor: "#1e293b",
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: space.lg,
+    marginTop: space.md,
     borderWidth: 2,
-    borderColor: "#334155",
+    borderColor: colors.border,
   },
-  stepCardDone: { borderColor: "#22c55e", backgroundColor: "#14532d33" },
+  stepCardDone: { borderColor: colors.live, backgroundColor: colors.successSoft },
   stepCardLocked: { opacity: 0.92 },
-  stepHeader: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 },
+  stepHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: space.sm,
+  },
   stepBadge: {
     width: 32,
     height: 32,
@@ -2014,35 +2168,55 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  stepBadgeDone: { backgroundColor: "#16a34a" },
-  stepBadgeTodo: { backgroundColor: "#475569" },
-  stepBadgeText: { color: "#fff", fontWeight: "800", fontSize: 16 },
-  stepTitle: { color: "#f8fafc", fontSize: 17, fontWeight: "800", flex: 1 },
-  stepBody: { color: "#cbd5e1", fontSize: 14, lineHeight: 20, marginBottom: 8 },
+  stepBadgeDone: { backgroundColor: colors.success },
+  stepBadgeTodo: { backgroundColor: colors.surfaceHover },
+  stepBadgeText: { color: "#fff", fontWeight: font.weightBlack, fontSize: font.xl },
+  stepTitle: {
+    color: colors.text,
+    fontSize: font.title,
+    fontWeight: font.weightBlack,
+    flex: 1,
+  },
+  stepBody: {
+    color: colors.textSecondary,
+    fontSize: font.body,
+    lineHeight: 20,
+    marginBottom: space.sm,
+  },
   stepStatus: {
-    color: "#93c5fd",
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 12,
+    color: colors.accentSoft,
+    fontSize: font.md,
+    fontWeight: font.weightSemi,
+    marginBottom: space.md,
   },
   liveStrip: {
-    backgroundColor: "#0f172a",
-    borderRadius: 14,
+    backgroundColor: colors.bgElevated,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: "#1e3a5f",
-    padding: 12,
-    marginTop: 8,
+    borderColor: colors.primarySoft,
+    padding: space.md,
+    marginTop: space.sm,
     marginBottom: 4,
   },
-  liveStripTitle: { color: "#94a3b8", fontSize: 12, fontWeight: "700", marginBottom: 8 },
-  liveStripRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  liveStripTitle: {
+    color: colors.textMuted,
+    fontSize: font.sm,
+    fontWeight: font.weightBold,
+    marginBottom: space.sm,
+  },
+  liveStripRow: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
   liveChip: {
-    backgroundColor: "#1e293b",
+    backgroundColor: colors.surface,
     borderRadius: 10,
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: space.sm,
     minWidth: 72,
   },
-  liveChipLab: { color: "#64748b", fontSize: 10, fontWeight: "600" },
-  liveChipVal: { color: "#f8fafc", fontSize: 15, fontWeight: "800", marginTop: 2 },
+  liveChipLab: { color: colors.textDim, fontSize: font.xs, fontWeight: font.weightSemi },
+  liveChipVal: {
+    color: colors.text,
+    fontSize: font.lg,
+    fontWeight: font.weightBlack,
+    marginTop: 2,
+  },
 });
