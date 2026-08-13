@@ -1,0 +1,74 @@
+{
+  "id": "saj.pdh30",
+  "vendor": "SAJ",
+  "family": "PDH",
+  "model": "PDH-30",
+  "version": "0.1.0-draft",
+  "status": "spike",
+  "source": [
+    "docs/PDH30_User_Manual.txt — Ch.6 Modbus: F3.15 → 0xF30F",
+    "docs/PDH30_User_Manual.pdf",
+    "include/saj_pdm30_protocol.h (MAP_F_STYLE)",
+    "Pending: tools/spike_pdh30_map.py field validation"
+  ],
+  "protocol": {
+    "link": "modbus_rtu",
+    "baud": 9600,
+    "parity": "N",
+    "data_bits": 8,
+    "stop_bits": 1,
+    "slave_default": 1,
+    "fc_read": 3,
+    "fc_write": 6,
+    "max_contiguous": 12,
+    "notes": "Manual: max continuous read 12 registers. Write+save same address as read."
+  },
+  "addressing": {
+    "scheme": "f_style",
+    "description": "register = ((0xF0 | group) << 8) | index  → F3.15 = 0xF30F",
+    "param_id_format": "F{group}.{index:02d}",
+    "alt_schemes_to_test": ["group_direct", "group_100"],
+    "manual_examples": [
+      {"param": "F3.15", "register": "0xF30F"},
+      {"param": "F3.17", "register": "0xF311"}
+    ]
+  },
+  "parameters": [],
+  "parameters_note": "Empty until Catalog Builder / manual extract + spike confirm. Use spike tool first.",
+  "telemetry": [
+    {"id": "run_freq", "register": "0x1001", "scale": 100, "unit": "Hz", "notes": "0.01 Hz (PDH Ch.6)"},
+    {"id": "bus_voltage", "register": "0x1002", "scale": 10, "unit": "V", "notes": "0.1 V"},
+    {"id": "out_voltage", "register": "0x1003", "scale": 1, "unit": "V"},
+    {"id": "out_current", "register": "0x1004", "scale": 100, "unit": "A", "notes": "0.01 A"},
+    {"id": "set_pressure", "register": "0x100F", "scale": 10, "unit": "bar", "notes": "0.1 bar — verify vs function code setpoint"},
+    {"id": "fb_pressure", "register": "0x1010", "scale": 10, "unit": "bar"},
+    {"id": "vfd_status", "register": "0x3000", "scale": 1, "unit": ""}
+  ],
+  "commands": {
+    "start_fwd": {"register": "0x2000", "value": "0x0001"},
+    "start_rev": {"register": "0x2000", "value": "0x0002"},
+    "stop": {"register": "0x2000", "value": "0x0006"},
+    "estop": {"register": "0x2000", "value": "0x0005"},
+    "fault_reset": {"register": "0x2000", "value": "0x0007"}
+  },
+  "fingerprint": [
+    {
+      "id": "F8.00",
+      "notes": "Communication address 1~6 — confirm group index against manual table before coding"
+    },
+    {
+      "id": "G1-35_or_F_comm",
+      "register_candidates": ["0xF123", "0x0123", "0x0087"],
+      "expect_raw_hint": 1,
+      "name": "slave / local address"
+    }
+  ],
+  "cli": {
+    "raw": "raw {register}",
+    "notes": "Until Edge supports profile set, only raw + special regs work for PDH map tests."
+  },
+  "spike": {
+    "tool": "tools/spike_pdh30_map.py",
+    "command": "python3 tools/spike_pdh30_map.py --port /dev/ttyACM0 --label pdh30 --also-cli"
+  }
+}
