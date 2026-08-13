@@ -1,0 +1,76 @@
+{
+  "name": "dummy_data",
+  "description": "Lista de prueba para SAJ Edge Configurator. Valores en unidades de ingeniería (floats), como espera el firmware Edge (w0/r0).",
+  "parameters": [
+    {
+      "group": 0,
+      "index": 0,
+      "value": 1.5,
+      "notes": "Presión consignada [bar]. w0 0 1.5 → scale 0.1 → raw 15",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 1,
+      "value": 0.4,
+      "notes": "Desviación de presión (wake) [bar]",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 3,
+      "value": 10.0,
+      "notes": "Rango del sensor [bar]",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 36,
+      "value": 0.5,
+      "notes": "Aceleración tiempo 1 [s]",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 37,
+      "value": 0.5,
+      "notes": "Deceleración tiempo 1 [s]",
+      "manual_only": false
+    },
+    {
+      "group": 0,
+      "index": 43,
+      "value": 8,
+      "notes": "Fuente de frecuencia principal (8=PID). SOLO MANUAL en teclado VDF",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 5,
+      "value": 60.0,
+      "notes": "Frecuencia máxima [Hz]",
+      "manual_only": false
+    },
+    {
+      "group": 1,
+      "index": 34,
+      "value": 0,
+      "notes": "Fuente de mando: 0=panel 1=terminal 2=serie — no auto-sync",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 35,
+      "value": 1,
+      "notes": "Dirección Modbus (slave ID)",
+      "manual_only": true
+    },
+    {
+      "group": 1,
+      "index": 36,
+      "value": 1,
+      "notes": "Baud: 1=9600",
+      "manual_only": true
+    }
+  ]
+}

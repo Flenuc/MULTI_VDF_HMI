@@ -1,0 +1,37 @@
+{
+  "wifi_profiles": [
+    {
+      "name": "PLANTA_EJEMPLO",
+      "ssid": "TU_SSID",
+      "password": "TU_PASSWORD",
+      "notes": "Copiá a connection_profiles.json y completá credenciales reales"
+    }
+  ],
+  "mqtt_profiles": [
+    {
+      "name": "Local Mosquitto",
+      "host": "127.0.0.1",
+      "port": 1883,
+      "username": "",
+      "password": "",
+      "topic_prefix": "saj/pdm30/saj-pdm30",
+      "notes": "App→broker en este PC. En el Edge: mqtt set <IP_LAN_PC> 1883"
+    },
+    {
+      "name": "LAN broker",
+      "host": "192.168.1.10",
+      "port": 1883,
+      "username": "",
+      "password": "",
+      "topic_prefix": "saj/pdm30/saj-pdm30",
+      "notes": "Ajustá la IP del PC/servidor con Mosquitto"
+    }
+  ],
+  "last_mode": "MQTT",
+  "last_wifi": "",
+  "last_mqtt": "Local Mosquitto",
+  "last_serial_port": "",
+  "last_serial_baud": 115200,
+  "last_bt_address": "",
+  "last_bt_name": ""
+}

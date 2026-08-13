@@ -1,0 +1,6 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.0
+pyserial>=3.5
+paho-mqtt>=1.6.1
+bleak>=0.22.0

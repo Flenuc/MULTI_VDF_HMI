@@ -1,0 +1,42 @@
+VarioField 0.3.2 — instalacion Windows
+======================================
+
+Que es
+------
+App de campo VarioField (MULTI_VDF_HMI):
+  - Backend Python (USB / MQTT / Bluetooth / BLE)
+  - Interfaz web (React Native / Expo) en el navegador
+
+Instalacion
+-----------
+1. Ejecute VarioField-Setup-0.3.2.exe
+2. Si no hay Python 3.12, el setup lo instala (usuario actual)
+3. La primera vez necesita Internet (pip: fastapi, uvicorn, bleak, etc.)
+4. Accesos directos en Escritorio y menu Inicio
+
+Uso
+---
+- Abra "VarioField" (Launch_VarioField.bat)
+- Se inicia el servicio local y se abre el navegador en
+    http://127.0.0.1:8765
+- Deje la ventana de consola abierta mientras use la app
+- Cierre la consola para detener el servicio
+
+Si falla el arranque
+-------------------
+Abra la carpeta de instalacion (por defecto):
+  %LOCALAPPDATA%\MULTI_VDF_HMI\VarioField
+y ejecute:  post_install.bat
+
+Requisitos
+----------
+- Windows 10/11 64-bit
+- Internet en la primera instalacion de dependencias
+- Puerto serie / Bluetooth segun el modo de conexion
+
+Desinstalar
+-----------
+Panel de control → Programas → VarioField
+(No elimina Python del sistema)
+
+Repo: https://github.com/Flenuc/MULTI_VDF_HMI

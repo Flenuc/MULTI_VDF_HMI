@@ -88,3 +88,6 @@ dist/
 # Windows setup build cache (official Python installer ~26MB)
 desktop_app/packaging/**/cache/
 desktop_app/packaging/**/payload/python-*.exe
+
+# VarioField Windows setup: UI se regenera en cada build
+desktop_app/packaging/windows_variofield/payload/ui/
