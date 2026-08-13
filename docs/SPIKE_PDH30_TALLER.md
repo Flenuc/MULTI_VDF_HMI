@@ -76,17 +76,36 @@ raw 0x1001    # D0.00 operating frequency
 
 Fórmula: **Fn.mm → registro `0xF(n)mm`** (ej. F3.15 → `0xF30F`).
 
+## Dump completo en banco (Edge CLI)
+
+```bash
+python3 tools/bank_dump_pdh30.py --port /dev/ttyACM0
+# → results/pdh30_full_dump_<ts>.{csv,json} + pdh30_full_dump_latest.*
+```
+
+**Resultado 2026-08-13 (Guition + PDH, profile saj.pdh30):**
+- **146/150 OK (97.3%)** en ~40 s  
+- Subset planta (F0/F2/F3/F8/D0): **81/81 OK**  
+- Fails recurrentes: `F4.15`, `FD.00` (ya vistos en mapa catálogo)
+
 ## Siguiente después del spike + catálogo
 
-1. Validar en banco 10–20 IDs del subset planta (raw + display HMI)
-2. Ajustar escalas en profile si eng≠display
-3. Firmware: `profile set saj.pdh30` + address scheme runtime
-4. App: selector de modelo + recetas con `drive_profile_id`
+1. ✅ Validar dump completo + subset planta
+2. Ajustar escalas en profile si eng≠display HMI
+3. ✅ Firmware: `profile set saj.pdh30` + pget/pset/dump
+4. ✅ App: recetas con `drive_profile_id` + compare/sync por ID
+5. ✅ End-to-end receta: `ejemplo_pdh30.json` → dump/compare → pset sync  
+   ```bash
+   python3 tools/e2e_pdh30_recipe.py --port /dev/ttyACM0
+   # App: Conectar USB → modelo «SAJ PDH-30» → receta «PDH30 planta» → Comparar → Enviar
+   ```
+6. ✅ Selector de modelo en UI (pestañas Equipo + Recetas; filtro de listas; `profile set` al conectar)
 
 ## Checklist de campo (imprimir)
 
-- [ ] PDH-30: spike JSON guardado en `results/`
-- [ ] Scheme recomendado: _______________
+- [x] PDH-30: spike JSON guardado en `results/`
+- [x] Scheme recomendado: **f_style**
+- [x] Dump completo: `pdh30_full_dump_latest.json` (97.3%)
 - [ ] Slave id leído: _______________
 - [ ] Fmax raw leído: _______________ (display VDF: _____ Hz)
 - [ ] PDM-30 regresión: group_direct OK

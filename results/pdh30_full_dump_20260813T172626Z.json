@@ -1,0 +1,1568 @@
+{
+  "summary": {
+    "timestamp": "20260813T172626Z",
+    "port": "/dev/ttyACM0",
+    "profile": "saj.pdh30",
+    "method": "edge_cli_dump",
+    "elapsed_s": 39.82,
+    "dump_started": true,
+    "dump_done": true,
+    "catalog_count": 150,
+    "lines_received": 150,
+    "unique_ids": 150,
+    "ok": 146,
+    "fail": 4,
+    "ok_pct": 97.33,
+    "missing_ids": [],
+    "fail_ids": [
+      "F4.15",
+      "FD.00",
+      "FD.01",
+      "FE.03"
+    ],
+    "fails": [
+      {
+        "id": "F4.15",
+        "addr": "0xF40F",
+        "reg": 62479,
+        "eng": null,
+        "raw": null,
+        "ok": false,
+        "scale": 1,
+        "ro": 1
+      },
+      {
+        "id": "FD.00",
+        "addr": "0xFD00",
+        "reg": 64768,
+        "eng": null,
+        "raw": null,
+        "ok": false,
+        "scale": 1,
+        "ro": 1
+      },
+      {
+        "id": "FD.01",
+        "addr": "0xFD01",
+        "reg": 64769,
+        "eng": null,
+        "raw": null,
+        "ok": false,
+        "scale": 1,
+        "ro": 0
+      },
+      {
+        "id": "FE.03",
+        "addr": "0xFE03",
+        "reg": 65027,
+        "eng": null,
+        "raw": null,
+        "ok": false,
+        "scale": 10,
+        "ro": 0
+      }
+    ]
+  },
+  "rows": [
+    {
+      "id": "F0.00",
+      "addr": "0xF000",
+      "reg": 61440,
+      "eng": 2.6,
+      "raw": 26,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F0.01",
+      "addr": "0xF001",
+      "reg": 61441,
+      "eng": 0.5,
+      "raw": 5,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F0.02",
+      "addr": "0xF002",
+      "reg": 61442,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F0.03",
+      "addr": "0xF003",
+      "reg": 61443,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F0.04",
+      "addr": "0xF004",
+      "reg": 61444,
+      "eng": 25.0,
+      "raw": 25,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F0.05",
+      "addr": "0xF005",
+      "reg": 61445,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F0.06",
+      "addr": "0xF006",
+      "reg": 61446,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F0.07",
+      "addr": "0xF007",
+      "reg": 61447,
+      "eng": 1.0,
+      "raw": 10,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F0.08",
+      "addr": "0xF008",
+      "reg": 61448,
+      "eng": 10.0,
+      "raw": 100,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F0.09",
+      "addr": "0xF009",
+      "reg": 61449,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F0.10",
+      "addr": "0xF00A",
+      "reg": 61450,
+      "eng": 9.0,
+      "raw": 90,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F0.11",
+      "addr": "0xF00B",
+      "reg": 61451,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F0.12",
+      "addr": "0xF00C",
+      "reg": 61452,
+      "eng": 3.5,
+      "raw": 35,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F0.13",
+      "addr": "0xF00D",
+      "reg": 61453,
+      "eng": 2.5,
+      "raw": 25,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F0.14",
+      "addr": "0xF00E",
+      "reg": 61454,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F0.15",
+      "addr": "0xF00F",
+      "reg": 61455,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F0.16",
+      "addr": "0xF010",
+      "reg": 61456,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 1
+    },
+    {
+      "id": "F0.17",
+      "addr": "0xF011",
+      "reg": 61457,
+      "eng": 2006.0,
+      "raw": 2006,
+      "ok": true,
+      "scale": 1,
+      "ro": 1
+    },
+    {
+      "id": "F0.18",
+      "addr": "0xF012",
+      "reg": 61458,
+      "eng": 2.5,
+      "raw": 25,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F0.19",
+      "addr": "0xF013",
+      "reg": 61459,
+      "eng": 5.0,
+      "raw": 50,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F0.20",
+      "addr": "0xF014",
+      "reg": 61460,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F1.00",
+      "addr": "0xF100",
+      "reg": 61696,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 1
+    },
+    {
+      "id": "F1.01",
+      "addr": "0xF101",
+      "reg": 61697,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F1.02",
+      "addr": "0xF102",
+      "reg": 61698,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 1
+    },
+    {
+      "id": "F1.03",
+      "addr": "0xF103",
+      "reg": 61699,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 1
+    },
+    {
+      "id": "F1.04",
+      "addr": "0xF104",
+      "reg": 61700,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F1.05",
+      "addr": "0xF105",
+      "reg": 61701,
+      "eng": 0.1,
+      "raw": 1,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F1.06",
+      "addr": "0xF106",
+      "reg": 61702,
+      "eng": 5.0,
+      "raw": 5,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F1.07",
+      "addr": "0xF107",
+      "reg": 61703,
+      "eng": 0.1,
+      "raw": 1,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F1.17",
+      "addr": "0xF111",
+      "reg": 61713,
+      "eng": 1.0,
+      "raw": 1,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F1.18",
+      "addr": "0xF112",
+      "reg": 61714,
+      "eng": 1.0,
+      "raw": 1,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F2.00",
+      "addr": "0xF200",
+      "reg": 61952,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F2.01",
+      "addr": "0xF201",
+      "reg": 61953,
+      "eng": 1000.0,
+      "raw": 1000,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F2.02",
+      "addr": "0xF202",
+      "reg": 61954,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F2.03",
+      "addr": "0xF203",
+      "reg": 61955,
+      "eng": 1000.0,
+      "raw": 1000,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F2.04",
+      "addr": "0xF204",
+      "reg": 61956,
+      "eng": 1.0,
+      "raw": 1,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F2.05",
+      "addr": "0xF205",
+      "reg": 61957,
+      "eng": 0.8,
+      "raw": 8,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F2.06",
+      "addr": "0xF206",
+      "reg": 61958,
+      "eng": 63.0,
+      "raw": 6300,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F2.07",
+      "addr": "0xF207",
+      "reg": 61959,
+      "eng": 63.0,
+      "raw": 6300,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F2.08",
+      "addr": "0xF208",
+      "reg": 61960,
+      "eng": 40.0,
+      "raw": 4000,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F2.09",
+      "addr": "0xF209",
+      "reg": 61961,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F2.10",
+      "addr": "0xF20A",
+      "reg": 61962,
+      "eng": 15.0,
+      "raw": 150,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F2.11",
+      "addr": "0xF20B",
+      "reg": 61963,
+      "eng": 2.0,
+      "raw": 2,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F2.12",
+      "addr": "0xF20C",
+      "reg": 61964,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F2.13",
+      "addr": "0xF20D",
+      "reg": 61965,
+      "eng": 3.0,
+      "raw": 3,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F2.14",
+      "addr": "0xF20E",
+      "reg": 61966,
+      "eng": 4097.0,
+      "raw": 4097,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F2.15",
+      "addr": "0xF20F",
+      "reg": 61967,
+      "eng": 800.0,
+      "raw": 800,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F3.00",
+      "addr": "0xF300",
+      "reg": 62208,
+      "eng": 120.0,
+      "raw": 1200,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F3.01",
+      "addr": "0xF301",
+      "reg": 62209,
+      "eng": 1.0,
+      "raw": 100,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F3.02",
+      "addr": "0xF302",
+      "reg": 62210,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F3.03",
+      "addr": "0xF303",
+      "reg": 62211,
+      "eng": 1.0,
+      "raw": 10,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F3.04",
+      "addr": "0xF304",
+      "reg": 62212,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F3.05",
+      "addr": "0xF305",
+      "reg": 62213,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F3.06",
+      "addr": "0xF306",
+      "reg": 62214,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F3.07",
+      "addr": "0xF307",
+      "reg": 62215,
+      "eng": 30.0,
+      "raw": 300,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F3.08",
+      "addr": "0xF308",
+      "reg": 62216,
+      "eng": 2.0,
+      "raw": 2,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F3.09",
+      "addr": "0xF309",
+      "reg": 62217,
+      "eng": 0.1,
+      "raw": 1,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F3.10",
+      "addr": "0xF30A",
+      "reg": 62218,
+      "eng": 5.0,
+      "raw": 50,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F3.11",
+      "addr": "0xF30B",
+      "reg": 62219,
+      "eng": 0.1,
+      "raw": 1,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F3.12",
+      "addr": "0xF30C",
+      "reg": 62220,
+      "eng": 39.0,
+      "raw": 3900,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F3.13",
+      "addr": "0xF30D",
+      "reg": 62221,
+      "eng": 39.0,
+      "raw": 3900,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F3.14",
+      "addr": "0xF30E",
+      "reg": 62222,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F3.15",
+      "addr": "0xF30F",
+      "reg": 62223,
+      "eng": 3.0,
+      "raw": 300,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F3.16",
+      "addr": "0xF310",
+      "reg": 62224,
+      "eng": 3780.0,
+      "raw": 3780,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F3.17",
+      "addr": "0xF311",
+      "reg": 62225,
+      "eng": 9.0,
+      "raw": 9,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F3.18",
+      "addr": "0xF312",
+      "reg": 62226,
+      "eng": 3.0,
+      "raw": 3,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F3.19",
+      "addr": "0xF313",
+      "reg": 62227,
+      "eng": 20.0,
+      "raw": 20,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F3.20",
+      "addr": "0xF314",
+      "reg": 62228,
+      "eng": 2.0,
+      "raw": 20,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F4.00",
+      "addr": "0xF400",
+      "reg": 62464,
+      "eng": 0.2,
+      "raw": 2,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F4.01",
+      "addr": "0xF401",
+      "reg": 62465,
+      "eng": 0.6,
+      "raw": 6,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F4.02",
+      "addr": "0xF402",
+      "reg": 62466,
+      "eng": 50.0,
+      "raw": 5000,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F4.03",
+      "addr": "0xF403",
+      "reg": 62467,
+      "eng": 30.0,
+      "raw": 300,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F4.04",
+      "addr": "0xF404",
+      "reg": 62468,
+      "eng": 700.0,
+      "raw": 700,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F4.05",
+      "addr": "0xF405",
+      "reg": 62469,
+      "eng": 0.5,
+      "raw": 5,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F4.06",
+      "addr": "0xF406",
+      "reg": 62470,
+      "eng": 9999.0,
+      "raw": 9999,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F4.07",
+      "addr": "0xF407",
+      "reg": 62471,
+      "eng": 3.0,
+      "raw": 30,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F4.08",
+      "addr": "0xF408",
+      "reg": 62472,
+      "eng": 20.0,
+      "raw": 200,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F4.09",
+      "addr": "0xF409",
+      "reg": 62473,
+      "eng": 3.0,
+      "raw": 30,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F4.10",
+      "addr": "0xF40A",
+      "reg": 62474,
+      "eng": 0.02,
+      "raw": 2,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F4.11",
+      "addr": "0xF40B",
+      "reg": 62475,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F4.12",
+      "addr": "0xF40C",
+      "reg": 62476,
+      "eng": 10.0,
+      "raw": 100,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F4.13",
+      "addr": "0xF40D",
+      "reg": 62477,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F4.15",
+      "addr": "0xF40F",
+      "reg": 62479,
+      "eng": null,
+      "raw": null,
+      "ok": false,
+      "scale": 1,
+      "ro": 1
+    },
+    {
+      "id": "F5.00",
+      "addr": "0xF500",
+      "reg": 62720,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F5.01",
+      "addr": "0xF501",
+      "reg": 62721,
+      "eng": 2.2,
+      "raw": 22,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F5.02",
+      "addr": "0xF502",
+      "reg": 62722,
+      "eng": 3.8,
+      "raw": 380,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F5.03",
+      "addr": "0xF503",
+      "reg": 62723,
+      "eng": 1.0,
+      "raw": 100,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F5.04",
+      "addr": "0xF504",
+      "reg": 62724,
+      "eng": 50.0,
+      "raw": 5000,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F5.05",
+      "addr": "0xF505",
+      "reg": 62725,
+      "eng": 3000.0,
+      "raw": 3000,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F5.06",
+      "addr": "0xF506",
+      "reg": 62726,
+      "eng": 2.0,
+      "raw": 2,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F5.07",
+      "addr": "0xF507",
+      "reg": 62727,
+      "eng": 51.0,
+      "raw": 51,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F5.08",
+      "addr": "0xF508",
+      "reg": 62728,
+      "eng": 1140.0,
+      "raw": 1140,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F5.09",
+      "addr": "0xF509",
+      "reg": 62729,
+      "eng": 907.0,
+      "raw": 907,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F5.10",
+      "addr": "0xF50A",
+      "reg": 62730,
+      "eng": 1566.0,
+      "raw": 1566,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F5.11",
+      "addr": "0xF50B",
+      "reg": 62731,
+      "eng": 1499.0,
+      "raw": 1499,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F5.12",
+      "addr": "0xF50C",
+      "reg": 62732,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F7.00",
+      "addr": "0xF700",
+      "reg": 63232,
+      "eng": 1.0,
+      "raw": 1,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F7.01",
+      "addr": "0xF701",
+      "reg": 63233,
+      "eng": 11.0,
+      "raw": 11,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F7.02",
+      "addr": "0xF702",
+      "reg": 63234,
+      "eng": 18.0,
+      "raw": 18,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F7.07",
+      "addr": "0xF707",
+      "reg": 63239,
+      "eng": 2.0,
+      "raw": 2,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F7.08",
+      "addr": "0xF708",
+      "reg": 63240,
+      "eng": 1.0,
+      "raw": 1,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F8.00",
+      "addr": "0xF800",
+      "reg": 63488,
+      "eng": 1.0,
+      "raw": 1,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F8.01",
+      "addr": "0xF801",
+      "reg": 63489,
+      "eng": 5.0,
+      "raw": 5,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F8.02",
+      "addr": "0xF802",
+      "reg": 63490,
+      "eng": 3.0,
+      "raw": 3,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "F8.03",
+      "addr": "0xF803",
+      "reg": 63491,
+      "eng": 0.4,
+      "raw": 4,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F8.04",
+      "addr": "0xF804",
+      "reg": 63492,
+      "eng": 1.0,
+      "raw": 10,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F8.05",
+      "addr": "0xF805",
+      "reg": 63493,
+      "eng": 0.01,
+      "raw": 1,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "F9.00",
+      "addr": "0xF900",
+      "reg": 63744,
+      "eng": 28.0,
+      "raw": 28,
+      "ok": true,
+      "scale": 1,
+      "ro": 1
+    },
+    {
+      "id": "F9.01",
+      "addr": "0xF901",
+      "reg": 63745,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "F9.12",
+      "addr": "0xF90C",
+      "reg": 63756,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 1
+    },
+    {
+      "id": "F9.13",
+      "addr": "0xF90D",
+      "reg": 63757,
+      "eng": 3000.0,
+      "raw": 29999,
+      "ok": true,
+      "scale": 10,
+      "ro": 1
+    },
+    {
+      "id": "F9.14",
+      "addr": "0xF90E",
+      "reg": 63758,
+      "eng": 3000.0,
+      "raw": 29999,
+      "ok": true,
+      "scale": 10,
+      "ro": 1
+    },
+    {
+      "id": "F9.15",
+      "addr": "0xF90F",
+      "reg": 63759,
+      "eng": 3000.0,
+      "raw": 29999,
+      "ok": true,
+      "scale": 10,
+      "ro": 1
+    },
+    {
+      "id": "F9.16",
+      "addr": "0xF910",
+      "reg": 63760,
+      "eng": 3000.0,
+      "raw": 29999,
+      "ok": true,
+      "scale": 10,
+      "ro": 1
+    },
+    {
+      "id": "F9.17",
+      "addr": "0xF911",
+      "reg": 63761,
+      "eng": 3000.0,
+      "raw": 29999,
+      "ok": true,
+      "scale": 10,
+      "ro": 1
+    },
+    {
+      "id": "FD.00",
+      "addr": "0xFD00",
+      "reg": 64768,
+      "eng": null,
+      "raw": null,
+      "ok": false,
+      "scale": 1,
+      "ro": 1
+    },
+    {
+      "id": "FD.01",
+      "addr": "0xFD01",
+      "reg": 64769,
+      "eng": null,
+      "raw": null,
+      "ok": false,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "FD.02",
+      "addr": "0xFD02",
+      "reg": 64770,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "FE.00",
+      "addr": "0xFE00",
+      "reg": 65024,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "FE.01",
+      "addr": "0xFE01",
+      "reg": 65025,
+      "eng": 0.3,
+      "raw": 3,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "FE.02",
+      "addr": "0xFE02",
+      "reg": 65026,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "FE.03",
+      "addr": "0xFE03",
+      "reg": 65027,
+      "eng": null,
+      "raw": null,
+      "ok": false,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "D0.00",
+      "addr": "0x1001",
+      "reg": 4097,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "D0.01",
+      "addr": "0x1000",
+      "reg": 4096,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "D0.02",
+      "addr": "0x1002",
+      "reg": 4098,
+      "eng": 535.5,
+      "raw": 5355,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "D0.03",
+      "addr": "0x1003",
+      "reg": 4099,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "D0.04",
+      "addr": "0x1004",
+      "reg": 4100,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 100,
+      "ro": 0
+    },
+    {
+      "id": "D0.05",
+      "addr": "0x1005",
+      "reg": 4101,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "D0.06",
+      "addr": "0x1006",
+      "reg": 4102,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "D0.07",
+      "addr": "0x1008",
+      "reg": 4104,
+      "eng": 2.0,
+      "raw": 2,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "D0.08",
+      "addr": "0x1009",
+      "reg": 4105,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "D0.09",
+      "addr": "0x100A",
+      "reg": 4106,
+      "eng": 198.0,
+      "raw": 198,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "D0.10",
+      "addr": "0x100B",
+      "reg": 4107,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "D0.11",
+      "addr": "0x100C",
+      "reg": 4108,
+      "eng": 1506.0,
+      "raw": 1506,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "D0.12",
+      "addr": "0x100D",
+      "reg": 4109,
+      "eng": 76.0,
+      "raw": 76,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "D0.13",
+      "addr": "0x100E",
+      "reg": 4110,
+      "eng": 33.0,
+      "raw": 33,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "D0.14",
+      "addr": "0x1007",
+      "reg": 4103,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "D0.15",
+      "addr": "0x100F",
+      "reg": 4111,
+      "eng": 2.6,
+      "raw": 26,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "D0.16",
+      "addr": "0x1010",
+      "reg": 4112,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 10,
+      "ro": 0
+    },
+    {
+      "id": "E0.00",
+      "addr": "0xE000",
+      "reg": 57344,
+      "eng": 15.0,
+      "raw": 15,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "E0.01",
+      "addr": "0xE001",
+      "reg": 57345,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "E0.02",
+      "addr": "0xE002",
+      "reg": 57346,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "E0.03",
+      "addr": "0xE003",
+      "reg": 57347,
+      "eng": 5538.0,
+      "raw": 5538,
+      "ok": true,
+      "scale": 1,
+      "ro": 1
+    },
+    {
+      "id": "E0.04",
+      "addr": "0xE004",
+      "reg": 57348,
+      "eng": 2.0,
+      "raw": 2,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "E0.05",
+      "addr": "0xE005",
+      "reg": 57349,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "E0.06",
+      "addr": "0xE006",
+      "reg": 57350,
+      "eng": 21.0,
+      "raw": 21,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "E0.07",
+      "addr": "0xE007",
+      "reg": 57351,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "E0.08",
+      "addr": "0xE008",
+      "reg": 57352,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "E0.09",
+      "addr": "0xE009",
+      "reg": 57353,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    },
+    {
+      "id": "E0.10",
+      "addr": "0xE00A",
+      "reg": 57354,
+      "eng": 0.0,
+      "raw": 0,
+      "ok": true,
+      "scale": 1,
+      "ro": 0
+    }
+  ]
+}

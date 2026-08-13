@@ -35,24 +35,46 @@ export function parseParamListJson(text: string): ParameterList {
   const pl: ParameterList = {
     name: String(data.name || "Lista"),
     description: String(data.description || ""),
+    drive_profile_id: String(
+      data.drive_profile_id || data.driveProfileId || "saj.pdm30"
+    ),
     parameters: Array.isArray(data.parameters)
       ? data.parameters.map((item: Record<string, unknown>) => {
-          let group = Number(item.group);
-          let index = Number(item.index);
-          if (item.param_id && (item.group === undefined || item.index === undefined)) {
-            const pid = String(item.param_id)
-              .toUpperCase()
-              .replace(".", "-")
-              .replace(" ", "");
-            if (pid.startsWith("P") && pid.includes("-")) {
-              const [gs, is] = pid.slice(1).split("-", 2);
-              group = parseInt(gs, 10);
-              index = parseInt(is, 10);
+          const rawId = item.id ?? item.param_id;
+          let group =
+            item.group !== undefined && item.group !== null
+              ? Number(item.group)
+              : 0;
+          let index =
+            item.index !== undefined && item.index !== null
+              ? Number(item.index)
+              : 0;
+          let id: string | undefined;
+          if (rawId != null) {
+            id = String(rawId).trim().toUpperCase();
+            // P0.00 / P0-00 → group/index
+            const pMatch = id.match(/^P([01])[.\-](\d{1,2})$/i);
+            if (pMatch) {
+              group = parseInt(pMatch[1], 10);
+              index = parseInt(pMatch[2], 10);
+              id = `P${group}-${String(index).padStart(2, "0")}`;
+            } else {
+              // F0.00 / FD.01 / D0.00
+              const fMatch = id.match(/^([FDE][0-9A-E]?)[.\-](\d{1,3})$/i);
+              if (fMatch) {
+                const head = fMatch[1].toUpperCase();
+                index = parseInt(fMatch[2], 10);
+                id = `${head}.${String(index).padStart(2, "0")}`;
+                group = 0;
+              }
             }
+          } else if (!Number.isNaN(group) && !Number.isNaN(index)) {
+            id = `P${group}-${String(index).padStart(2, "0")}`;
           }
           return {
-            group,
-            index,
+            id,
+            group: Number.isNaN(group) ? 0 : group,
+            index: Number.isNaN(index) ? 0 : index,
             value: Number(item.value),
             notes: String(item.notes ?? ""),
             manual_only: Boolean(item.manual_only),
@@ -68,13 +90,23 @@ export function serializeParamList(pl: ParameterList): string {
     {
       name: pl.name,
       description: pl.description,
-      parameters: pl.parameters.map((p) => ({
-        group: p.group,
-        index: p.index,
-        value: p.value,
-        notes: p.notes,
-        manual_only: p.manual_only,
-      })),
+      drive_profile_id: pl.drive_profile_id || "saj.pdm30",
+      parameters: pl.parameters.map((p) => {
+        const id =
+          p.id ||
+          `P${p.group}-${String(p.index).padStart(2, "0")}`;
+        const row: Record<string, unknown> = {
+          id,
+          value: p.value,
+          notes: p.notes,
+          manual_only: p.manual_only,
+        };
+        if (id.startsWith("P") && id.includes("-")) {
+          row.group = p.group;
+          row.index = p.index;
+        }
+        return row;
+      }),
     },
     null,
     2

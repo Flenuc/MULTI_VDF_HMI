@@ -92,6 +92,23 @@ export const t = {
   cmdPlaceholder: "Comando técnico (solo avanzado)…",
   send: "Enviar",
 
+  // Drive model (multi-VDF)
+  driveModelTitle: "Modelo de variador",
+  driveModelHint:
+    "Elige el modelo conectado al módulo. Las recetas y el mapa de parámetros dependen de esto.",
+  driveModelRecipes: "Recetas de este modelo",
+  driveModelAllRecipes: "Todas las recetas",
+  driveModelApplied: (name: string) => `Modelo activo: ${name}`,
+  driveModelEdgeOk: (name: string) => `Módulo configurado para ${name}`,
+  driveModelMismatch:
+    "La receta es de otro modelo. Cambia el modelo o elige otra receta.",
+  driveModelFilter: "Filtrar recetas por modelo",
+  catalogColName: "Nombre (manual)",
+  catalogLoading: "Cargando catálogo del modelo…",
+  catalogReady: (n: number) => `Catálogo: ${n} parámetros del manual`,
+  catalogMissing: "Sin nombre en catálogo",
+  catalogUnit: "Unidad",
+
   // Recipes
   recipesTitle: "Receta de parámetros",
   recipesServer: "Recetas en este PC",

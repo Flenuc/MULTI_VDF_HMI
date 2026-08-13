@@ -87,6 +87,7 @@ export type ProfilesStore = {
 };
 
 export type ParamFileInfo = {
+  drive_profile_id?: string;
   filename: string;
   stem: string;
   name: string;
@@ -176,6 +177,22 @@ export const api = {
     json<{ ok: boolean }>(`/param-lists/${encodeURIComponent(filename)}`, {
       method: "DELETE",
     }),
+
+  driveProfiles: () =>
+    json<{ profiles: DriveProfileInfo[] }>("/drive-profiles"),
+  driveProfile: (id: string) =>
+    json<Record<string, unknown>>(`/drive-profiles/${encodeURIComponent(id)}`),
+};
+
+export type DriveProfileInfo = {
+  id: string;
+  vendor?: string;
+  family?: string;
+  model?: string;
+  status?: string;
+  param_count?: number;
+  version?: string;
+  path?: string;
 };
 
 export type EventHandler = (ev: BackendEvent) => void;

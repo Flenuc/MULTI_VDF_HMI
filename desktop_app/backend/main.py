@@ -291,6 +291,7 @@ class LastsBody(BaseModel):
 class ParamListBody(BaseModel):
     name: str = "Lista"
     description: str = ""
+    drive_profile_id: str = "saj.pdm30"
     parameters: list = Field(default_factory=list)
 
 
@@ -326,6 +327,21 @@ def api_upsert_wifi(body: WifiProfileBody):
 @app.patch("/profiles/lasts")
 def api_patch_lasts(body: LastsBody):
     return param_api.update_lasts(**{k: v for k, v in body.model_dump().items() if v is not None})
+
+
+@app.get("/drive-profiles")
+def api_list_drive_profiles():
+    return {"profiles": param_api.list_drive_profiles()}
+
+
+@app.get("/drive-profiles/{profile_id}")
+def api_get_drive_profile(profile_id: str):
+    try:
+        return param_api.load_drive_profile(profile_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="drive profile not found") from None
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.get("/param-lists")
@@ -391,6 +407,7 @@ if _UI is not None:
             "redoc",
             "profiles",
             "param-lists",
+            "drive-profiles",
             "broker",
         }:
             raise HTTPException(status_code=404, detail="Not found")
