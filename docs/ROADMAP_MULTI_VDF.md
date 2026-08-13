@@ -188,13 +188,17 @@ Manual / dump → extractores → borrador profile
 
 **Objetivo:** el sistema actual se expresa como el primer Drive Profile, sin cambiar la UX del operario.
 
-- [ ] Extraer de `ScaleTable` + `saj_pdm30_protocol.h` → `drive_profiles/saj/pdm30/profile.json`
-- [ ] Añadir `drive_profile_id: "saj.pdm30"` a recetas (default si falta)
+- [x] Extraer de `ScaleTable` + `saj_pdm30_protocol.h` → `drive_profiles/saj/pdm30/profile.json`
+- [x] Añadir `drive_profile_id: "saj.pdm30"` a recetas (default si falta) + `models.ParameterList`
+- [x] Loader `drive_profiles/` + README
+- [x] Spike tool RS485: `tools/spike_pdh30_map.py` (raw CLI / schemes)
 - [ ] App: selector de modelo (solo PDM-30 visible en operario; más en técnico)
 - [ ] Edge: leer profile id por CLI `profile get` (hardcoded `saj.pdm30` al inicio)
-- [ ] Tests: dump/compare/sync idénticos a 0.3.3
+- [ ] Tests: dump/compare/sync idénticos a 0.3.3 con profile cargado
 
 **Criterio de salida:** con profile explícito, un banco PDM-30 se comporta igual que hoy.
+
+**Taller (hardware disponible ahora):** PDM-30 (regresión), **PDH-30 (spike activo)**, PD-20 y Danfoss cuando haya unidad; 8200B y Bedford después.
 
 ---
 
@@ -202,11 +206,14 @@ Manual / dump → extractores → borrador profile
 
 **Objetivo:** primer modelo “nuevo” usable en planta para recetas y compare/write.
 
-1. **Catalogación**
+1. **Catalogación / spike**
+   - [x] Scaffold `drive_profiles/saj/pdh30/profile.json` (F-style + telemetría Ch.6)
+   - [x] Tool: `python3 tools/spike_pdh30_map.py --port /dev/ttyACM0 --label pdh30`
+   - [ ] **Ejecutar spike en taller** con PDH-30 cableado; archivar `results/spike_map_pdh30_*.json`
+   - [ ] Confirmar scheme ganador (esperado: `f_style`)
    - [ ] Parser del manual `docs/PDH30_User_Manual.txt` (tablas F0.xx / registros)
-   - [ ] Mapear esquema `MAP_F_STYLE` (y validar en banco)
-   - [ ] Escalas y unidades por parámetro (o por grupo si el manual lo define así)
-   - [ ] Telemetría y comandos marcha/paro desde Ch.6 (reutilizar registros 0x100x/0x2000 si coinciden)
+   - [ ] Escalas y unidades por parámetro
+   - [ ] Telemetría y comandos marcha/paro validados en banco
 
 2. **Firmware**
    - [ ] `profile set saj.pdh30` / autodetect opcional (fingerprint de defaults)

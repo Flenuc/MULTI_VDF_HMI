@@ -56,6 +56,8 @@ class Parameter:
 class ParameterList:
     name: str = "Nueva lista"
     description: str = ""
+    # Multi-VDF: which drive catalog this recipe targets (default PDM-30)
+    drive_profile_id: str = "saj.pdm30"
     parameters: List[Parameter] = field(default_factory=list)
 
     def add(self, param: Parameter) -> None:
@@ -84,6 +86,7 @@ class ParameterList:
         return {
             "name": self.name,
             "description": self.description,
+            "drive_profile_id": self.drive_profile_id or "saj.pdm30",
             "parameters": [p.to_dict() for p in self.parameters],
         }
 
@@ -92,6 +95,7 @@ class ParameterList:
         pl = cls(
             name=str(data.get("name", "Lista")),
             description=str(data.get("description", "")),
+            drive_profile_id=str(data.get("drive_profile_id") or "saj.pdm30"),
         )
         for item in data.get("parameters", []):
             pl.add(Parameter.from_dict(item))
