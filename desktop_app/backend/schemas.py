@@ -69,4 +69,4 @@ class OkResponse(BaseModel):
 class HealthResponse(BaseModel):
     ok: bool = True
     service: str = "variofield-backend"
-    version: str = "0.3.0"
+    version: str = "0.3.2"

@@ -1,9 +1,11 @@
 @echo off
-REM Build MULTI_VDF_HMI desktop for Windows (Electron + PyInstaller + Expo web)
+REM Build VarioField desktop for Windows (Electron + PyInstaller + Expo web)
 REM Run on Windows x64 with Node.js + Python 3.12
 setlocal EnableExtensions
 cd /d "%~dp0"
+set EXPO_PUBLIC_ENV=production
 
+echo === VarioField 0.3.2 — Windows production build ===
 echo === 1) Python backend .exe ===
 if not exist "%~dp0.venv\Scripts\python.exe" (
   python -m venv "%~dp0.venv"
@@ -43,9 +45,10 @@ pyinstaller --noconfirm --clean ^
   --collect-all bleak ^
   "%~dp0backend\main.py"
 
-echo === 2) Expo web UI ===
+echo === 2) Expo web UI (production) ===
 cd /d "%~dp0frontend"
 if not exist node_modules call npm install
+set EXPO_PUBLIC_ENV=production
 call npx expo export --platform web --output-dir dist --clear
 cd /d "%~dp0"
 xcopy /E /I /Y "%~dp0frontend\dist\*" "%~dp0electron\resources\ui\"
@@ -57,7 +60,8 @@ call npx electron-builder --win nsis
 cd /d "%~dp0"
 
 echo.
-echo === Build Windows listo ===
+echo === VarioField Windows build listo ===
 dir "%~dp0electron\dist\*.exe"
+echo Instalador: electron\dist\VarioField-Setup-0.3.2.exe
 echo.
 endlocal

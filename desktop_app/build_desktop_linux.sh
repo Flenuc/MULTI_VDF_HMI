@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-# Build MULTI_VDF_HMI desktop (Electron + PyInstaller backend + Expo web UI)
-# Output: desktop_app/electron/dist/  (AppImage / deb) + resources
+# Build VarioField desktop production pack (Electron + PyInstaller + Expo web)
+# Output: desktop_app/electron/dist/VarioField-*.AppImage
 set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
+
+export EXPO_PUBLIC_ENV="${EXPO_PUBLIC_ENV:-production}"
+VERSION="$(node -p "require('./electron/package.json').version" 2>/dev/null || echo "0.3.2")"
+echo "=== VarioField ${VERSION} — build producción (EXPO_PUBLIC_ENV=${EXPO_PUBLIC_ENV}) ==="
 
 echo "=== 1) Python backend binary (PyInstaller) ==="
 if [[ ! -d .venv ]]; then
@@ -14,7 +18,7 @@ source .venv/bin/activate
 pip install -q -U pip wheel
 pip install -q -r requirements.txt -r backend/requirements.txt pyinstaller
 
-rm -rf build/pyi dist/backend_bin
+rm -rf build/pyi
 mkdir -p electron/resources/backend electron/resources/ui
 
 pyinstaller --noconfirm --clean \
@@ -33,55 +37,62 @@ pyinstaller --noconfirm --clean \
   --hidden-import backend.main \
   --hidden-import backend.session \
   --hidden-import backend.schemas \
+  --hidden-import backend.param_api \
   --hidden-import comms \
   --hidden-import comms.serial_client \
   --hidden-import comms.mqtt_client \
   --hidden-import comms.bluetooth_client \
   --hidden-import comms.ble_nus_client \
   --hidden-import comms.dummy_client \
+  --hidden-import models \
+  --hidden-import profiles \
+  --hidden-import storage \
   --hidden-import serial.tools.list_ports \
   --collect-all bleak \
   "$DIR/backend/main.py"
 
 chmod +x electron/resources/backend/multi_vdf_backend
-ls -lh electron/resources/backend/
+ls -lh electron/resources/backend/multi_vdf_backend
 
-echo "=== 2) Expo web static UI ==="
+echo "=== 2) Expo web static UI (production) ==="
 cd frontend
 if [[ ! -d node_modules ]]; then npm install; fi
 if [[ ! -d node_modules/react-native-web ]]; then
   npx expo install react-dom react-native-web @expo/metro-runtime
 fi
+export EXPO_PUBLIC_ENV=production
 npx expo export --platform web --output-dir dist --clear
 cd ..
 rm -rf electron/resources/ui/*
 cp -a frontend/dist/. electron/resources/ui/
-# Also wire MULTI_VDF_UI_DIR for the onefile binary (Electron sets it to resources/ui)
 test -f electron/resources/ui/index.html
 echo "UI files: $(find electron/resources/ui -type f | wc -l)"
 
-echo "=== 3) Electron app ==="
+echo "=== 3) Electron AppImage ==="
 cd electron
 if [[ ! -d node_modules ]]; then npm install; fi
-# Place a tiny README next to backend
+# Ensure icons available (electron-builder looks at app-icons)
+if [[ ! -f app-icons/icon.png ]]; then
+  echo "WARN: app-icons/icon.png missing — using default Electron icon"
+fi
+
 cat > resources/backend/LEEME.txt << EOF
-multi_vdf_backend — API + UI host
-Electron sets MULTI_VDF_UI_DIR to ../ui
-Port: 127.0.0.1:8765
+VarioField backend ${VERSION}
+API + UI en http://127.0.0.1:8765
+Electron define MULTI_VDF_UI_DIR hacia resources/ui
 EOF
 
-# AppImage only by default — .deb uses fpm (x86) and fails on aarch64/Pi.
 npx electron-builder --linux AppImage
 cd ..
 
 echo ""
-echo "=== Desktop Linux build listo ==="
+echo "=== VarioField ${VERSION} — build listo ==="
 ls -lh electron/dist/*AppImage 2>/dev/null || ls -lh electron/dist/
+ARCH="$(uname -m)"
 echo ""
-echo "Ejecutar (estás en desktop_app):"
-echo "  chmod +x electron/dist/MULTI_VDF_HMI-*.AppImage"
-echo "  ./electron/dist/MULTI_VDF_HMI-*-arm64.AppImage"
+echo "Ejecutar:"
+echo "  chmod +x electron/dist/VarioField-*.AppImage"
+echo "  ./electron/dist/VarioField-*-*.AppImage"
 echo ""
-echo "Dev sin empaquetar (desde desktop_app):"
-echo "  cd electron && npm start"
-echo "  # NO: cd desktop_app/electron  (si ya estás dentro de desktop_app)"
+echo "Host arch: ${ARCH}  (arm64 Pi → AppImage arm64; x86_64 PC → AppImage x64)"
+echo "Notas: RELEASE_NOTES_0.3.2.md"
