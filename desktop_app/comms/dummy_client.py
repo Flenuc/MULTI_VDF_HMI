@@ -20,6 +20,18 @@ class DummyClient(CommsClient):
             (1, 5): 60.0,
             (1, 35): 1.0,
         }
+        # Multi-VDF id → eng (for pget/pset / PDH dump)
+        self._id_regs: Dict[str, float] = {
+            "P0-00": 1.0,
+            "P0-01": 0.4,
+            "P0-03": 10.0,
+            "P1-05": 60.0,
+            "F0.00": 2.6,
+            "F0.01": 0.5,
+            "F0.03": 0.0,
+            "D0.00": 0.0,
+        }
+        self._profile = "saj.pdm30"
         self._stream = False
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
@@ -90,22 +102,84 @@ class DummyClient(CommsClient):
             self._regs[(g, i)] = v
             self._emit_line(f"OK write P{g}-{i:02d} eng={v} raw={int(v*10)}")
             return
+        if op == "profile":
+            if len(parts) < 2 or parts[1].lower() == "get":
+                self._emit_line(f"profile={self._profile}")
+                return
+            if parts[1].lower() == "list":
+                self._emit_line("profiles: saj.pdm30 saj.pdh30")
+                return
+            if parts[1].lower() == "set" and len(parts) >= 3:
+                pid = parts[2].strip().lower()
+                if pid in ("saj.pdm30", "pdm30", "pdm"):
+                    self._profile = "saj.pdm30"
+                elif pid in ("saj.pdh30", "pdh30", "pdh"):
+                    self._profile = "saj.pdh30"
+                else:
+                    self._emit_line("ERR: profile set saj.pdm30|saj.pdh30")
+                    return
+                self._emit_line(f"OK profile={self._profile}")
+                return
+            self._emit_line("usage: profile get|list|set <id>")
+            return
+        if op in ("pget", "pset") and len(parts) >= 2:
+            pid = parts[1].strip().upper().replace(" ", "")
+            # normalize P0.00 → P0-00
+            if pid.startswith("P") and "." in pid:
+                pid = pid.replace(".", "-", 1)
+            if op == "pget":
+                if pid.startswith("P") and "-" in pid:
+                    try:
+                        g = int(pid[1])
+                        i = int(pid.split("-", 1)[1])
+                        v = self._regs.get((g, i), self._id_regs.get(pid, 0.0))
+                    except ValueError:
+                        v = self._id_regs.get(pid, 0.0)
+                else:
+                    v = self._id_regs.get(pid, 0.0)
+                self._id_regs[pid] = v
+                self._emit_line(f"{pid} @0x0000 = {v}  (raw={int(v*10)} scale=10)")
+                return
+            if len(parts) < 3:
+                self._emit_line(f"usage: pset {pid} <eng>")
+                return
+            v = float(parts[2])
+            self._id_regs[pid] = v
+            if pid.startswith("P") and "-" in pid:
+                try:
+                    g = int(pid[1])
+                    i = int(pid.split("-", 1)[1])
+                    self._regs[(g, i)] = v
+                except ValueError:
+                    pass
+            self._emit_line(f"OK write {pid} @0x0000 eng={v} raw={int(v*10)}")
+            return
         if op == "dump":
-            self._emit_line("DUMP begin (eng scale)")
+            self._emit_line(f"DUMP begin profile={self._profile}")
             self._emit_line("CSV:param,addr,eng,raw,unit")
-            for (g, i), v in sorted(self._regs.items()):
-                raw = int(v * 10)
-                self._emit_line(f"CSV:P{g}-{i:02d},0x{(g<<8)|i:04X},{v},{raw},")
-            # fill missing as zeros for demo span
-            for g in (0, 1):
-                for i in range(48):
-                    if (g, i) not in self._regs:
-                        self._emit_line(f"CSV:P{g}-{i:02d},0x{(g<<8)|i:04X},0,0,")
+            if "pdh" in self._profile:
+                for pid, v in sorted(self._id_regs.items()):
+                    if pid.startswith("P"):
+                        continue
+                    raw = int(v * 10)
+                    self._emit_line(f"CSV:{pid},0xF000,{v},{raw},")
+                # ensure common plant IDs exist
+                for pid in ("F0.00", "F0.01", "F0.03", "D0.00"):
+                    if pid not in self._id_regs:
+                        self._emit_line(f"CSV:{pid},0xF000,0,0,")
+            else:
+                for (g, i), v in sorted(self._regs.items()):
+                    raw = int(v * 10)
+                    self._emit_line(f"CSV:P{g}-{i:02d},0x{(g<<8)|i:04X},{v},{raw},")
+                for g in (0, 1):
+                    for i in range(48):
+                        if (g, i) not in self._regs:
+                            self._emit_line(f"CSV:P{g}-{i:02d},0x{(g<<8)|i:04X},0,0,")
             self._emit_line("CSV:END")
             self._emit_line("DUMP done")
             return
         if op == "help":
-            self._emit_line("help | ping | dump | stream on|off | r0|w0 …")
+            self._emit_line("help | ping | dump | stream on|off | profile | pget|pset | r0|w0 …")
             return
         self._emit_line(f"ERR: unknown (dummy) {cmd}")
 

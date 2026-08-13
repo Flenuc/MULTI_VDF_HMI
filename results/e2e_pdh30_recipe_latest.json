@@ -1,0 +1,29 @@
+{
+  "timestamp": "20260813T173508Z",
+  "port": "/dev/ttyACM0",
+  "recipe": "/home/master-pi/Desktop/VF patron/desktop_app/param_lists/ejemplo_pdh30.json",
+  "profile": "saj.pdh30",
+  "param_count": 79,
+  "writable_count": 62,
+  "dump_elapsed_s": 35.71,
+  "dump_ids": 143,
+  "compare_matches": 60,
+  "compare_mismatches": 2,
+  "compare_missing": 2,
+  "mismatch_sample": [
+    {
+      "id": "F0.09",
+      "recipe": 0.0,
+      "live": null,
+      "reason": "missing"
+    },
+    {
+      "id": "F0.19",
+      "recipe": 5.0,
+      "live": null,
+      "reason": "missing"
+    }
+  ],
+  "sync": "skipped",
+  "ok": false
+}

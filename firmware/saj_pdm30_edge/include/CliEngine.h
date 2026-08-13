@@ -65,6 +65,8 @@ private:
   uint8_t  _dumpGroup = 0;
   uint8_t  _dumpIndex = 0;
   uint8_t  _dumpChunk = 0;
+  uint16_t _dumpPdhIdx = 0;       // index into kPdh30Params for PDH dump
+  bool     _dumpIsPdh = false;
   bool     _dumpAwaiting = false;
   uint32_t _dumpNextChunkAt = 0;  // millis gate between chunks (WS pacing)
   bool     _streamPausedForDump = false;
@@ -80,6 +82,9 @@ private:
   uint16_t _ctxAddr = 0;
   bool     _ctxIsParam = false;
   bool     _ctxScaled = true;
+  bool     _ctxIsPdhId = false;   // print as F0.00 / table scale
+  uint16_t _ctxScale = 1;
+  char     _ctxId[12] = {};
   float    _ctxEng = 0.0f;
 
   char _reply[CLI_REPLY_MAX];
@@ -95,4 +100,6 @@ private:
   void finishDump(const char *errMsg);
   void appendDumpCsvLine(size_t &pos, uint8_t group, uint8_t idx, bool ok,
                          uint16_t raw);
+  void appendDumpPdhCsvLine(size_t &pos, const char *id, uint16_t reg,
+                            uint16_t scale, bool ok, uint16_t raw);
 };

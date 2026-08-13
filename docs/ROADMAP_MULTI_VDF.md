@@ -194,7 +194,7 @@ Manual / dump → extractores → borrador profile
 - [x] Spike tool RS485: `tools/spike_pdh30_map.py` (raw CLI / schemes)
 - [ ] App: selector de modelo (solo PDM-30 visible en operario; más en técnico)
 - [ ] Edge: leer profile id por CLI `profile get` (hardcoded `saj.pdm30` al inicio)
-- [ ] Tests: dump/compare/sync idénticos a 0.3.3 con profile cargado
+- [x] Tests: models + receta PDH por ID + dump CSV F-style (`desktop_app/tests/test_logic.py`)
 
 **Criterio de salida:** con profile explícito, un banco PDM-30 se comporta igual que hoy.
 
@@ -209,24 +209,33 @@ Manual / dump → extractores → borrador profile
 1. **Catalogación / spike**
    - [x] Scaffold `drive_profiles/saj/pdh30/profile.json` (F-style + telemetría Ch.6)
    - [x] Tool: `python3 tools/spike_pdh30_map.py --port /dev/ttyACM0 --label pdh30`
-   - [ ] **Ejecutar spike en taller** con PDH-30 cableado; archivar `results/spike_map_pdh30_*.json`
-   - [ ] Confirmar scheme ganador (esperado: `f_style`)
-   - [ ] Parser del manual `docs/PDH30_User_Manual.txt` (tablas F0.xx / registros)
-   - [ ] Escalas y unidades por parámetro
-   - [ ] Telemetría y comandos marcha/paro validados en banco
+   - [x] **Ejecutar spike en taller** con PDH-30 cableado; archivar `results/spike_map_pdh30_*.json`
+   - [x] Confirmar scheme ganador (esperado: `f_style`) — mapa catálogo 148/150 OK
+   - [x] Parser del manual `docs/PDH30_User_Manual.txt` (tablas F0.xx / registros)
+   - [x] Escalas y unidades por parámetro (en profile + tabla FW)
+   - [ ] Telemetría y comandos marcha/paro validados en banco (ping OK; set-pressure profile-aware pendiente)
 
 2. **Firmware**
-   - [ ] `profile set saj.pdh30` / autodetect opcional (fingerprint de defaults)
-   - [ ] Driver reutilizando motor Modbus; cambiar solo address + scale tables
-   - [ ] CLI: mantener `r0/w0` si PDH se presenta como grupos 0/1 **o** introducir `param get F0.00`
+   - [x] `profile set saj.pdh30` / `profile get|list` (autodetect opcional pendiente)
+   - [x] Driver reutilizando motor Modbus; catálogo `Pdh30ParamTable.h` + scale por ID
+   - [x] CLI: `pget`/`pset`/`wraw` + `dump` profile-aware (PDM chunks / PDH catalog)
 
 3. **App**
-   - [ ] Selector **PDH-30** en conectar / receta
-   - [ ] Recetas con IDs del perfil (mostrar nombre de manual, no solo código)
-   - [ ] Compare/sync usando el mapper del perfil
+   - [x] Receta con `drive_profile_id` + API `/drive-profiles`
+   - [x] Recetas por ID (`ejemplo_pdh30.json`, IDs F0.xx…)
+   - [x] Compare/sync: `profile set` + `dump` por ID + `pset <id>`
+   - [x] UI: selector de modelo (Conectar + Recetas) + filtro de listas + push Edge
+   - [x] UI: nombres de manual en filas (catálogo por ID + unidad en receta/live)
 
 4. **Campo**
-   - [ ] Banco: 10 params R/W + dump completo + 1 receta de planta
+   - [x] Banco: pget/pset F0.00/F0.01/F0.07 + write readback OK (Guition + PDH)
+   - [x] Dump PDH completo en banco (`tools/bank_dump_pdh30.py`) → **146/150 OK (97.3%)** ~40 s
+     - fails recurrentes: F4.15, FD.00 (+ ocasionales FD.01/FE.03 o D0.xx)
+     - artefactos: `results/pdh30_full_dump_latest.{csv,json}`
+   - [x] Receta planta end-to-end en banco (`tools/e2e_pdh30_recipe.py` + app path pset/await)
+     - compare: dump profile-aware; mismatch solo en params escribibles
+     - sync: `pset <id>` con espera OK write + reintento CRC/busy
+     - resultado: **61/62 writes OK**, readback F0.00/01/07 OK
    - [ ] Documentar diferencias PDH vs PDM (presión, PID, límites)
 
 **Criterio de salida:** receta de planta en PDH-30 se compara y envía sin tocar código CTk legacy.

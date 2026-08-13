@@ -3,11 +3,14 @@
 #include "TelemetryService.h"
 #include "NetworkService.h"
 #include "BtIo.h"
+#include "DriveProfile.h"
+#include "generated/Pdh30ParamTable.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 void CliEngine::replyf(const Channel &ch, const char *fmt, ...) {
   va_list ap;
@@ -19,7 +22,10 @@ void CliEngine::replyf(const Channel &ch, const char *fmt, ...) {
 
 void CliEngine::printHelp(const Channel &ch) {
   replyf(ch, "help | ping | dump | stream on|off");
-  replyf(ch, "r0|r1 <ii>   w0|w1 <ii> <float>   raw <addr>");
+  replyf(ch, "profile | profile get | profile set saj.pdm30|saj.pdh30");
+  replyf(ch, "pget <id> | pset <id> <eng>   e.g. pget F0.00 / pset F0.00 2.6");
+  replyf(ch, "r0|r1 <ii>   w0|w1 <ii> <float>   (PDM map)");
+  replyf(ch, "raw <addr> | wraw <addr> <uint>   e.g. raw 0xF000");
   replyf(ch, "start | stop | estop | reset | set <pct>");
   replyf(ch, "slave <id>   values ENGINEERING floats");
   replyf(ch, "wifi status | wifi set <ssid> <pass> | wifi reconnect");
@@ -27,7 +33,59 @@ void CliEngine::printHelp(const Channel &ch) {
   replyf(ch, "mqtt status | mqtt set <host> [port] | mqtt user <u> <p>");
   replyf(ch, "mqtt enable | mqtt disable");
   replyf(ch, "bt status | bt advertise | bt clearbonds");
-  replyf(ch, "link: MQTT topics saj/pdm30/saj-pdm30/{cmd,rsp,telemetry}");
+  replyf(ch, "profile now=%s", g_driveProfile.idStr());
+}
+
+// Normalize param id to uppercase canonical form (F0.00 / P0-00 / D0.00)
+static bool normalizeParamId(const char *in, char *out, size_t outSz) {
+  if (!in || !out || outSz < 5) return false;
+  char tmp[16];
+  size_t n = 0;
+  for (const char *p = in; *p && n + 1 < sizeof(tmp); ++p) {
+    if (*p == ' ' || *p == '\t') continue;
+    tmp[n++] = (char)toupper((unsigned char)*p);
+  }
+  tmp[n] = '\0';
+  // P0-0 / P0-00 / P0.00
+  if (tmp[0] == 'P' && (tmp[1] == '0' || tmp[1] == '1') &&
+      (tmp[2] == '-' || tmp[2] == '.')) {
+    int idx = atoi(tmp + 3);
+    if (idx < 0 || idx > 47) return false;
+    snprintf(out, outSz, "P%c-%02d", tmp[1], idx);
+    return true;
+  }
+  // F0.00 .. F9.00, FD.00, FE.00, D0.00, E0.00
+  if ((tmp[0] == 'F' || tmp[0] == 'D' || tmp[0] == 'E') && strchr(tmp, '.')) {
+    strncpy(out, tmp, outSz - 1);
+    out[outSz - 1] = '\0';
+    // pad index to 2 digits if F0.0 style
+    char g[4] = {};
+    int idx = -1;
+    if (sscanf(tmp, "%3[^.].%d", g, &idx) == 2 && idx >= 0 && idx < 256) {
+      snprintf(out, outSz, "%s.%02d", g, idx);
+    }
+    return true;
+  }
+  return false;
+}
+
+static uint16_t engToRawScaled(float eng, uint16_t scale) {
+  if (scale < 1) scale = 1;
+  float v = eng * (float)scale;
+  if (v >= 0.0f) v += 0.5f;
+  else v -= 0.5f;
+  if (v < 0) v = 0;
+  if (v > 65535.0f) v = 65535.0f;
+  return (uint16_t)v;
+}
+
+static float rawToEngScaled(uint16_t raw, uint16_t scale) {
+  if (scale <= 1) {
+    int16_t s = (int16_t)raw;
+    return (float)s;
+  }
+  int16_t s = (int16_t)raw;
+  return (float)s / (float)scale;
 }
 
 // Commands that never touch Modbus — must work even while telemetry owns the bus
@@ -40,6 +98,8 @@ static bool isControlOnlyCmd(int argc, char **argv) {
   if (strcmp(cmd, "wifi") == 0) return true;   // status/set/profile/reconnect
   if (strcmp(cmd, "mqtt") == 0) return true;   // status/set/user/enable/disable
   if (strcmp(cmd, "bt") == 0) return true;     // status/advertise/clearbonds
+  if (strcmp(cmd, "profile") == 0) return true; // drive profile get/set (no Modbus)
+  if (strcmp(cmd, "profile") == 0) return true;
   if (strcmp(cmd, "slave") == 0 && argc < 2) return true;  // query only
   return false;
 }
@@ -281,6 +341,27 @@ void CliEngine::dispatch(const Channel &ch, int argc, char **argv) {
     return;
   }
 
+  if (strcmp(cmd, "profile") == 0) {
+    if (argc < 2 || strcmp(argv[1], "get") == 0) {
+      replyf(ch, "profile=%s", g_driveProfile.idStr());
+      return;
+    }
+    if (strcmp(argv[1], "set") == 0 && argc >= 3) {
+      if (!g_driveProfile.setFromStr(argv[2])) {
+        replyf(ch, "ERR: profile set saj.pdm30|saj.pdh30");
+        return;
+      }
+      replyf(ch, "OK profile=%s", g_driveProfile.idStr());
+      return;
+    }
+    if (strcmp(argv[1], "list") == 0) {
+      replyf(ch, "profiles: saj.pdm30 saj.pdh30");
+      return;
+    }
+    replyf(ch, "usage: profile get|list|set <id>");
+    return;
+  }
+
   if (strcmp(cmd, "ping") == 0 || strcmp(cmd, "status") == 0) {
     _jobCh = ch;
     _pingStep = 0;
@@ -294,6 +375,8 @@ void CliEngine::dispatch(const Channel &ch, int argc, char **argv) {
     _dumpGroup = 0;
     _dumpIndex = 0;
     _dumpChunk = 0;
+    _dumpPdhIdx = 0;
+    _dumpIsPdh = g_driveProfile.isPdh();
     _dumpAwaiting = false;
     _dumpNextChunkAt = 0;
     // Pause telemetry stream so it does not fight dump for Modbus / WS bandwidth
@@ -302,8 +385,89 @@ void CliEngine::dispatch(const Channel &ch, int argc, char **argv) {
       _tel->setEnabled(false);
     }
     _job = Job::Dump;
-    replyf(ch, "DUMP begin (eng scale)");
+    replyf(ch, "DUMP begin profile=%s", g_driveProfile.idStr());
     replyf(ch, "CSV:param,addr,eng,raw,unit");
+    return;
+  }
+
+  // pget <id>   pset <id> <eng>
+  if ((strcmp(cmd, "pget") == 0 || strcmp(cmd, "pset") == 0) && argc >= 2) {
+    char id[12];
+    if (!normalizeParamId(argv[1], id, sizeof(id))) {
+      replyf(ch, "ERR: bad id (use F0.00 or P0-00)");
+      return;
+    }
+    _jobCh = ch;
+    _ctxIsPdhId = false;
+    _ctxScaled = true;
+    _ctxIsParam = true;
+    strncpy(_ctxId, id, sizeof(_ctxId) - 1);
+    _ctxId[sizeof(_ctxId) - 1] = '\0';
+
+    // PDM classic P0/P1
+    if (id[0] == 'P' && (id[1] == '0' || id[1] == '1')) {
+      uint8_t g = (uint8_t)(id[1] - '0');
+      int ii = atoi(id + 3);
+      _ctxGroup = g;
+      _ctxIndex = (uint8_t)ii;
+      _ctxAddr = paramAddress(g, (uint8_t)ii);
+      _ctxScale = ScaleTable::scaleOf(g, (uint8_t)ii);
+      if (strcmp(cmd, "pget") == 0) {
+        if (!_vfd.requestReadParam(g, (uint8_t)ii)) {
+          replyf(ch, "ERR: queue read");
+          return;
+        }
+        _job = Job::WaitRead;
+        return;
+      }
+      if (argc < 3) {
+        replyf(ch, "usage: pset P0-00 <eng>");
+        return;
+      }
+      float eng = strtof(argv[2], nullptr);
+      uint16_t raw = ScaleTable::engToRaw(g, (uint8_t)ii, eng);
+      _ctxEng = eng;
+      if (!_vfd.requestWriteParam(g, (uint8_t)ii, raw)) {
+        replyf(ch, "ERR: queue write");
+        return;
+      }
+      _job = Job::WaitWrite;
+      return;
+    }
+
+    // PDH catalog id (F0.00, FD.01, D0.00, …)
+    const Pdh30ParamEntry *pe = pdh30FindId(id);
+    if (!pe) {
+      replyf(ch, "ERR: unknown id %s (set profile saj.pdh30 catalog)", id);
+      return;
+    }
+    _ctxIsPdhId = true;
+    _ctxAddr = pe->reg;
+    _ctxScale = pe->scale ? pe->scale : 1;
+    if (strcmp(cmd, "pget") == 0) {
+      if (!_vfd.requestReadHolding(pe->reg, 1)) {
+        replyf(ch, "ERR: queue read");
+        return;
+      }
+      _job = Job::WaitRead;
+      return;
+    }
+    if (pe->ro) {
+      replyf(ch, "ERR: %s is read-only", id);
+      return;
+    }
+    if (argc < 3) {
+      replyf(ch, "usage: pset F0.00 <eng>");
+      return;
+    }
+    float eng = strtof(argv[2], nullptr);
+    uint16_t raw = engToRawScaled(eng, _ctxScale);
+    _ctxEng = eng;
+    if (!_vfd.requestWriteHolding(pe->reg, raw)) {
+      replyf(ch, "ERR: queue write");
+      return;
+    }
+    _job = Job::WaitWrite;
     return;
   }
 
@@ -417,11 +581,39 @@ void CliEngine::dispatch(const Channel &ch, int argc, char **argv) {
     _ctxAddr = (uint16_t)addr;
     _ctxIsParam = false;
     _ctxScaled = false;
+    _ctxIsPdhId = false;
     if (!_vfd.requestReadHolding((uint16_t)addr, 1)) {
       replyf(ch, "ERR: queue raw");
       return;
     }
     _job = Job::WaitRead;
+    return;
+  }
+
+  // wraw <addr> <uint>
+  if (strcmp(cmd, "wraw") == 0 && argc >= 3) {
+    char *end = nullptr;
+    unsigned long addr = strtoul(argv[1], &end, 0);
+    if (end == argv[1] || addr > 0xFFFFUL) {
+      replyf(ch, "ERR: bad addr");
+      return;
+    }
+    unsigned long val = strtoul(argv[2], nullptr, 0);
+    if (val > 0xFFFFUL) {
+      replyf(ch, "ERR: bad value");
+      return;
+    }
+    _jobCh = ch;
+    _ctxAddr = (uint16_t)addr;
+    _ctxIsParam = false;
+    _ctxScaled = false;
+    _ctxIsPdhId = false;
+    _ctxEng = (float)val;
+    if (!_vfd.requestWriteHolding((uint16_t)addr, (uint16_t)val)) {
+      replyf(ch, "ERR: queue wraw");
+      return;
+    }
+    _job = Job::WaitWrite;
     return;
   }
 
@@ -485,6 +677,23 @@ void CliEngine::appendDumpCsvLine(size_t &pos, uint8_t group, uint8_t idx,
   if (n > 0) pos += (size_t)n;
 }
 
+void CliEngine::appendDumpPdhCsvLine(size_t &pos, const char *id, uint16_t reg,
+                                     uint16_t scale, bool ok, uint16_t raw) {
+  if (pos + 64 >= sizeof(_dumpBatch)) return;
+  int n;
+  if (!ok || !id) {
+    n = snprintf(_dumpBatch + pos, sizeof(_dumpBatch) - pos,
+                 "CSV:%s,0x%04X,ERROR,ERROR,\n",
+                 id ? id : "?", (unsigned)reg);
+  } else {
+    float eng = rawToEngScaled(raw, scale ? scale : 1);
+    n = snprintf(_dumpBatch + pos, sizeof(_dumpBatch) - pos,
+                 "CSV:%s,0x%04X,%.4g,%u,\n",
+                 id, (unsigned)reg, (double)eng, (unsigned)raw);
+  }
+  if (n > 0) pos += (size_t)n;
+}
+
 void CliEngine::restoreStreamIfNeeded() {
   if (_streamPausedForCmd) {
     _streamPausedForCmd = false;
@@ -530,6 +739,11 @@ void CliEngine::pollJob() {
     MbResult r = _mb.lastResult();
     if (r != MbResult::Ok) {
       replyf(_jobCh, "ERR: %s", _mb.resultStr());
+    } else if (_ctxIsPdhId) {
+      uint16_t raw = _mb.lastValue();
+      float eng = rawToEngScaled(raw, _ctxScale);
+      replyf(_jobCh, "%s @0x%04X = %.4g  (raw=%u scale=%u)",
+             _ctxId, _ctxAddr, (double)eng, (unsigned)raw, (unsigned)_ctxScale);
     } else if (_ctxIsParam && _ctxScaled) {
       uint16_t raw = _mb.lastValue();
       float eng = ScaleTable::rawToEng(_ctxGroup, _ctxIndex, raw);
@@ -549,10 +763,16 @@ void CliEngine::pollJob() {
     MbResult r = _mb.lastResult();
     if (r != MbResult::Ok) {
       replyf(_jobCh, "ERR: %s", _mb.resultStr());
-    } else {
+    } else if (_ctxIsPdhId) {
+      uint16_t raw = engToRawScaled(_ctxEng, _ctxScale);
+      replyf(_jobCh, "OK write %s @0x%04X eng=%.4g raw=%u",
+             _ctxId, _ctxAddr, (double)_ctxEng, (unsigned)raw);
+    } else if (_ctxIsParam) {
       uint16_t raw = _mb.lastValue();
       replyf(_jobCh, "OK write P%u-%02u @0x%04X eng=%.4g raw=%u",
              _ctxGroup, _ctxIndex, _ctxAddr, (double)_ctxEng, (unsigned)raw);
+    } else {
+      replyf(_jobCh, "OK wraw 0x%04X = %u", _ctxAddr, (unsigned)_mb.lastValue());
     }
     _job = Job::None;
     restoreStreamIfNeeded();
@@ -615,6 +835,59 @@ void CliEngine::pollJob() {
   }
 
   if (_job == Job::Dump) {
+    // ----- PDH: one register per catalog entry (non-contiguous F/D/E map) -----
+    if (_dumpIsPdh) {
+      if (_dumpAwaiting) {
+        _dumpAwaiting = false;
+        if (!clientStillValid()) {
+          finishDump("client gone");
+          return;
+        }
+        if (_dumpPdhIdx >= kPdh30ParamsCount) {
+          finishDump(nullptr);
+          return;
+        }
+        const Pdh30ParamEntry &pe = kPdh30Params[_dumpPdhIdx];
+        size_t pos = 0;
+        _dumpBatch[0] = '\0';
+        if (_mb.lastResult() != MbResult::Ok) {
+          appendDumpPdhCsvLine(pos, pe.id, pe.reg, pe.scale, false, 0);
+        } else {
+          appendDumpPdhCsvLine(pos, pe.id, pe.reg, pe.scale, true, _mb.lastValue());
+        }
+        if (pos > 0) {
+          if (_dumpBatch[pos - 1] == '\n') _dumpBatch[pos - 1] = '\0';
+          _sink.reply(_jobCh, _dumpBatch);
+        }
+        _dumpPdhIdx++;
+        if (_dumpPdhIdx >= kPdh30ParamsCount) {
+          finishDump(nullptr);
+          return;
+        }
+        _dumpNextChunkAt = millis() + DUMP_CHUNK_GAP_MS;
+        return;
+      }
+
+      if ((int32_t)(millis() - _dumpNextChunkAt) < 0) return;
+      if (!clientStillValid()) {
+        finishDump("client gone");
+        return;
+      }
+      if (_dumpPdhIdx >= kPdh30ParamsCount) {
+        finishDump(nullptr);
+        return;
+      }
+      const Pdh30ParamEntry &pe = kPdh30Params[_dumpPdhIdx];
+      if (!_vfd.requestReadHolding(pe.reg, 1)) {
+        finishDump("queue failed");
+        return;
+      }
+      _dumpChunk = 1;
+      _dumpAwaiting = true;
+      return;
+    }
+
+    // ----- PDM: contiguous P0/P1 chunks -----
     if (_dumpAwaiting) {
       _dumpAwaiting = false;
       if (!clientStillValid()) {

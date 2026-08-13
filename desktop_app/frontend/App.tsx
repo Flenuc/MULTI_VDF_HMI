@@ -55,7 +55,9 @@ import {
 import {
   applyCompare,
   clearCompare,
+  cliPsetLine,
   emptyList,
+  isPdhProfile,
   paramId,
   parseDumpCsvLine,
   removeParam,
@@ -65,7 +67,25 @@ import {
   validateParam,
   writable,
 } from "./src/lib/params";
-import { isTutorialDone, setTutorialDone } from "./src/lib/prefs";
+import {
+  buildCatalogIndex,
+  catalogDisplayName,
+  catalogLookup,
+  driveProfileHint,
+  driveProfileShortLabel,
+  FALLBACK_DRIVE_PROFILES,
+  formatEngWithUnit,
+  isSameDriveFamily,
+  normalizeDriveProfileId,
+  type CatalogIndex,
+  type DriveProfileInfo,
+} from "./src/lib/driveProfiles";
+import {
+  getLastDriveProfileId,
+  isTutorialDone,
+  setLastDriveProfileId,
+  setTutorialDone,
+} from "./src/lib/prefs";
 import { colors, font, radius, space, touchMin } from "./src/theme";
 
 type Tab = "home" | "connect" | "params" | "more";
@@ -110,7 +130,16 @@ function userLogLine(raw: string): string | null {
   if (s.startsWith("help |") || s.startsWith("board=") || s.startsWith("mqtt enabled")) {
     return s.length > 120 ? s.slice(0, 117) + "…" : s;
   }
-  if (s.startsWith("status=") || s.startsWith("freq=") || s.startsWith("P0-") || s.startsWith("P1-")) {
+  if (
+    s.startsWith("status=") ||
+    s.startsWith("freq=") ||
+    s.startsWith("P0-") ||
+    s.startsWith("P1-") ||
+    s.startsWith("profile=") ||
+    s.startsWith("OK profile=") ||
+    /^F[0-9A-E]\./i.test(s) ||
+    /^[DE]0\./i.test(s)
+  ) {
     return s;
   }
   if (s.startsWith("DUMP") || s.startsWith("stream ON") || s.startsWith("stream OFF")) {
@@ -158,9 +187,23 @@ export default function App() {
   const [plist, setPlist] = useState<ParameterList>(emptyList());
   const [listFile, setListFile] = useState("ejemplo_pdm30.json");
   const [listFiles, setListFiles] = useState<ParamFileInfo[]>([]);
+  /** Multi-VDF model catalog (from API or fallback). */
+  const [driveProfiles, setDriveProfiles] = useState<DriveProfileInfo[]>(
+    FALLBACK_DRIVE_PROFILES
+  );
+  const [driveProfileId, setDriveProfileId] = useState(
+    () => normalizeDriveProfileId(getLastDriveProfileId() || "saj.pdm30")
+  );
+  /** id → manual name/unit from drive_profiles catalog */
+  const [catalog, setCatalog] = useState<CatalogIndex>({});
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  /** When true, recipe chips only show lists for the active model. */
+  const [filterRecipesByModel, setFilterRecipesByModel] = useState(true);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [edGroup, setEdGroup] = useState<"P0" | "P1">("P0");
   const [edIdx, setEdIdx] = useState("0");
+  /** Free-form multi-VDF id (F0.00 / P0-00). When set, preferred over group/index. */
+  const [edId, setEdId] = useState("");
   const [edVal, setEdVal] = useState("0");
   const [edNotes, setEdNotes] = useState("");
   const [edManual, setEdManual] = useState(false);
@@ -194,6 +237,15 @@ export default function App() {
     plistRef.current = plist;
   }, [plist]);
 
+  /** Waiters for CLI responses (Edge only queues 1 Modbus cmd — must wait OK). */
+  type LineWaiter = {
+    pred: (line: string) => boolean;
+    resolve: (line: string) => void;
+    reject: (err: Error) => void;
+    timer: ReturnType<typeof setTimeout>;
+  };
+  const lineWaiters = useRef<LineWaiter[]>([]);
+
   const pushLog = useCallback((line: string) => {
     const pretty = userLogLine(line);
     if (pretty == null) return;
@@ -202,6 +254,88 @@ export default function App() {
       return next.length > 200 ? next.slice(-200) : next;
     });
   }, []);
+
+  const notifyLineWaiters = useCallback((line: string) => {
+    const pending = lineWaiters.current;
+    if (!pending.length) return;
+    const keep: LineWaiter[] = [];
+    for (const w of pending) {
+      try {
+        if (w.pred(line)) {
+          clearTimeout(w.timer);
+          w.resolve(line);
+        } else {
+          keep.push(w);
+        }
+      } catch {
+        keep.push(w);
+      }
+    }
+    lineWaiters.current = keep;
+  }, []);
+
+  const waitForLine = useCallback(
+    (pred: (line: string) => boolean, timeoutMs = 8000): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          lineWaiters.current = lineWaiters.current.filter((w) => w.timer !== timer);
+          reject(new Error("timeout esperando respuesta del Edge"));
+        }, timeoutMs);
+        lineWaiters.current.push({ pred, resolve, reject, timer });
+      });
+    },
+    []
+  );
+
+  /** Send CLI line and wait for Modbus result (not just "OK queued"). */
+  const sendAndAwait = useCallback(
+    async (cmd: string, timeoutMs = 10000): Promise<string> => {
+      const isFinal = (l: string) => {
+        if (l === "OK queued" || l.startsWith("OK queued")) return false;
+        if (l.startsWith("OK write")) return true;
+        if (l.startsWith("OK op")) return true;
+        if (l.startsWith("OK profile=")) return true;
+        if (l.startsWith("OK wraw")) return true;
+        if (l.startsWith("ERR: busy")) return true;
+        if (l.startsWith("ERR:")) return true;
+        // pget style: "F0.00 @0xF000 = …"
+        if (/^[A-Z0-9.]+\s+@0x/i.test(l)) return true;
+        if (/^P[01]-\d{2}\s+@0x/i.test(l)) return true;
+        if (l.startsWith("0x") && l.includes("=")) return true;
+        return false;
+      };
+      for (let attempt = 0; attempt < 4; attempt++) {
+        // Arm waiter BEFORE send to avoid missing fast control-path replies
+        const pending = waitForLine(isFinal, timeoutMs);
+        try {
+          await api.command(cmd);
+          pushLog(`→ ${cmd}`);
+          const line = await pending;
+          if (line.startsWith("ERR: busy")) {
+            await sleep(250 + attempt * 150);
+            continue;
+          }
+          // Transient RS485 noise — retry a few times
+          if (
+            line.startsWith("ERR:") &&
+            /crc|timeout|frame|busy/i.test(line)
+          ) {
+            await sleep(300 + attempt * 200);
+            continue;
+          }
+          if (line.startsWith("ERR:")) {
+            throw new Error(line);
+          }
+          return line;
+        } catch (e) {
+          if (attempt >= 3) throw e;
+          await sleep(250);
+        }
+      }
+      throw new Error(`sin respuesta a: ${cmd}`);
+    },
+    [waitForLine, pushLog]
+  );
 
   const reportError = useCallback(
     (
@@ -326,16 +460,40 @@ export default function App() {
             setMode(showDevTools() ? "dummy" : "mqtt");
           else setMode("mqtt");
         }
+        // Multi-VDF catalog
+        try {
+          const dp = await api.driveProfiles();
+          if (!cancelled && dp.profiles?.length) {
+            setDriveProfiles(dp.profiles);
+          }
+        } catch {
+          /* keep FALLBACK_DRIVE_PROFILES */
+        }
+
         const files = await api.paramListFiles();
         if (!cancelled) {
           setListFiles(files.files);
+          const lastDp = normalizeDriveProfileId(
+            getLastDriveProfileId() || "saj.pdm30"
+          );
+          setDriveProfileId(lastDp);
+          // Prefer recipe matching active model
           const pref =
+            files.files.find(
+              (f) =>
+                normalizeDriveProfileId(f.drive_profile_id) === lastDp
+            ) ||
             files.files.find((f) => f.filename === "ejemplo_pdm30.json") ||
             files.files[0];
           if (pref) {
             setListFile(pref.filename);
             const loaded = await api.getParamList(pref.filename);
             setPlist(loaded.list);
+            const rid = normalizeDriveProfileId(
+              loaded.list.drive_profile_id || lastDp
+            );
+            setDriveProfileId(rid);
+            setLastDriveProfileId(rid);
           }
         }
       } catch {
@@ -354,7 +512,9 @@ export default function App() {
     const ws = openEventSocket(
       (ev) => {
         if (ev.type === "line" && typeof ev.payload === "string") {
-          const line = ev.payload;
+          let line = ev.payload.trim();
+          if (line.startsWith(">")) line = line.slice(1).trim();
+          notifyLineWaiters(line);
           pushLog(line);
           const lineErr = classifyFromLine(line);
           if (lineErr && lineErr.code === "DRIVE_NO_LINK") {
@@ -363,7 +523,13 @@ export default function App() {
             setAppError(null);
           }
           if (dumpActive.current) {
-            if (line.startsWith("ERR:")) {
+            // Dump rows report ERROR in CSV; only abort on dump-level failures
+            if (
+              line.startsWith("ERR:") &&
+              (line.includes("dump") ||
+                line.includes("queue failed") ||
+                line.includes("client gone"))
+            ) {
               dumpActive.current = false;
               endOp("No se pudo leer el variador.");
               setAppError(
@@ -373,12 +539,20 @@ export default function App() {
             }
             const parsed = parseDumpCsvLine(line);
             if (parsed && parsed.eng != null) {
-              dumpMap.current[`${parsed.group}:${parsed.index}`] = parsed.eng;
+              dumpMap.current[parsed.id] = parsed.eng;
               dumpCount.current += 1;
-              setProgress(Math.min(0.95, 0.1 + dumpCount.current / 100));
+              const expect = isPdhProfile(plistRef.current.drive_profile_id)
+                ? 150
+                : 96;
+              setProgress(
+                Math.min(0.95, 0.05 + dumpCount.current / Math.max(expect, 1))
+              );
               setOpName(`Leyendo ${dumpCount.current}…`);
             }
-            if (line.includes("DUMP done") || line.startsWith("CSV:END")) {
+            if (
+              dumpActive.current &&
+              (line.includes("DUMP done") || line.startsWith("CSV:END"))
+            ) {
               dumpActive.current = false;
               const { list, mismatches } = applyCompare(
                 plistRef.current,
@@ -387,17 +561,18 @@ export default function App() {
               setPlist(list);
               setProgress(1);
               setHasCompared(true);
+              const nRead = Object.keys(dumpMap.current).length;
               endOp(
                 mismatches === 0
                   ? "Receta y variador coinciden."
-                  : `${mismatches} diferencia(s) respecto al variador.`
+                  : `${mismatches} diferencia(s) respecto al variador (${nRead} leídos).`
               );
               Alert.alert(
                 "Comparación terminada",
                 mismatches === 0
                   ? "Todo coincide con la receta."
                   : `Hay ${mismatches} diferencia(s) o valores sin lectura.\n` +
-                      `Leídos del variador: ${Object.keys(dumpMap.current).length}.\n` +
+                      `Leídos del variador: ${nRead}.\n` +
                       "Las filas en rojo marcan problemas."
               );
             }
@@ -567,12 +742,16 @@ export default function App() {
       setAppError(null);
       const delay =
         mode === "serial" ? 2500 : mode === "bluetooth" || mode === "ble" ? 1500 : 800;
+      const modelId = normalizeDriveProfileId(driveProfileId);
       setTimeout(async () => {
         try {
+          // Push active VFD model before stream so dump/pset use the right map
+          await api.command(`profile set ${modelId}`);
+          pushLog(`→ profile set ${modelId}`);
           await api.command("stream on");
           pushLog("→ stream on");
         } catch (e) {
-          pushLog(`No se pudo activar la lectura en vivo: ${e}`);
+          pushLog(`Post-conexión: ${e}`);
         }
       }, delay);
     } catch (e) {
@@ -626,14 +805,138 @@ export default function App() {
   };
   sendCmdRef.current = sendCmd;
 
+  const activeDriveMeta = useMemo(
+    () =>
+      driveProfiles.find(
+        (p) => normalizeDriveProfileId(p.id) === normalizeDriveProfileId(driveProfileId)
+      ),
+    [driveProfiles, driveProfileId]
+  );
+
+  // Load full catalog (names/units) when model changes
+  useEffect(() => {
+    let cancelled = false;
+    const id = normalizeDriveProfileId(driveProfileId);
+    setCatalogLoading(true);
+    (async () => {
+      try {
+        const full = await api.driveProfile(id);
+        if (cancelled) return;
+        setCatalog(buildCatalogIndex(full as { parameters?: Array<Record<string, unknown>> }));
+      } catch {
+        if (!cancelled) setCatalog({});
+      } finally {
+        if (!cancelled) setCatalogLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [driveProfileId]);
+
+  const visibleRecipeFiles = useMemo(() => {
+    if (!filterRecipesByModel) return listFiles;
+    return listFiles.filter((f) =>
+      isSameDriveFamily(f.drive_profile_id || "saj.pdm30", driveProfileId)
+    );
+  }, [listFiles, filterRecipesByModel, driveProfileId]);
+
+  const recipeModelMismatch = useMemo(() => {
+    const rid = normalizeDriveProfileId(plist.drive_profile_id || "saj.pdm30");
+    return rid !== normalizeDriveProfileId(driveProfileId);
+  }, [plist.drive_profile_id, driveProfileId]);
+
+  /** Apply model in UI + receta + Edge CLI profile. */
+  const selectDriveModel = useCallback(
+    async (id: string, opts?: { pushEdge?: boolean; retagRecipe?: boolean }) => {
+      const nid = normalizeDriveProfileId(id);
+      setDriveProfileId(nid);
+      setLastDriveProfileId(nid);
+      setHasCompared(false);
+      setHasSynced(false);
+      if (opts?.retagRecipe !== false) {
+        setPlist((pl) => ({ ...pl, drive_profile_id: nid }));
+      }
+      const label = driveProfileShortLabel(
+        driveProfiles.find((p) => normalizeDriveProfileId(p.id) === nid) || nid
+      );
+      setStatusMsg(t.driveModelApplied(label));
+      pushLog(t.driveModelApplied(label));
+
+      const pushEdge = opts?.pushEdge !== false && connected;
+      if (pushEdge) {
+        try {
+          await api.command(`profile set ${nid}`);
+          pushLog(`→ profile set ${nid}`);
+          setStatusMsg(t.driveModelEdgeOk(label));
+        } catch {
+          /* older firmware without profile cmd */
+        }
+      }
+
+      // Auto-pick a recipe for this model if current list doesn't match
+      if (filterRecipesByModel) {
+        const match = listFiles.find((f) =>
+          isSameDriveFamily(f.drive_profile_id || "saj.pdm30", nid)
+        );
+        const currentOk = listFiles.some(
+          (f) =>
+            f.filename === listFile &&
+            isSameDriveFamily(f.drive_profile_id || "saj.pdm30", nid)
+        );
+        if (match && !currentOk) {
+          try {
+            const r = await api.getParamList(match.filename);
+            setListFile(r.filename);
+            setPlist({
+              ...r.list,
+              drive_profile_id: normalizeDriveProfileId(
+                r.list.drive_profile_id || nid
+              ),
+            });
+            setSelectedKey(null);
+          } catch {
+            /* keep current */
+          }
+        }
+      }
+    },
+    [
+      connected,
+      driveProfiles,
+      filterRecipesByModel,
+      listFile,
+      listFiles,
+      pushLog,
+    ]
+  );
+
   const loadList = async (filename: string) => {
     try {
       const r = await api.getParamList(filename);
       setListFile(r.filename);
       setPlist(r.list);
       setSelectedKey(null);
-      setStatusMsg(`Receta cargada: ${r.list.name || r.filename}`);
+      setHasCompared(false);
+      setHasSynced(false);
+      const prof = normalizeDriveProfileId(
+        r.list.drive_profile_id || driveProfileId || "saj.pdm30"
+      );
+      setDriveProfileId(prof);
+      setLastDriveProfileId(prof);
+      setStatusMsg(
+        `Receta cargada: ${r.list.name || r.filename} (${driveProfileShortLabel(prof)})`
+      );
       setAppError(null);
+      // Align Edge profile with recipe when already connected
+      if (connected) {
+        try {
+          await api.command(`profile set ${prof}`);
+          pushLog(`→ profile set ${prof}`);
+        } catch {
+          /* non-fatal on older firmware */
+        }
+      }
     } catch (e) {
       reportError(e, "load");
     }
@@ -699,16 +1002,53 @@ export default function App() {
 
   const addParam = () => {
     try {
-      const p: Parameter = {
-        group: edGroup === "P0" ? 0 : 1,
-        index: parseInt(edIdx, 10),
-        value: parseFloat(edVal.replace(",", ".")),
-        notes: edNotes,
-        manual_only: edManual,
-      };
+      const freeId = edId.trim();
+      let p: Parameter;
+      if (freeId) {
+        const upper = freeId.toUpperCase();
+        const pMatch = upper.match(/^P([01])[.\-](\d{1,2})$/);
+        if (pMatch) {
+          p = {
+            id: `P${pMatch[1]}-${String(parseInt(pMatch[2], 10)).padStart(2, "0")}`,
+            group: parseInt(pMatch[1], 10),
+            index: parseInt(pMatch[2], 10),
+            value: parseFloat(edVal.replace(",", ".")),
+            notes: edNotes,
+            manual_only: edManual,
+          };
+        } else {
+          p = {
+            id: upper,
+            group: 0,
+            index: 0,
+            value: parseFloat(edVal.replace(",", ".")),
+            notes: edNotes,
+            manual_only: edManual,
+          };
+        }
+      } else {
+        p = {
+          group: edGroup === "P0" ? 0 : 1,
+          index: parseInt(edIdx, 10),
+          value: parseFloat(edVal.replace(",", ".")),
+          notes: edNotes,
+          manual_only: edManual,
+        };
+        p.id = paramId(p);
+      }
+      // Prefer manual name from catalog when notes empty
+      if (!p.notes?.trim()) {
+        const catName = catalogDisplayName(catalog, paramId(p));
+        if (catName) p.notes = catName;
+      }
       validateParam(p);
       setPlist((pl) => upsertParam(pl, p));
-      setStatusMsg(`Parámetro ${paramId(p)} actualizado`);
+      const shown = catalogDisplayName(catalog, paramId(p));
+      setStatusMsg(
+        shown
+          ? `${paramId(p)} · ${shown} actualizado`
+          : `Parámetro ${paramId(p)} actualizado`
+      );
     } catch (e) {
       Alert.alert("Dato no válido", String(e));
     }
@@ -716,23 +1056,22 @@ export default function App() {
 
   const delParam = () => {
     if (!selectedKey) return;
-    const [g, i] = selectedKey.split(":").map(Number);
-    setPlist((pl) =>
-      removeParam(pl, {
-        group: g,
-        index: i,
-        value: 0,
-        notes: "",
-        manual_only: false,
-      })
-    );
+    setPlist((pl) => {
+      const target = pl.parameters.find((x) => paramId(x) === selectedKey);
+      if (!target) return pl;
+      return removeParam(pl, target);
+    });
     setSelectedKey(null);
   };
 
   const selectParam = (p: Parameter) => {
-    setSelectedKey(`${p.group}:${p.index}`);
-    setEdGroup(p.group === 0 ? "P0" : "P1");
-    setEdIdx(String(p.index));
+    const id = paramId(p);
+    setSelectedKey(id);
+    setEdId(id);
+    if (id.startsWith("P") && id.includes("-")) {
+      setEdGroup(p.group === 0 ? "P0" : "P1");
+      setEdIdx(String(p.index));
+    }
     setEdVal(String(p.value));
     setEdNotes(p.notes || "");
     setEdManual(!!p.manual_only);
@@ -750,20 +1089,52 @@ export default function App() {
     }
     if (!beginOp("Enviar receta")) return;
     setAppError(null);
+    let okN = 0;
+    let failN = 0;
+    const failIds: string[] = [];
     try {
+      // Prefer UI model selector; keep recipe tag in sync
+      const prof = normalizeDriveProfileId(
+        driveProfileId || plist.drive_profile_id || "saj.pdm30"
+      );
+      if (
+        normalizeDriveProfileId(plist.drive_profile_id) !== prof
+      ) {
+        setPlist((pl) => ({ ...pl, drive_profile_id: prof }));
+      }
+      await sendAndAwait(`profile set ${prof}`, 3000);
+      await api.command("stream off");
+      pushLog("→ stream off");
+      await sleep(80);
       const total = items.length;
       for (let i = 0; i < total; i++) {
         const p = items[i];
-        const c = `w${p.group} ${p.index} ${Number(p.value)}`;
-        await api.command(c);
-        pushLog(`→ ${c}`);
+        const c = cliPsetLine(p);
+        try {
+          await sendAndAwait(c, 12000);
+          okN += 1;
+        } catch (err) {
+          failN += 1;
+          failIds.push(paramId(p));
+          pushLog(`Fallo ${paramId(p)}: ${String(err)}`);
+        }
         setProgress((i + 1) / total);
         setStatusMsg(`Enviando ${i + 1} de ${total}…`);
-        await sleep(150);
       }
       setHasSynced(true);
-      endOp("Receta enviada al variador.");
-      Alert.alert("Listo", "Los parámetros se enviaron al variador.");
+      if (failN === 0) {
+        endOp(`Receta enviada (${okN} parámetros).`);
+        Alert.alert("Listo", `Se enviaron ${okN} parámetros al variador.`);
+      } else {
+        endOp(`Enviado con fallos: ${okN} ok, ${failN} error(es).`);
+        Alert.alert(
+          "Envío parcial",
+          `${okN} ok, ${failN} fallaron.\n` +
+            (failIds.length
+              ? `Ej.: ${failIds.slice(0, 8).join(", ")}`
+              : "")
+        );
+      }
     } catch (e) {
       endOp("El envío se interrumpió.");
       reportError(e, "sync");
@@ -816,11 +1187,23 @@ export default function App() {
     setPlist((pl) => clearCompare(pl));
     setAppError(null);
     try {
+      const prof = normalizeDriveProfileId(
+        driveProfileId || plist.drive_profile_id || "saj.pdm30"
+      );
+      if (normalizeDriveProfileId(plist.drive_profile_id) !== prof) {
+        setPlist((pl) => ({ ...pl, drive_profile_id: prof }));
+      }
+      // profile/stream are control-only on Edge; no need to await Modbus
+      await api.command(`profile set ${prof}`);
+      pushLog(`→ profile set ${prof}`);
       await api.command("stream off");
       pushLog("→ stream off");
+      await sleep(100);
       await api.command("dump");
       pushLog("→ dump");
       setStatusMsg("Leyendo el variador para comparar…");
+      // PDH catalog dump ~40–90 s; PDM chunks faster
+      const timeoutMs = isPdhProfile(prof) ? 180000 : 120000;
       setTimeout(() => {
         if (dumpActive.current) {
           dumpActive.current = false;
@@ -835,7 +1218,7 @@ export default function App() {
           );
           setAppError(classifyError(new Error("timeout"), { context: "compare" }));
         }
-      }, 120000);
+      }, timeoutMs);
     } catch (e) {
       dumpActive.current = false;
       endOp("No se pudo iniciar la comparación.");
@@ -984,12 +1367,17 @@ export default function App() {
       if (recipeFilter === "manual" && !p.manual_only) return false;
       if (recipeFilter === "ok" && (p.mismatch || p.manual_only)) return false;
       if (!q) return true;
-      const id = paramId(p).toLowerCase();
+      const id = paramId(p);
+      const cat = catalogLookup(catalog, id);
       const notes = (p.notes || "").toLowerCase();
+      const name = (cat?.name || "").toLowerCase();
+      const unit = (cat?.unit || "").toLowerCase();
       const val = String(p.value);
       const live = p.live_value != null ? String(p.live_value) : "";
       return (
-        id.includes(q) ||
+        id.toLowerCase().includes(q) ||
+        name.includes(q) ||
+        unit.includes(q) ||
         notes.includes(q) ||
         val.includes(q) ||
         live.includes(q) ||
@@ -997,7 +1385,7 @@ export default function App() {
         String(p.index).includes(q)
       );
     });
-  }, [plist.parameters, recipeSearch, recipeFilter]);
+  }, [plist.parameters, recipeSearch, recipeFilter, catalog]);
 
   const quickActions = [
     { label: t.actCheckDrive, cmd: "ping" },
@@ -1120,6 +1508,11 @@ export default function App() {
           <>
             <Text style={styles.section}>{t.homeTitle}</Text>
             <Text style={styles.hint}>{t.homeSubtitle}</Text>
+            <Text style={styles.muted}>
+              {t.driveModelApplied(
+                driveProfileShortLabel(activeDriveMeta || driveProfileId)
+              )}
+            </Text>
 
             {/* Compact live strip */}
             <View style={styles.liveStrip}>
@@ -1254,7 +1647,30 @@ export default function App() {
 
         {tab === "connect" && (
           <>
-            <Text style={styles.section}>¿Cómo te conectas al módulo?</Text>
+            <Text style={styles.section}>{t.driveModelTitle}</Text>
+            <Text style={styles.hint}>{t.driveModelHint}</Text>
+            <View style={styles.chips}>
+              {driveProfiles.map((p) => {
+                const id = normalizeDriveProfileId(p.id);
+                return (
+                  <Chip
+                    key={p.id}
+                    label={driveProfileShortLabel(p)}
+                    active={normalizeDriveProfileId(driveProfileId) === id}
+                    onPress={() => {
+                      void selectDriveModel(id, { pushEdge: connected });
+                    }}
+                  />
+                );
+              })}
+            </View>
+            <Text style={styles.muted}>
+              {driveProfileHint(activeDriveMeta, driveProfileId)}
+            </Text>
+
+            <Text style={[styles.section, { marginTop: 16 }]}>
+              ¿Cómo te conectas al módulo?
+            </Text>
             <View style={styles.chips}>
               {modesVisible.map((m) => (
                 <Chip
@@ -1538,16 +1954,88 @@ export default function App() {
                 )
               </Text>
             </Text>
-            <Text style={styles.label}>{t.recipesServer}</Text>
+
+            <Text style={styles.label}>{t.driveModelTitle}</Text>
             <View style={styles.chips}>
-              {listFiles.map((f) => (
-                <Chip
-                  key={f.filename}
-                  label={`${f.name || f.stem}`}
-                  active={listFile === f.filename}
-                  onPress={() => loadList(f.filename)}
-                />
-              ))}
+              {driveProfiles.map((p) => {
+                const id = normalizeDriveProfileId(p.id);
+                return (
+                  <Chip
+                    key={p.id}
+                    label={driveProfileShortLabel(p)}
+                    active={normalizeDriveProfileId(driveProfileId) === id}
+                    onPress={() => {
+                      void selectDriveModel(id, { pushEdge: connected });
+                    }}
+                  />
+                );
+              })}
+            </View>
+            <Text style={styles.muted}>
+              {t.driveModelApplied(driveProfileShortLabel(activeDriveMeta || driveProfileId))}
+              {" · "}
+              {driveProfileHint(activeDriveMeta, driveProfileId)}
+            </Text>
+            {recipeModelMismatch ? (
+              <View style={styles.warnBox}>
+                <Text style={styles.warnText}>{t.driveModelMismatch}</Text>
+                <Pressable
+                  style={[styles.btnSec, { marginTop: 8 }]}
+                  onPress={() => {
+                    const rid = normalizeDriveProfileId(
+                      plist.drive_profile_id || "saj.pdm30"
+                    );
+                    void selectDriveModel(rid, {
+                      pushEdge: connected,
+                      retagRecipe: false,
+                    });
+                  }}
+                >
+                  <Text style={styles.btnText}>
+                    Usar modelo de la receta (
+                    {driveProfileShortLabel(
+                      plist.drive_profile_id || "saj.pdm30"
+                    )}
+                    )
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
+
+            <View style={[styles.row, { marginTop: 8, alignItems: "center" }]}>
+              <Switch
+                value={filterRecipesByModel}
+                onValueChange={setFilterRecipesByModel}
+              />
+              <Text style={[styles.hint, { flex: 1, marginLeft: 8 }]}>
+                {t.driveModelFilter}
+              </Text>
+            </View>
+
+            <Text style={styles.label}>
+              {filterRecipesByModel ? t.driveModelRecipes : t.driveModelAllRecipes}
+            </Text>
+            <View style={styles.chips}>
+              {visibleRecipeFiles.length === 0 ? (
+                <Text style={styles.muted}>
+                  No hay recetas para este modelo. Desactiva el filtro o importa un JSON.
+                </Text>
+              ) : (
+                visibleRecipeFiles.map((f) => (
+                  <Chip
+                    key={f.filename}
+                    label={`${f.name || f.stem}${
+                      f.drive_profile_id && f.drive_profile_id.includes("pdh")
+                        ? " · PDH"
+                        : f.drive_profile_id && f.drive_profile_id.includes("pdm")
+                          ? " · PDM"
+                          : ""
+                    }`}
+                    active={listFile === f.filename}
+                    onPress={() => loadList(f.filename)}
+                  />
+                ))
+              )}
             </View>
             <Text style={styles.hint}>
               {isDesktopShell()
@@ -1587,12 +2075,17 @@ export default function App() {
               ) : null}
             </View>
 
+            <Text style={styles.muted}>
+              {catalogLoading
+                ? t.catalogLoading
+                : t.catalogReady(Object.keys(catalog).length)}
+            </Text>
             <Text style={styles.label}>Buscar en la receta</Text>
             <TextInput
               style={styles.input}
               value={recipeSearch}
               onChangeText={setRecipeSearch}
-              placeholder="ID, valor o notas… (ej. P0-00, presión, 1.5)"
+              placeholder="ID, nombre del manual, valor… (ej. F0.00, pressure, 2.6)"
               placeholderTextColor={colors.textDim}
               accessibilityLabel="Buscar parámetros en la receta"
               clearButtonMode="while-editing"
@@ -1626,10 +2119,10 @@ export default function App() {
             ) : null}
 
             <View style={styles.tableHead}>
-              <Text style={[styles.th, { flex: 1 }]}>ID</Text>
+              <Text style={[styles.th, { flex: 1.1 }]}>ID</Text>
+              <Text style={[styles.th, { flex: 2.2 }]}>{t.catalogColName}</Text>
               <Text style={[styles.th, { flex: 1 }]}>Receta</Text>
               <Text style={[styles.th, { flex: 1 }]}>Variador</Text>
-              <Text style={[styles.th, { flex: 2 }]}>Notas</Text>
             </View>
             {filteredParams.length === 0 ? (
               <Text style={styles.muted}>
@@ -1637,7 +2130,10 @@ export default function App() {
               </Text>
             ) : (
               filteredParams.map((p) => {
-                const key = `${p.group}:${p.index}`;
+                const key = paramId(p);
+                const cat = catalogLookup(catalog, key);
+                const name = cat?.name || "";
+                const unit = cat?.unit || "";
                 const sel = selectedKey === key;
                 const bg = p.mismatch
                   ? colors.dangerBg
@@ -1646,22 +2142,41 @@ export default function App() {
                     : sel
                       ? colors.primarySoft
                       : colors.surface;
+                const a11yName = name || key;
                 return (
                   <Pressable
                     key={key}
                     onPress={() => selectParam(p)}
                     style={[styles.tr, { backgroundColor: bg }]}
                     accessibilityRole="button"
-                    accessibilityLabel={`${paramId(p)} valor ${p.value}`}
+                    accessibilityLabel={`${a11yName} ${key} valor ${p.value}${
+                      unit ? " " + unit : ""
+                    }`}
                   >
-                    <Text style={[styles.td, { flex: 1 }]}>{paramId(p)}</Text>
-                    <Text style={[styles.td, { flex: 1 }]}>{p.value}</Text>
-                    <Text style={[styles.td, { flex: 1 }]}>
-                      {p.live_value == null ? "—" : p.live_value}
+                    <View style={{ flex: 1.1 }}>
+                      <Text style={styles.td}>{key}</Text>
+                      {p.manual_only ? (
+                        <Text style={styles.tdSub}>Manual</Text>
+                      ) : null}
+                    </View>
+                    <View style={{ flex: 2.2 }}>
+                      <Text style={styles.td} numberOfLines={2}>
+                        {name || t.catalogMissing}
+                      </Text>
+                      {p.notes && p.notes !== name ? (
+                        <Text style={styles.tdSub} numberOfLines={1}>
+                          {p.notes}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Text style={[styles.td, { flex: 1 }]} numberOfLines={2}>
+                      {formatEngWithUnit(p.value, unit)}
                     </Text>
-                    <Text style={[styles.td, { flex: 2 }]} numberOfLines={1}>
-                      {p.manual_only ? "Manual · " : ""}
-                      {p.notes}
+                    <Text style={[styles.td, { flex: 1 }]} numberOfLines={2}>
+                      {formatEngWithUnit(
+                        p.live_value == null ? null : p.live_value,
+                        unit
+                      )}
                     </Text>
                   </Pressable>
                 );
@@ -1669,18 +2184,69 @@ export default function App() {
             )}
 
             <Text style={styles.section}>{t.editor}</Text>
-            <View style={styles.chips}>
-              <Chip label="Grupo 0" active={edGroup === "P0"} onPress={() => setEdGroup("P0")} />
-              <Chip label="Grupo 1" active={edGroup === "P1"} onPress={() => setEdGroup("P1")} />
-            </View>
-            <Text style={styles.label}>{t.indexLabel}</Text>
+            <Text style={styles.muted}>
+              Modelo: {driveProfileShortLabel(driveProfileId)}
+              {isPdhProfile(driveProfileId)
+                ? " · IDs F0.00 / D0.00"
+                : " · IDs P0-xx"}
+            </Text>
+            <Text style={styles.label}>ID parámetro (recomendado)</Text>
             <TextInput
               style={styles.input}
-              value={edIdx}
-              onChangeText={setEdIdx}
-              keyboardType="numeric"
+              value={edId}
+              onChangeText={setEdId}
+              placeholder={
+                isPdhProfile(driveProfileId) ? "ej. F0.00" : "ej. P0-00"
+              }
+              autoCapitalize="characters"
               placeholderTextColor="#6b7280"
             />
+            {(() => {
+              const look =
+                catalogLookup(catalog, edId.trim()) ||
+                (selectedKey ? catalogLookup(catalog, selectedKey) : undefined);
+              if (!look?.name && !look?.unit) return null;
+              return (
+                <Text style={styles.catalogHint}>
+                  {look.name || t.catalogMissing}
+                  {look.unit ? ` · ${look.unit}` : ""}
+                  {look.register ? ` · ${look.register}` : ""}
+                </Text>
+              );
+            })()}
+            {!isPdhProfile(driveProfileId) ? (
+              <>
+                <View style={styles.chips}>
+                  <Chip
+                    label="Grupo 0"
+                    active={edGroup === "P0"}
+                    onPress={() => {
+                      setEdGroup("P0");
+                      setEdId("");
+                    }}
+                  />
+                  <Chip
+                    label="Grupo 1"
+                    active={edGroup === "P1"}
+                    onPress={() => {
+                      setEdGroup("P1");
+                      setEdId("");
+                    }}
+                  />
+                </View>
+                <Text style={styles.label}>{t.indexLabel}</Text>
+                <TextInput
+                  style={styles.input}
+                  value={edIdx}
+                  onChangeText={(v) => {
+                    setEdIdx(v);
+                    setEdId("");
+                  }}
+                  keyboardType="numeric"
+                  placeholderTextColor="#6b7280"
+                />
+              </>
+            ) : null}
             <Text style={styles.label}>{t.valueLabel}</Text>
             <TextInput
               style={styles.input}
@@ -2405,6 +2971,31 @@ const styles = StyleSheet.create({
   badge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: radius.sm },
   badgeText: { color: colors.text, fontSize: font.sm, fontWeight: font.weightSemi },
   muted: { color: colors.textDim, fontSize: font.md },
+  tdSub: {
+    color: colors.textDim,
+    fontSize: font.xs,
+    marginTop: 2,
+  },
+  catalogHint: {
+    color: colors.accentSoft,
+    fontSize: font.md,
+    marginTop: -4,
+    marginBottom: space.sm,
+  },
+  warnBox: {
+    backgroundColor: colors.warningSoft,
+    borderColor: colors.warning,
+    borderWidth: 1,
+    borderRadius: radius.md,
+    padding: space.md,
+    marginTop: space.sm,
+    marginBottom: space.sm,
+  },
+  warnText: {
+    color: colors.warning,
+    fontSize: font.md,
+    fontWeight: font.weightSemi,
+  },
   hint: {
     color: colors.textMuted,
     fontSize: font.md,

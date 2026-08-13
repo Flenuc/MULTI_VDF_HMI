@@ -1,0 +1,481 @@
+{
+  "name": "PDH30 planta F0/F2/F3/F8",
+  "drive_profile_id": "saj.pdh30",
+  "description": "Receta piloto PDH-30 por ID (subset planta). Valores desde mapa de campo cuando existen.",
+  "parameters": [
+    {
+      "id": "F0.00",
+      "value": 2.6,
+      "notes": "Pre-set pressure",
+      "manual_only": false
+    },
+    {
+      "id": "F0.01",
+      "value": 0.5,
+      "notes": "Startup pressure deviation",
+      "manual_only": false
+    },
+    {
+      "id": "F0.02",
+      "value": 0.0,
+      "notes": "Motor rotation direction",
+      "manual_only": false
+    },
+    {
+      "id": "F0.03",
+      "value": 0.0,
+      "notes": "Antifreeze function",
+      "manual_only": false
+    },
+    {
+      "id": "F0.04",
+      "value": 25.0,
+      "notes": "Water leakage coefficient",
+      "manual_only": false
+    },
+    {
+      "id": "F0.05",
+      "value": 0.0,
+      "notes": "Start/stop signal option",
+      "manual_only": false
+    },
+    {
+      "id": "F0.06",
+      "value": 0.0,
+      "notes": "Auto-starting option",
+      "manual_only": false
+    },
+    {
+      "id": "F0.07",
+      "value": 1.0,
+      "notes": "Auto-starting delay time",
+      "manual_only": false
+    },
+    {
+      "id": "F0.08",
+      "value": 10.0,
+      "notes": "Sensor range",
+      "manual_only": false
+    },
+    {
+      "id": "F0.09",
+      "value": 0.0,
+      "notes": "Sensor feedback channel",
+      "manual_only": false
+    },
+    {
+      "id": "F0.10",
+      "value": 9.0,
+      "notes": "High pressure alarm value",
+      "manual_only": false
+    },
+    {
+      "id": "F0.11",
+      "value": 0.0,
+      "notes": "Low pressure alarm value",
+      "manual_only": false
+    },
+    {
+      "id": "F0.12",
+      "value": 3.5,
+      "notes": "pressure 0.0Bar～ Bar 3.5Bar Effective when =3, the",
+      "manual_only": false
+    },
+    {
+      "id": "F0.13",
+      "value": 2.5,
+      "notes": "starting 0.0Bar～ Bar 2.5Bar pressure is greater than pressure .The inlet pressure",
+      "manual_only": false
+    },
+    {
+      "id": "F0.14",
+      "value": 0.0,
+      "notes": "feedback 0:AI1 1:AI2 0 0 as signal detection.",
+      "manual_only": false
+    },
+    {
+      "id": "F0.15",
+      "value": 0.0,
+      "notes": "Working mode of VFD",
+      "manual_only": false
+    },
+    {
+      "id": "F0.18",
+      "value": 2.5,
+      "notes": "Acceleration time",
+      "manual_only": false
+    },
+    {
+      "id": "F0.19",
+      "value": 5.0,
+      "notes": "Deceleration time",
+      "manual_only": false
+    },
+    {
+      "id": "F0.20",
+      "value": 0.0,
+      "notes": "Macro function",
+      "manual_only": false
+    },
+    {
+      "id": "F2.00",
+      "value": 0.0,
+      "notes": "feedback 0-2 / 0 2: -4.5V",
+      "manual_only": false
+    },
+    {
+      "id": "F2.01",
+      "value": 1000.0,
+      "notes": "correction - signal deviation coefficient Selection of 0:4-20mA",
+      "manual_only": false
+    },
+    {
+      "id": "F2.02",
+      "value": 0.0,
+      "notes": "feedback 0-2 / 1 2: -4.5V",
+      "manual_only": false
+    },
+    {
+      "id": "F2.03",
+      "value": 1000.0,
+      "notes": "correction - signal deviation coefficient Motor",
+      "manual_only": false
+    },
+    {
+      "id": "F2.04",
+      "value": 1.0,
+      "notes": "control 1：VF 1 1 1：AM-VF；",
+      "manual_only": false
+    },
+    {
+      "id": "F2.05",
+      "value": 0.8,
+      "notes": "source water supply / 8 Choose 5 for emergent",
+      "manual_only": false
+    },
+    {
+      "id": "F2.06",
+      "value": 63.0,
+      "notes": "Lower limit of running frequency",
+      "manual_only": false
+    },
+    {
+      "id": "F2.07",
+      "value": 63.0,
+      "notes": "Maximum output frequency",
+      "manual_only": false
+    },
+    {
+      "id": "F2.08",
+      "value": 40.0,
+      "notes": "Upper limit of running frequency",
+      "manual_only": false
+    },
+    {
+      "id": "F2.09",
+      "value": 0.0,
+      "notes": "reaches the frequency \\ 2",
+      "manual_only": false
+    },
+    {
+      "id": "F2.10",
+      "value": 15.0,
+      "notes": "Carrier frequency",
+      "manual_only": false
+    },
+    {
+      "id": "F2.11",
+      "value": 2.0,
+      "notes": "mode 1: Running \\ 0",
+      "manual_only": false
+    },
+    {
+      "id": "F2.12",
+      "value": 0.0,
+      "notes": "the halt 1:Stop \\ 0 mode of VFD.",
+      "manual_only": false
+    },
+    {
+      "id": "F2.13",
+      "value": 3.0,
+      "notes": "automatic 0~5 \\ 3 E031) These are not affected reset failures by this function.",
+      "manual_only": false
+    },
+    {
+      "id": "F2.14",
+      "value": 4097.0,
+      "notes": "carrier of the output 1001 0 improved",
+      "manual_only": false
+    },
+    {
+      "id": "F2.15",
+      "value": 800.0,
+      "notes": "0~ % % operating frequency of host(auxiliar constant speed mode.",
+      "manual_only": false
+    },
+    {
+      "id": "F3.00",
+      "value": 120.0,
+      "notes": "Proportional gain",
+      "manual_only": false
+    },
+    {
+      "id": "F3.01",
+      "value": 1.0,
+      "notes": "Integral time",
+      "manual_only": false
+    },
+    {
+      "id": "F3.02",
+      "value": 0.0,
+      "notes": "time ~ s Start-up time",
+      "manual_only": false
+    },
+    {
+      "id": "F3.03",
+      "value": 1.0,
+      "notes": "of PID ~ s Deviation",
+      "manual_only": false
+    },
+    {
+      "id": "F3.04",
+      "value": 0.0,
+      "notes": "limit of PID ~ % control PID source 0: setting by keyboard",
+      "manual_only": false
+    },
+    {
+      "id": "F3.05",
+      "value": 0.0,
+      "notes": "setting 0~2 \\ 0 1: setting by AI1 choice 2: setting by AI2",
+      "manual_only": false
+    },
+    {
+      "id": "F3.06",
+      "value": 0.0,
+      "notes": "characteristi Tens: \\ 0000 increases. c choice Reserved 0001: Negative control: When Hundreds: the feedback signal is bi",
+      "manual_only": false
+    },
+    {
+      "id": "F3.07",
+      "value": 30.0,
+      "notes": "detection ~ s still 0, the PID feedback time of PID disconnection fault is feedback reported. This function is",
+      "manual_only": false
+    },
+    {
+      "id": "F3.08",
+      "value": 2.0,
+      "notes": "function 1: Sleep mode 1 \\ 1 pressure holding detection option 2: Sleep mode 2 time and the sleep rate are",
+      "manual_only": false
+    },
+    {
+      "id": "F3.09",
+      "value": 0.1,
+      "notes": "detection ~ s PID wakeup detection delay delay",
+      "manual_only": false
+    },
+    {
+      "id": "F3.10",
+      "value": 5.0,
+      "notes": "detection ~ s value. If it enters standby in delay advance or it is started and stopped frequently, increase",
+      "manual_only": false
+    },
+    {
+      "id": "F3.11",
+      "value": 0.1,
+      "notes": "deviation ~ bar within standby deviation",
+      "manual_only": false
+    },
+    {
+      "id": "F3.12",
+      "value": 39.0,
+      "notes": "hold ~ Hz duration, PID enters standby",
+      "manual_only": false
+    },
+    {
+      "id": "F3.13",
+      "value": 39.0,
+      "notes": "hold ~ Hz duration, PID enters standby frequency status.",
+      "manual_only": false
+    },
+    {
+      "id": "F3.14",
+      "value": 0.0,
+      "notes": "operation 0~ s sleep, the running time of PID",
+      "manual_only": false
+    },
+    {
+      "id": "F3.15",
+      "value": 3.0,
+      "notes": "Sleep detection (see manual)",
+      "manual_only": false
+    },
+    {
+      "id": "F3.16",
+      "value": 3780.0,
+      "notes": "pumping ~ (%) the parameter is reused in the",
+      "manual_only": false
+    },
+    {
+      "id": "F3.17",
+      "value": 9.0,
+      "notes": "Ratio 0~30 \\ 9 Set bigger make sleep quicker",
+      "manual_only": false
+    },
+    {
+      "id": "F3.18",
+      "value": 3.0,
+      "notes": "disconnected 0~ V the system. It is judged by the detection voltage. value",
+      "manual_only": false
+    },
+    {
+      "id": "F3.19",
+      "value": 20.0,
+      "notes": "gain 2 ~ % Integral time",
+      "manual_only": false
+    },
+    {
+      "id": "F3.20",
+      "value": 2.0,
+      "notes": "~ s",
+      "manual_only": false
+    },
+    {
+      "id": "F8.00",
+      "value": 1.0,
+      "notes": "Communication address",
+      "manual_only": false
+    },
+    {
+      "id": "F8.01",
+      "value": 5.0,
+      "notes": "Communication baud rate",
+      "manual_only": false
+    },
+    {
+      "id": "F8.02",
+      "value": 3.0,
+      "notes": "Data bit 2: Odd check \\ 3 must be the same as check setting (8 ,0 ,1) the data bit check 3: No check setting of the PC.",
+      "manual_only": false
+    },
+    {
+      "id": "F8.03",
+      "value": 0.4,
+      "notes": "Response 0~20 ms 2 delay RS485",
+      "manual_only": false
+    },
+    {
+      "id": "F8.04",
+      "value": 1.0,
+      "notes": "Time out ~ s : The function is disabled. fault time",
+      "manual_only": false
+    },
+    {
+      "id": "F8.05",
+      "value": 0.01,
+      "notes": "current 0: 0.01A 1: 0.1A",
+      "manual_only": false
+    },
+    {
+      "id": "D0.00",
+      "value": 0.0,
+      "notes": "Operating frequency",
+      "manual_only": true
+    },
+    {
+      "id": "D0.01",
+      "value": 0.0,
+      "notes": "Setting frequency",
+      "manual_only": true
+    },
+    {
+      "id": "D0.02",
+      "value": 551.7,
+      "notes": "Bus voltage 0.1V",
+      "manual_only": true
+    },
+    {
+      "id": "D0.03",
+      "value": 0.0,
+      "notes": "Output voltage 1V",
+      "manual_only": true
+    },
+    {
+      "id": "D0.04",
+      "value": 0.0,
+      "notes": "Output current 0.01A（>55Kw，0.1A）",
+      "manual_only": true
+    },
+    {
+      "id": "D0.05",
+      "value": 0.0,
+      "notes": "Output Power 0.1kW",
+      "manual_only": true
+    },
+    {
+      "id": "D0.06",
+      "value": 0.0,
+      "notes": "Output torque %",
+      "manual_only": true
+    },
+    {
+      "id": "D0.07",
+      "value": 2.0,
+      "notes": "DI input status 1",
+      "manual_only": true
+    },
+    {
+      "id": "D0.08",
+      "value": 0.0,
+      "notes": "DO output status 1",
+      "manual_only": true
+    },
+    {
+      "id": "D0.09",
+      "value": 197.0,
+      "notes": "AI1 voltage 0.01V - 43 -",
+      "manual_only": true
+    },
+    {
+      "id": "D0.10",
+      "value": 0.0,
+      "notes": "AI2 voltage 0.01V",
+      "manual_only": true
+    },
+    {
+      "id": "D0.11",
+      "value": 1505.0,
+      "notes": "Cumulative power-on time 1H",
+      "manual_only": true
+    },
+    {
+      "id": "D0.12",
+      "value": 76.0,
+      "notes": "Cumulative running time 1H",
+      "manual_only": true
+    },
+    {
+      "id": "D0.13",
+      "value": 33.0,
+      "notes": "Cumulative power consumption 1kWh",
+      "manual_only": true
+    },
+    {
+      "id": "D0.14",
+      "value": 0.0,
+      "notes": "Load speed 1RPM",
+      "manual_only": true
+    },
+    {
+      "id": "D0.15",
+      "value": 2.6,
+      "notes": "PID setting",
+      "manual_only": true
+    },
+    {
+      "id": "D0.16",
+      "value": 0.0,
+      "notes": "PID feedback",
+      "manual_only": true
+    }
+  ]
+}

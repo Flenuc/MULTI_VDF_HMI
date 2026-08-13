@@ -12,6 +12,11 @@
   - Scripts: `desktop_app/scripts/setup_mosquitto.sh` (Linux) y `setup_mosquitto.ps1` (Windows)
   - API: `GET /broker/status`, `POST /broker/setup`
   - Crea/asegura el perfil **Local Mosquitto** (127.0.0.1:1883)
+- **Multi-VDF / SAJ PDH-30 (perfil `saj.pdh30`)**:
+  - Edge CLI: `profile set|get`, `pget`/`pset` por ID (`F0.00`…), `dump` profile-aware
+  - App: selector de modelo, recetas por ID, nombres del manual en filas, compare/sync con espera de respuesta
+  - Receta planta: `param_lists/ejemplo_pdh30.json`
+  - Banco: dump completo ~97 % OK; E2E receta compare+sync
 - Empaques actualizados (AppImage arm64 + Setup Windows Electron).
 
 ## Archivos de esta release

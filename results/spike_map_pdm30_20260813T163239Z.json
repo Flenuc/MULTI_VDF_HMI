@@ -1,0 +1,484 @@
+{
+  "label": "pdm30",
+  "timestamp": "20260813T163239Z",
+  "port": "/dev/ttyACM0",
+  "slave": 1,
+  "schemes": {
+    "group_direct": {
+      "score": {
+        "reads_ok": 11,
+        "reads_fail": 0,
+        "distinctive": 15,
+        "score": 37
+      },
+      "rows": [
+        {
+          "scheme": "group_direct",
+          "group": 0,
+          "index": 0,
+          "id": "G0-00",
+          "label": "set_pressure / F0.00?",
+          "notes": "pressure setpoint often non-zero",
+          "register": "0x0000",
+          "raw": 15,
+          "reply": "[mqtt] failed rc=-2\n0x0000 = 15 (0x000F)\r\n>"
+        },
+        {
+          "scheme": "group_direct",
+          "group": 0,
+          "index": 3,
+          "id": "G0-03",
+          "label": "sensor_range",
+          "notes": "often 10.0 bar raw~100",
+          "register": "0x0003",
+          "raw": 100,
+          "reply": "0x0003 = 100 (0x0064)\r\n>"
+        },
+        {
+          "scheme": "group_direct",
+          "group": 0,
+          "index": 8,
+          "id": "G0-08",
+          "label": "pid_fn",
+          "notes": "often 1",
+          "register": "0x0008",
+          "raw": 1,
+          "reply": "0x0008 = 1 (0x0001)\r\n>"
+        },
+        {
+          "scheme": "group_direct",
+          "group": 0,
+          "index": 36,
+          "id": "G0-36",
+          "label": "accel",
+          "notes": "accel time",
+          "register": "0x0024",
+          "raw": 5,
+          "reply": "0x0024 = 5 (0x0005)\r\n>"
+        },
+        {
+          "scheme": "group_direct",
+          "group": 0,
+          "index": 43,
+          "id": "G0-43",
+          "label": "freq_source",
+          "notes": "often 8 on pump macros",
+          "register": "0x002B",
+          "raw": 8,
+          "reply": "0x002B = 8 (0x0008)\r\n> [mqtt] connect 192.168.203.33:1883 as saj-C43F\u2026"
+        },
+        {
+          "scheme": "group_direct",
+          "group": 1,
+          "index": 5,
+          "id": "G1-05",
+          "label": "fmax",
+          "notes": "max freq raw 5000/6000",
+          "register": "0x0105",
+          "raw": 6000,
+          "reply": "[mqtt] failed rc=-2\n0x0105 = 6000 (0x1770)\r\n>"
+        },
+        {
+          "scheme": "group_direct",
+          "group": 1,
+          "index": 6,
+          "id": "G1-06",
+          "label": "f_upper",
+          "notes": "upper freq",
+          "register": "0x0106",
+          "raw": 6000,
+          "reply": "0x0106 = 6000 (0x1770)\r\n>"
+        },
+        {
+          "scheme": "group_direct",
+          "group": 1,
+          "index": 9,
+          "id": "G1-09",
+          "label": "carrier",
+          "notes": "carrier",
+          "register": "0x0109",
+          "raw": 160,
+          "reply": "0x0109 = 160 (0x00A0)\r\n>"
+        },
+        {
+          "scheme": "group_direct",
+          "group": 1,
+          "index": 35,
+          "id": "G1-35",
+          "label": "slave_id",
+          "notes": "local address usually 1",
+          "register": "0x0123",
+          "raw": 1,
+          "reply": "0x0123 = 1 (0x0001)\r\n>"
+        },
+        {
+          "scheme": "group_direct",
+          "group": 1,
+          "index": 36,
+          "id": "G1-36",
+          "label": "baud_code",
+          "notes": "1 = 9600 on SAJ family",
+          "register": "0x0124",
+          "raw": 1,
+          "reply": "0x0124 = 1 (0x0001)\r\n> [mqtt] connect 192.168.203.33:1883 as saj-C43F\u2026"
+        },
+        {
+          "scheme": "group_direct",
+          "group": 1,
+          "index": 37,
+          "id": "G1-37",
+          "label": "data_format",
+          "notes": "0 = 8N1",
+          "register": "0x0125",
+          "raw": 0,
+          "reply": "[mqtt] failed rc=-2\n0x0125 = 0 (0x0000)\r\n>"
+        }
+      ]
+    },
+    "f_style": {
+      "score": {
+        "reads_ok": 11,
+        "reads_fail": 0,
+        "distinctive": 15,
+        "score": 37
+      },
+      "rows": [
+        {
+          "scheme": "f_style",
+          "group": 0,
+          "index": 0,
+          "id": "G0-00",
+          "label": "set_pressure / F0.00?",
+          "notes": "pressure setpoint often non-zero",
+          "register": "0xF000",
+          "raw": 15,
+          "reply": "0xF000 = 15 (0x000F)\r\n>"
+        },
+        {
+          "scheme": "f_style",
+          "group": 0,
+          "index": 3,
+          "id": "G0-03",
+          "label": "sensor_range",
+          "notes": "often 10.0 bar raw~100",
+          "register": "0xF003",
+          "raw": 100,
+          "reply": "0xF003 = 100 (0x0064)\r\n>"
+        },
+        {
+          "scheme": "f_style",
+          "group": 0,
+          "index": 8,
+          "id": "G0-08",
+          "label": "pid_fn",
+          "notes": "often 1",
+          "register": "0xF008",
+          "raw": 1,
+          "reply": "0xF008 = 1 (0x0001)\r\n>"
+        },
+        {
+          "scheme": "f_style",
+          "group": 0,
+          "index": 36,
+          "id": "G0-36",
+          "label": "accel",
+          "notes": "accel time",
+          "register": "0xF024",
+          "raw": 5,
+          "reply": "0xF024 = 5 (0x0005)\r\n> [mqtt] connect 192.168.203.33:1883 as saj-C43F\u2026"
+        },
+        {
+          "scheme": "f_style",
+          "group": 0,
+          "index": 43,
+          "id": "G0-43",
+          "label": "freq_source",
+          "notes": "often 8 on pump macros",
+          "register": "0xF02B",
+          "raw": 8,
+          "reply": "[mqtt] failed rc=-2\n0xF02B = 8 (0x0008)\r\n>"
+        },
+        {
+          "scheme": "f_style",
+          "group": 1,
+          "index": 5,
+          "id": "G1-05",
+          "label": "fmax",
+          "notes": "max freq raw 5000/6000",
+          "register": "0xF105",
+          "raw": 6000,
+          "reply": "0xF105 = 6000 (0x1770)\r\n>"
+        },
+        {
+          "scheme": "f_style",
+          "group": 1,
+          "index": 6,
+          "id": "G1-06",
+          "label": "f_upper",
+          "notes": "upper freq",
+          "register": "0xF106",
+          "raw": 6000,
+          "reply": "0xF106 = 6000 (0x1770)\r\n>"
+        },
+        {
+          "scheme": "f_style",
+          "group": 1,
+          "index": 9,
+          "id": "G1-09",
+          "label": "carrier",
+          "notes": "carrier",
+          "register": "0xF109",
+          "raw": 160,
+          "reply": "0xF109 = 160 (0x00A0)\r\n>"
+        },
+        {
+          "scheme": "f_style",
+          "group": 1,
+          "index": 35,
+          "id": "G1-35",
+          "label": "slave_id",
+          "notes": "local address usually 1",
+          "register": "0xF123",
+          "raw": 1,
+          "reply": "0xF123 = 1 (0x0001)\r\n> [mqtt] connect 192.168.203.33:1883 as saj-C43F\u2026"
+        },
+        {
+          "scheme": "f_style",
+          "group": 1,
+          "index": 36,
+          "id": "G1-36",
+          "label": "baud_code",
+          "notes": "1 = 9600 on SAJ family",
+          "register": "0xF124",
+          "raw": 1,
+          "reply": "[mqtt] failed rc=-2\n0xF124 = 1 (0x0001)\r\n>"
+        },
+        {
+          "scheme": "f_style",
+          "group": 1,
+          "index": 37,
+          "id": "G1-37",
+          "label": "data_format",
+          "notes": "0 = 8N1",
+          "register": "0xF125",
+          "raw": 0,
+          "reply": "0xF125 = 0 (0x0000)\r\n>"
+        }
+      ]
+    },
+    "group_100": {
+      "score": {
+        "reads_ok": 5,
+        "reads_fail": 6,
+        "distinctive": 5,
+        "score": 15
+      },
+      "rows": [
+        {
+          "scheme": "group_100",
+          "group": 0,
+          "index": 0,
+          "id": "G0-00",
+          "label": "set_pressure / F0.00?",
+          "notes": "pressure setpoint often non-zero",
+          "register": "0x0000",
+          "raw": 15,
+          "reply": "0x0000 = 15 (0x000F)\r\n>"
+        },
+        {
+          "scheme": "group_100",
+          "group": 0,
+          "index": 3,
+          "id": "G0-03",
+          "label": "sensor_range",
+          "notes": "often 10.0 bar raw~100",
+          "register": "0x0003",
+          "raw": 100,
+          "reply": "0x0003 = 100 (0x0064)\r\n>"
+        },
+        {
+          "scheme": "group_100",
+          "group": 0,
+          "index": 8,
+          "id": "G0-08",
+          "label": "pid_fn",
+          "notes": "often 1",
+          "register": "0x0008",
+          "raw": 1,
+          "reply": "0x0008 = 1 (0x0001)\r\n> [mqtt] connect 192.168.203.33:1883 as saj-C43F\u2026"
+        },
+        {
+          "scheme": "group_100",
+          "group": 0,
+          "index": 36,
+          "id": "G0-36",
+          "label": "accel",
+          "notes": "accel time",
+          "register": "0x0024",
+          "raw": 5,
+          "reply": "[mqtt] failed rc=-2\n0x0024 = 5 (0x0005)\r\n>"
+        },
+        {
+          "scheme": "group_100",
+          "group": 0,
+          "index": 43,
+          "id": "G0-43",
+          "label": "freq_source",
+          "notes": "often 8 on pump macros",
+          "register": "0x002B",
+          "raw": 8,
+          "reply": "0x002B = 8 (0x0008)\r\n>"
+        },
+        {
+          "scheme": "group_100",
+          "group": 1,
+          "index": 5,
+          "id": "G1-05",
+          "label": "fmax",
+          "notes": "max freq raw 5000/6000",
+          "register": "0x0069",
+          "raw": null,
+          "reply": "ERR: Bad frame\r\n> [mqtt] connect 192.168.203.33:1883 as saj-C43F\u2026"
+        },
+        {
+          "scheme": "group_100",
+          "group": 1,
+          "index": 6,
+          "id": "G1-06",
+          "label": "f_upper",
+          "notes": "upper freq",
+          "register": "0x006A",
+          "raw": null,
+          "reply": "[mqtt] failed rc=-2\nERR: Bad frame\r\n>"
+        },
+        {
+          "scheme": "group_100",
+          "group": 1,
+          "index": 9,
+          "id": "G1-09",
+          "label": "carrier",
+          "notes": "carrier",
+          "register": "0x006D",
+          "raw": null,
+          "reply": "[mqtt] connect 192.168.203.33:1883 as saj-C43F\u2026\n[mqtt] failed rc=-2\nERR: Bad frame\r\n>"
+        },
+        {
+          "scheme": "group_100",
+          "group": 1,
+          "index": 35,
+          "id": "G1-35",
+          "label": "slave_id",
+          "notes": "local address usually 1",
+          "register": "0x0087",
+          "raw": null,
+          "reply": "ERR: Bad frame\r\n> [mqtt] connect 192.168.203.33:1883 as saj-C43F\u2026"
+        },
+        {
+          "scheme": "group_100",
+          "group": 1,
+          "index": 36,
+          "id": "G1-36",
+          "label": "baud_code",
+          "notes": "1 = 9600 on SAJ family",
+          "register": "0x0088",
+          "raw": null,
+          "reply": "[mqtt] failed rc=-2\nERR: Bad frame\r\n>"
+        },
+        {
+          "scheme": "group_100",
+          "group": 1,
+          "index": 37,
+          "id": "G1-37",
+          "label": "data_format",
+          "notes": "0 = 8N1",
+          "register": "0x0089",
+          "raw": null,
+          "reply": "[mqtt] connect 192.168.203.33:1883 as saj-C43F\u2026\n[mqtt] failed rc=-2\nERR: Bad frame\r\n>"
+        }
+      ]
+    }
+  },
+  "special_regs": [
+    {
+      "register": "0x1001",
+      "name": "run_freq",
+      "raw": 0,
+      "reply": "0x1001 = 0 (0x0000)\r\n>"
+    },
+    {
+      "register": "0x1002",
+      "name": "bus_or_out",
+      "raw": 0,
+      "reply": "0x1002 = 0 (0x0000)\r\n>"
+    },
+    {
+      "register": "0x1003",
+      "name": "out_or_bus",
+      "raw": 3164,
+      "reply": "0x1003 = 3164 (0x0C5C)\r\n>"
+    },
+    {
+      "register": "0x1004",
+      "name": "out_current",
+      "raw": 0,
+      "reply": "[mqtt] failed rc=-2\n0x1004 = 0 (0x0000)\r\n>"
+    },
+    {
+      "register": "0x3000",
+      "name": "vfd_status",
+      "raw": 3,
+      "reply": "0x3000 = 3 (0x0003)\r\n>"
+    },
+    {
+      "register": "0x2000",
+      "name": "ctrl_cmd_ro_probe",
+      "raw": null,
+      "reply": "ERR: Bad frame\r\n> [mqtt] connect 192.168.203.33:1883 as saj-C43F\u2026"
+    }
+  ],
+  "cli_pdm_map": [
+    {
+      "cmd": "r0 0",
+      "label": "set_pressure / F0.00?",
+      "eng": 1.5,
+      "raw": 15,
+      "reply": "P0-00 @0x0000 = 1.5 bar  (raw=15)\r\n>"
+    },
+    {
+      "cmd": "r0 3",
+      "label": "sensor_range",
+      "eng": 10.0,
+      "raw": 100,
+      "reply": "P0-03 @0x0003 = 10 bar  (raw=100)\r\n>"
+    },
+    {
+      "cmd": "r0 8",
+      "label": "pid_fn",
+      "eng": 1.0,
+      "raw": 1,
+      "reply": "P0-08 @0x0008 = 1   (raw=1)\r\n>"
+    },
+    {
+      "cmd": "r0 36",
+      "label": "accel",
+      "eng": 0.5,
+      "raw": 5,
+      "reply": "P0-36 @0x0024 = 0.5 s  (raw=5)\r\n> [mqtt] connect 192.168.203.33:1883 as saj-C43F\u2026"
+    },
+    {
+      "cmd": "r0 43",
+      "label": "freq_source",
+      "eng": 8.0,
+      "raw": 8,
+      "reply": "[mqtt] failed rc=-2\nP0-43 @0x002B = 8   (raw=8)\r\n>"
+    },
+    {
+      "cmd": "r1 5",
+      "label": "fmax",
+      "eng": 60.0,
+      "raw": 6000,
+      "reply": "P1-05 @0x0105 = 60 Hz  (raw=6000)\r\n>"
+    }
+  ],
+  "recommendation": "Best scheme by heuristic: group_direct (score=37). For label=pdm30: expect group_direct on PDM-30. Confirm by matching slave id (G1-35) and fmax (G1-05) to HMI display."
+}

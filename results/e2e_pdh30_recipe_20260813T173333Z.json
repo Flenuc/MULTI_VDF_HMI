@@ -1,0 +1,60 @@
+{
+  "timestamp": "20260813T173333Z",
+  "port": "/dev/ttyACM0",
+  "recipe": "/home/master-pi/Desktop/VF patron/desktop_app/param_lists/ejemplo_pdh30.json",
+  "profile": "saj.pdh30",
+  "param_count": 79,
+  "writable_count": 62,
+  "dump_elapsed_s": 35.76,
+  "dump_ids": 147,
+  "compare_matches": 76,
+  "compare_mismatches": 3,
+  "compare_missing": 0,
+  "mismatch_sample": [
+    {
+      "id": "D0.02",
+      "recipe": 551.7,
+      "live": 534.6,
+      "reason": "diff"
+    },
+    {
+      "id": "D0.09",
+      "recipe": 197.0,
+      "live": 198.0,
+      "reason": "diff"
+    },
+    {
+      "id": "D0.11",
+      "recipe": 1505.0,
+      "live": 1506.0,
+      "reason": "diff"
+    }
+  ],
+  "sync_elapsed_s": 4.67,
+  "sync_ok": 61,
+  "sync_fail": 1,
+  "sync_fails": [
+    {
+      "id": "F2.13",
+      "error": "ERR: CRC error"
+    }
+  ],
+  "readback": [
+    {
+      "id": "F0.00",
+      "line": "F0.00 @0xF000 = 2.6  (raw=26 scale=10)",
+      "recipe": 2.6
+    },
+    {
+      "id": "F0.01",
+      "line": "F0.01 @0xF001 = 0.5  (raw=5 scale=10)",
+      "recipe": 0.5
+    },
+    {
+      "id": "F0.07",
+      "line": "F0.07 @0xF007 = 1  (raw=10 scale=10)",
+      "recipe": 1.0
+    }
+  ],
+  "ok": false
+}

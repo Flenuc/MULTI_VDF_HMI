@@ -22,9 +22,12 @@ from profiles import (
 from storage import load_json, save_json
 
 _APP = Path(__file__).resolve().parents[1]
+_ROOT = _APP.parent  # repo root (VF patron)
 LISTS_DIR = _APP / "param_lists"
 CONFIG_DIR = _APP / "config"
+DRIVE_PROFILES_DIR = _ROOT / "drive_profiles"
 SAFE_NAME = re.compile(r"^[\w .\-()\[\]]+$")
+SAFE_PROFILE_ID = re.compile(r"^[a-z0-9][a-z0-9._-]*$", re.I)
 
 
 def lists_dir() -> Path:
@@ -39,10 +42,20 @@ def list_param_files() -> List[Dict[str, Any]]:
             pl = load_json(p)
             n = len(pl.parameters)
             name = pl.name or p.stem
+            drive = pl.drive_profile_id or "saj.pdm30"
         except Exception:
             n = -1
             name = p.stem
-        out.append({"filename": p.name, "stem": p.stem, "name": name, "count": n})
+            drive = ""
+        out.append(
+            {
+                "filename": p.name,
+                "stem": p.stem,
+                "name": name,
+                "count": n,
+                "drive_profile_id": drive,
+            }
+        )
     return out
 
 
@@ -183,3 +196,54 @@ def get_wifi_by_name(name: str) -> Optional[Dict[str, Any]]:
         "password": p.password,
         "notes": p.notes,
     }
+
+
+def list_drive_profiles() -> List[Dict[str, Any]]:
+    """Index of drive_profiles/**/profile.json under repo root."""
+    root = DRIVE_PROFILES_DIR
+    out: List[Dict[str, Any]] = []
+    if not root.is_dir():
+        return out
+    for p in sorted(root.glob("**/profile.json")):
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+            pid = str(data.get("id") or p.parent.name)
+            params = data.get("parameters") or []
+            out.append(
+                {
+                    "id": pid,
+                    "vendor": data.get("vendor"),
+                    "family": data.get("family"),
+                    "model": data.get("model"),
+                    "version": data.get("version"),
+                    "status": data.get("status"),
+                    "param_count": len(params) if isinstance(params, list) else 0,
+                    "path": str(p.relative_to(root)),
+                }
+            )
+        except Exception:
+            continue
+    return out
+
+
+def load_drive_profile(profile_id: str) -> Dict[str, Any]:
+    """Load full catalog JSON for a drive profile id (e.g. saj.pdh30)."""
+    pid = (profile_id or "").strip()
+    if not pid or not SAFE_PROFILE_ID.match(pid):
+        raise ValueError("invalid drive profile id")
+    # id "saj.pdh30" → drive_profiles/saj/pdh30/profile.json
+    parts = pid.split(".")
+    if len(parts) >= 2:
+        vendor, model = parts[0], parts[1]
+        candidate = DRIVE_PROFILES_DIR / vendor / model / "profile.json"
+        if candidate.is_file():
+            return json.loads(candidate.read_text(encoding="utf-8"))
+    # fallback: scan
+    for p in DRIVE_PROFILES_DIR.glob("**/profile.json"):
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+            if str(data.get("id")) == pid:
+                return data
+        except Exception:
+            continue
+    raise FileNotFoundError(pid)

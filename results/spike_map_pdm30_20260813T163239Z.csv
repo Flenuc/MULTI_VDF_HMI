@@ -1,0 +1,34 @@
+scheme,id,label,group,index,register,raw
+group_direct,G0-00,set_pressure / F0.00?,0,0,0x0000,15
+group_direct,G0-03,sensor_range,0,3,0x0003,100
+group_direct,G0-08,pid_fn,0,8,0x0008,1
+group_direct,G0-36,accel,0,36,0x0024,5
+group_direct,G0-43,freq_source,0,43,0x002B,8
+group_direct,G1-05,fmax,1,5,0x0105,6000
+group_direct,G1-06,f_upper,1,6,0x0106,6000
+group_direct,G1-09,carrier,1,9,0x0109,160
+group_direct,G1-35,slave_id,1,35,0x0123,1
+group_direct,G1-36,baud_code,1,36,0x0124,1
+group_direct,G1-37,data_format,1,37,0x0125,0
+f_style,G0-00,set_pressure / F0.00?,0,0,0xF000,15
+f_style,G0-03,sensor_range,0,3,0xF003,100
+f_style,G0-08,pid_fn,0,8,0xF008,1
+f_style,G0-36,accel,0,36,0xF024,5
+f_style,G0-43,freq_source,0,43,0xF02B,8
+f_style,G1-05,fmax,1,5,0xF105,6000
+f_style,G1-06,f_upper,1,6,0xF106,6000
+f_style,G1-09,carrier,1,9,0xF109,160
+f_style,G1-35,slave_id,1,35,0xF123,1
+f_style,G1-36,baud_code,1,36,0xF124,1
+f_style,G1-37,data_format,1,37,0xF125,0
+group_100,G0-00,set_pressure / F0.00?,0,0,0x0000,15
+group_100,G0-03,sensor_range,0,3,0x0003,100
+group_100,G0-08,pid_fn,0,8,0x0008,1
+group_100,G0-36,accel,0,36,0x0024,5
+group_100,G0-43,freq_source,0,43,0x002B,8
+group_100,G1-05,fmax,1,5,0x0069,
+group_100,G1-06,f_upper,1,6,0x006A,
+group_100,G1-09,carrier,1,9,0x006D,
+group_100,G1-35,slave_id,1,35,0x0087,
+group_100,G1-36,baud_code,1,36,0x0088,
+group_100,G1-37,data_format,1,37,0x0089,
