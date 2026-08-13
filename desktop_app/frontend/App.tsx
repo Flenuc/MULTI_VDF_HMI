@@ -50,7 +50,7 @@ import {
 } from "./src/lib/params";
 import { isTutorialDone, setTutorialDone } from "./src/lib/prefs";
 
-type Tab = "connect" | "params" | "edge" | "help";
+type Tab = "home" | "connect" | "params" | "more";
 type Mode = "mqtt" | "serial" | "bluetooth" | "ble" | "dummy";
 
 const MODE_DEFS: {
@@ -108,12 +108,14 @@ function userLogLine(raw: string): string | null {
 export default function App() {
   const dev = showDevTools();
   const [devTick, setDevTick] = useState(0); // re-render when unlocking dev tools
-  const [tab, setTab] = useState<Tab>("connect");
+  const [tab, setTab] = useState<Tab>("home");
   const [backendOk, setBackendOk] = useState<boolean | null>(null);
   const [wsState, setWsState] = useState<"open" | "close" | "error" | "idle">("idle");
   const [connected, setConnected] = useState(false);
-  const [statusMsg, setStatusMsg] = useState(t.statusOffline);
+  const [statusMsg, setStatusMsg] = useState<string>(t.statusOffline);
   const [mode, setMode] = useState<Mode>("mqtt");
+  const [hasCompared, setHasCompared] = useState(false);
+  const [hasSynced, setHasSynced] = useState(false);
   const [ports, setPorts] = useState<PortInfo[]>([]);
   const [port, setPort] = useState("");
   const [baud, setBaud] = useState("115200");
@@ -146,6 +148,7 @@ export default function App() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [showAbout, setShowAbout] = useState(false);
+  const [moreSection, setMoreSection] = useState<"network" | "help">("help");
   const [mForm, setMForm] = useState({
     name: "Local",
     host: "127.0.0.1",
@@ -271,6 +274,7 @@ export default function App() {
               );
               setPlist(list);
               setProgress(1);
+              setHasCompared(true);
               endOp(
                 mismatches === 0
                   ? "Receta y variador coinciden."
@@ -601,6 +605,7 @@ export default function App() {
         setStatusMsg(`Enviando ${i + 1} de ${total}…`);
         await sleep(150);
       }
+      setHasSynced(true);
       endOp("Receta enviada al variador.");
       Alert.alert("Listo", "Los parámetros se enviaron al variador.");
     } catch (e) {
@@ -838,7 +843,14 @@ export default function App() {
             <Text style={styles.title}>{BRAND.name}</Text>
             <Text style={styles.tagline}>{BRAND.tagline}</Text>
           </View>
-          <Pressable style={styles.helpBtn} onPress={() => setTab("help")}>
+          <Pressable
+            style={styles.helpBtn}
+            onPress={() => {
+              setMoreSection("help");
+              setTab("more");
+            }}
+            accessibilityLabel="Ayuda"
+          >
             <Text style={styles.helpBtnText}>?</Text>
           </Pressable>
         </View>
@@ -877,10 +889,10 @@ export default function App() {
         <View style={styles.tabs}>
           {(
             [
+              ["home", t.tabHome],
               ["connect", t.tabConnect],
               ["params", t.tabParams],
-              ["edge", t.tabEdge],
-              ["help", t.tabHelp],
+              ["more", t.tabMore],
             ] as const
           ).map(([id, lab]) => (
             <Pressable
@@ -901,6 +913,142 @@ export default function App() {
         contentContainerStyle={styles.pad}
         keyboardShouldPersistTaps="handled"
       >
+        {tab === "home" && (
+          <>
+            <Text style={styles.section}>{t.homeTitle}</Text>
+            <Text style={styles.hint}>{t.homeSubtitle}</Text>
+
+            {/* Compact live strip */}
+            <View style={styles.liveStrip}>
+              <Text style={styles.liveStripTitle}>{t.homeLive}</Text>
+              <View style={styles.liveStripRow}>
+                {telCards.slice(0, 4).map((c) => (
+                  <View key={c.k} style={styles.liveChip}>
+                    <Text style={styles.liveChipLab}>{c.label}</Text>
+                    <Text style={styles.liveChipVal}>
+                      {c.v === undefined || c.v === null || c.v === ""
+                        ? "—"
+                        : typeof c.v === "number"
+                          ? c.v.toFixed(1)
+                          : String(c.v)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <StepCard
+              done={connected}
+              title={t.step1Title}
+              body={t.step1Body}
+              status={connected ? t.step1Done : t.statusOffline}
+              primaryLabel={connected ? "Ver conexión" : t.step1Cta}
+              onPrimary={() => setTab("connect")}
+            />
+            <StepCard
+              done={plist.parameters.length > 0}
+              title={t.step2Title}
+              body={t.step2Body}
+              status={
+                plist.parameters.length > 0
+                  ? t.step2Done(plist.parameters.length)
+                  : "Ninguna receta cargada"
+              }
+              primaryLabel={t.step2Cta}
+              onPrimary={() => setTab("params")}
+            />
+            <StepCard
+              done={hasCompared}
+              locked={!connected}
+              title={t.step3Title}
+              body={t.step3Body}
+              status={
+                !connected
+                  ? t.stepNeedConnect
+                  : hasCompared
+                    ? t.step3Done
+                    : "Aún no has comparado"
+              }
+              primaryLabel={t.step3CtaCheck}
+              onPrimary={() => {
+                if (!connected) {
+                  Alert.alert("Paso 1", t.stepNeedConnect);
+                  setTab("connect");
+                  return;
+                }
+                sendCmd("ping");
+              }}
+              secondaryLabel={t.step3CtaCompare}
+              onSecondary={() => {
+                if (!connected) {
+                  Alert.alert("Paso 1", t.stepNeedConnect);
+                  setTab("connect");
+                  return;
+                }
+                if (!plist.parameters.length) {
+                  Alert.alert("Paso 2", t.stepNeedRecipe);
+                  setTab("params");
+                  return;
+                }
+                compareVfd();
+              }}
+            />
+            <StepCard
+              done={hasSynced}
+              locked={!connected || !plist.parameters.length}
+              title={t.step4Title}
+              body={t.step4Body}
+              status={
+                !connected
+                  ? t.stepNeedConnect
+                  : !plist.parameters.length
+                    ? t.stepNeedRecipe
+                    : hasSynced
+                      ? t.step4Done
+                      : hasCompared
+                        ? "Listo para enviar (ya comparaste)"
+                        : "Puedes enviar; se recomienda comparar antes"
+              }
+              primaryLabel={t.step4Cta}
+              onPrimary={() => {
+                if (!connected) {
+                  Alert.alert("Paso 1", t.stepNeedConnect);
+                  setTab("connect");
+                  return;
+                }
+                if (!plist.parameters.length) {
+                  Alert.alert("Paso 2", t.stepNeedRecipe);
+                  setTab("params");
+                  return;
+                }
+                syncVfd();
+              }}
+            />
+
+            <Text style={[styles.section, { marginTop: 8 }]}>Más opciones</Text>
+            <Pressable
+              style={styles.btnSec}
+              onPress={() => {
+                setMoreSection("network");
+                setTab("more");
+              }}
+              accessibilityRole="button"
+            >
+              <Text style={styles.btnText}>{t.homeMoreNetwork}</Text>
+            </Pressable>
+            <Pressable
+              style={styles.btnSec}
+              onPress={() => {
+                setMoreSection("help");
+                setTab("more");
+              }}
+              accessibilityRole="button"
+            >
+              <Text style={styles.btnText}>{t.homeMoreHelp}</Text>
+            </Pressable>
+          </>
+        )}
+
         {tab === "connect" && (
           <>
             <Text style={styles.section}>¿Cómo te conectas al módulo?</Text>
@@ -1256,7 +1404,22 @@ export default function App() {
           </>
         )}
 
-        {tab === "edge" && (
+        {tab === "more" && (
+          <>
+            <View style={styles.chips}>
+              <Chip
+                label={t.tabEdge}
+                active={moreSection === "network"}
+                onPress={() => setMoreSection("network")}
+              />
+              <Chip
+                label={t.tabHelp}
+                active={moreSection === "help"}
+                onPress={() => setMoreSection("help")}
+              />
+            </View>
+
+            {moreSection === "network" && (
           <>
             <Text style={styles.section}>{t.edgeTitle}</Text>
             <View style={styles.cardInfo}>
@@ -1329,9 +1492,9 @@ export default function App() {
               <Text style={styles.btnText}>{t.reloadProfiles}</Text>
             </Pressable>
           </>
-        )}
+            )}
 
-        {tab === "help" && (
+            {moreSection === "help" && (
           <>
             <Text style={styles.section}>Ayuda</Text>
             <Pressable style={[styles.btnPri, styles.btnLarge]} onPress={openTutorial}>
@@ -1339,11 +1502,11 @@ export default function App() {
             </Pressable>
             <View style={styles.cardInfo}>
               <Text style={styles.cardInfoText}>
-                Flujo recomendado:{"\n"}
-                1) Conecta el módulo (Equipo){"\n"}
-                2) Abre una receta{"\n"}
-                3) Compara con el variador{"\n"}
-                4) Envía la receta si hace falta{"\n\n"}
+                Camino recomendado (también en Inicio):{"\n"}
+                1) Conectar el módulo{"\n"}
+                2) Elegir la receta{"\n"}
+                3) Comprobar / comparar{"\n"}
+                4) Enviar al variador{"\n\n"}
                 Puedes enviar sin comparar: la app te lo recordará.
               </Text>
             </View>
@@ -1368,6 +1531,14 @@ export default function App() {
                 {showDevTools() ? t.diagnosticsLock : t.diagnosticsUnlock}
               </Text>
             </Pressable>
+            <Pressable
+              style={styles.btnSec}
+              onPress={() => setTab("home")}
+            >
+              <Text style={styles.btnText}>Volver al inicio</Text>
+            </Pressable>
+          </>
+            )}
           </>
         )}
       </ScrollView>
@@ -1555,6 +1726,68 @@ function Chip({
     >
       <Text style={styles.chipText}>{label}</Text>
     </Pressable>
+  );
+}
+
+function StepCard({
+  title,
+  body,
+  status,
+  done,
+  locked,
+  primaryLabel,
+  onPrimary,
+  secondaryLabel,
+  onSecondary,
+}: {
+  title: string;
+  body: string;
+  status: string;
+  done?: boolean;
+  locked?: boolean;
+  primaryLabel: string;
+  onPrimary: () => void;
+  secondaryLabel?: string;
+  onSecondary?: () => void;
+}) {
+  return (
+    <View
+      style={[
+        styles.stepCard,
+        done && styles.stepCardDone,
+        locked && styles.stepCardLocked,
+      ]}
+      accessibilityRole="summary"
+    >
+      <View style={styles.stepHeader}>
+        <View
+          style={[styles.stepBadge, done ? styles.stepBadgeDone : styles.stepBadgeTodo]}
+        >
+          <Text style={styles.stepBadgeText}>{done ? "✓" : "·"}</Text>
+        </View>
+        <Text style={styles.stepTitle}>{title}</Text>
+      </View>
+      <Text style={styles.stepBody}>{body}</Text>
+      <Text style={styles.stepStatus}>{status}</Text>
+      <View style={styles.row}>
+        <Pressable
+          style={[styles.btnPri, styles.btnLarge]}
+          onPress={onPrimary}
+          accessibilityRole="button"
+        >
+          <Text style={styles.btnTextLarge}>{primaryLabel}</Text>
+        </Pressable>
+        {secondaryLabel && onSecondary ? (
+          <Pressable
+            style={[styles.btnSec, locked && styles.dis]}
+            onPress={onSecondary}
+            accessibilityRole="button"
+          >
+            <Text style={styles.btnText}>{secondaryLabel}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
   );
 }
 
@@ -1763,4 +1996,53 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   tutorialBody: { color: "#cbd5e1", fontSize: 15, lineHeight: 22, marginBottom: 20 },
+  stepCard: {
+    backgroundColor: "#1e293b",
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 12,
+    borderWidth: 2,
+    borderColor: "#334155",
+  },
+  stepCardDone: { borderColor: "#22c55e", backgroundColor: "#14532d33" },
+  stepCardLocked: { opacity: 0.92 },
+  stepHeader: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 },
+  stepBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stepBadgeDone: { backgroundColor: "#16a34a" },
+  stepBadgeTodo: { backgroundColor: "#475569" },
+  stepBadgeText: { color: "#fff", fontWeight: "800", fontSize: 16 },
+  stepTitle: { color: "#f8fafc", fontSize: 17, fontWeight: "800", flex: 1 },
+  stepBody: { color: "#cbd5e1", fontSize: 14, lineHeight: 20, marginBottom: 8 },
+  stepStatus: {
+    color: "#93c5fd",
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 12,
+  },
+  liveStrip: {
+    backgroundColor: "#0f172a",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#1e3a5f",
+    padding: 12,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  liveStripTitle: { color: "#94a3b8", fontSize: 12, fontWeight: "700", marginBottom: 8 },
+  liveStripRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  liveChip: {
+    backgroundColor: "#1e293b",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    minWidth: 72,
+  },
+  liveChipLab: { color: "#64748b", fontSize: 10, fontWeight: "600" },
+  liveChipVal: { color: "#f8fafc", fontSize: 15, fontWeight: "800", marginTop: 2 },
 });
