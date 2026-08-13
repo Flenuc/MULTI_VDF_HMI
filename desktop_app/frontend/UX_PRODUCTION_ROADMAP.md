@@ -170,11 +170,13 @@
 
 ### Fase 6 — Empaque y release producción (2–3 días)
 
-- [ ] Build AppImage / NSIS con `production` flags
+- [x] Build AppImage con `EXPO_PUBLIC_ENV=production`
+- [x] Versión semántica **0.3.2** (app Electron + brand + backend health)
+- [x] Checklist QA de campo en `RELEASE_NOTES_0.3.2.md`
+- [x] Release notes operario + tag GitHub **v0.3.2**
+- [x] Artifact: `VarioField-0.3.2-arm64.AppImage`
+- [ ] NSIS Windows (generar en PC x64 con `build_desktop_windows.bat`)
 - [ ] Sin consola del backend en Windows (opcional log a archivo)
-- [ ] Versión semántica visible (app + backend)
-- [ ] Checklist QA de campo (USB, MQTT, BT, sync, compare, import/export)
-- [ ] Release notes en lenguaje de usuario
 - [ ] (Opcional) Telemetría de uso anónima off-by-default
 
 ---
