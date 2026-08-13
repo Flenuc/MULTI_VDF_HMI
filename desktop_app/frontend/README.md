@@ -27,9 +27,10 @@ export EXPO_PUBLIC_API_URL=http://127.0.0.1:8765
 
 - `App.tsx` — UI completa (paridad CustomTkinter):
   - **Conexión:** MQTT / USB / BLE / BT SPP / Simulado, telemetría, CLI
-  - **Parámetros:** listas JSON, editor, Sync → VDF, Comparar (dump)
+  - **Parámetros:** listas JSON, **Abrir/Guardar JSON**, editor, Sync → VDF, Comparar
   - **Edge / Perfiles:** Wi‑Fi y MQTT al Edge, perfiles en PC
 - `src/api/client.ts` — REST + WebSocket
 - `src/lib/params.ts` — modelos de parámetros + parse dump
+- `src/lib/jsonFile.ts` — import/export JSON (Electron diálogos o web download)
 
 Ver `../ARCHITECTURE.md` para el diseño completo.

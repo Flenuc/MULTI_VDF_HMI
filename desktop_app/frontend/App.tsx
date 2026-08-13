@@ -41,6 +41,11 @@ import {
   validateParam,
   writable,
 } from "./src/lib/params";
+import {
+  exportParamListJson,
+  importParamListJson,
+  isDesktopShell,
+} from "./src/lib/jsonFile";
 
 type Tab = "connect" | "params" | "edge";
 type Mode = "mqtt" | "serial" | "bluetooth" | "ble" | "dummy";
@@ -404,10 +409,68 @@ export default function App() {
       setPlist(r.list);
       const files = await api.paramListFiles();
       setListFiles(files.files);
-      setStatusMsg(`Guardado ${r.filename}`);
-      pushLog(`Guardado ${r.filename}`);
+      setStatusMsg(`Guardado en servidor: ${r.filename}`);
+      pushLog(`Guardado servidor ${r.filename}`);
     } catch (e) {
       Alert.alert("Guardar", String(e));
+    }
+  };
+
+  /** Import JSON from disk (Electron dialog or browser file picker). */
+  const importJson = async () => {
+    try {
+      const r = await importParamListJson();
+      if (!r) return;
+      setPlist(r.list);
+      setListFile(r.filename.endsWith(".json") ? r.filename : `${r.filename}.json`);
+      setSelectedKey(null);
+      setStatusMsg(
+        r.path
+          ? `Importado ${r.path}`
+          : `Importado ${r.filename} (${r.list.parameters.length} params)`
+      );
+      pushLog(
+        `Import JSON: ${r.filename} — ${r.list.parameters.length} parámetros` +
+          (r.path ? ` (${r.path})` : "")
+      );
+    } catch (e) {
+      Alert.alert("Importar JSON", String(e));
+    }
+  };
+
+  /**
+   * Export / Guardar como JSON en disco.
+   * Desktop: native save dialog. Web: download del navegador.
+   * Optionally also copies into backend param_lists/.
+   */
+  const exportJson = async (alsoServer = false) => {
+    try {
+      const defaultName =
+        listFile || `${(plist.name || "lista").replace(/\s+/g, "_")}.json`;
+      const r = await exportParamListJson(plist, defaultName);
+      if (!r) return;
+      if (r.path) {
+        const base = r.path.split(/[/\\]/).pop() || defaultName;
+        setListFile(base);
+        setStatusMsg(`Exportado a ${r.path}`);
+        pushLog(`Export JSON → ${r.path}`);
+      } else if (r.downloaded) {
+        setStatusMsg(`Descarga JSON: ${defaultName}`);
+        pushLog(`Export JSON (descarga) ${defaultName}`);
+      }
+      if (alsoServer) {
+        const name =
+          (r.path && r.path.split(/[/\\]/).pop()) ||
+          listFile ||
+          defaultName;
+        await api.putParamList(name, plist);
+        const files = await api.paramListFiles();
+        setListFiles(files.files);
+        setListFile(name);
+        pushLog(`También guardado en servidor: ${name}`);
+      }
+    } catch (e) {
+      Alert.alert("Exportar JSON", String(e));
     }
   };
 
@@ -881,10 +944,29 @@ export default function App() {
                 />
               ))}
             </View>
+            <Text style={styles.hint}>
+              {isDesktopShell()
+                ? "Desktop: diálogos nativos Abrir/Guardar JSON"
+                : "Web: selector de archivo / descarga del navegador"}
+            </Text>
             <View style={styles.row}>
-              <Pressable style={styles.btnSec} onPress={saveList}>
-                <Text style={styles.btnText}>Guardar</Text>
+              <Pressable style={styles.btnSec} onPress={importJson}>
+                <Text style={styles.btnText}>Abrir JSON…</Text>
               </Pressable>
+              <Pressable style={styles.btnSec} onPress={() => exportJson(false)}>
+                <Text style={styles.btnText}>Guardar como…</Text>
+              </Pressable>
+              <Pressable style={styles.btnSec} onPress={saveList}>
+                <Text style={styles.btnText}>Guardar en servidor</Text>
+              </Pressable>
+              <Pressable
+                style={styles.btnSec}
+                onPress={() => exportJson(true)}
+              >
+                <Text style={styles.btnText}>Export + servidor</Text>
+              </Pressable>
+            </View>
+            <View style={styles.row}>
               <Pressable
                 style={styles.btnPri}
                 onPress={syncVfd}
