@@ -162,14 +162,18 @@ function attachBackendLogs(proc) {
 function startBackend() {
   const res = resourcesDir();
   const ui = uiDir();
+  const scriptsDir = path.join(res, "scripts");
   logLine(`startBackend resourcesDir=${res}`);
   logLine(`uiDir=${ui} exists=${fs.existsSync(ui)}`);
+  logLine(`scriptsDir=${scriptsDir} exists=${fs.existsSync(scriptsDir)}`);
 
   const env = {
     ...process.env,
     MULTI_VDF_HOST: HOST,
     MULTI_VDF_PORT: String(PORT),
     MULTI_VDF_UI_DIR: ui,
+    MULTI_VDF_RESOURCES: res,
+    MULTI_VDF_SCRIPTS_DIR: fs.existsSync(scriptsDir) ? scriptsDir : "",
     PYTHONUNBUFFERED: "1",
     VARIOFIELD_EMBED: "1",
   };

@@ -8,7 +8,7 @@
 !include "FileFunc.nsh"
 
 Name "VarioField"
-OutFile "VarioField-Setup-0.3.2.exe"
+OutFile "VarioField-Setup-0.3.3.exe"
 Unicode true
 RequestExecutionLevel user
 InstallDir "$LOCALAPPDATA\MULTI_VDF_HMI\VarioField"
@@ -16,7 +16,7 @@ InstallDirRegKey HKCU "Software\MULTI_VDF_HMI\VarioFieldElectron" "InstallDir"
 SetCompressor /SOLID lzma
 
 !define PRODUCT_NAME "VarioField"
-!define PRODUCT_VERSION "0.3.2"
+!define PRODUCT_VERSION "0.3.3"
 !define PRODUCT_PUBLISHER "Flenuc"
 !define PRODUCT_WEB "https://github.com/Flenuc/MULTI_VDF_HMI"
 
@@ -39,7 +39,7 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_LANGUAGE "Spanish"
 !insertmacro MUI_LANGUAGE "English"
 
-VIProductVersion "0.3.2.0"
+VIProductVersion "0.3.3.0"
 VIAddVersionKey /LANG=0 "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey /LANG=0 "CompanyName" "${PRODUCT_PUBLISHER}"
 VIAddVersionKey /LANG=0 "FileDescription" "VarioField Electron (campo)"

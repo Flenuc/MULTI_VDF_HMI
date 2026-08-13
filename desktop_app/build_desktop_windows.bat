@@ -5,7 +5,7 @@ setlocal EnableExtensions
 cd /d "%~dp0"
 set EXPO_PUBLIC_ENV=production
 
-echo === VarioField 0.3.2 — Windows production build ===
+echo === VarioField 0.3.3 — Windows production build ===
 echo === 1) Python backend .exe ===
 if not exist "%~dp0.venv\Scripts\python.exe" (
   python -m venv "%~dp0.venv"
@@ -66,6 +66,6 @@ cd /d "%~dp0"
 echo.
 echo === VarioField Windows build listo ===
 dir "%~dp0electron\dist\*.exe"
-echo Instalador: electron\dist\VarioField-Setup-0.3.2.exe
+echo Instalador: electron\dist\VarioField-Setup-0.3.3.exe
 echo.
 endlocal
