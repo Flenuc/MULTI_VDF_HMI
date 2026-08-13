@@ -92,8 +92,8 @@ function startBackend() {
     backendProc = null;
     if (!quitting && mainWindow) {
       dialog.showErrorBox(
-        "MULTI_VDF_HMI",
-        "El backend Python se detuvo. Cierra la app e inténtalo de nuevo."
+        "VarioField",
+        "El servicio de comunicación se detuvo. Cierra la app e inténtalo de nuevo."
       );
     }
   });
@@ -133,7 +133,7 @@ function createWindow() {
     height: 780,
     minWidth: 800,
     minHeight: 560,
-    title: "MULTI_VDF_HMI",
+    title: "VarioField",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,

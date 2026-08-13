@@ -1,8 +1,8 @@
 {
-  "name": "multi-vdf-hmi-desktop",
-  "productName": "MULTI_VDF_HMI",
-  "version": "0.2.0",
-  "description": "MULTI_VDF_HMI field desktop — Electron + Python backend",
+  "name": "variofield-desktop",
+  "productName": "VarioField",
+  "version": "0.3.0",
+  "description": "VarioField — recetas y enlace a variadores en campo (Electron + Python)",
   "homepage": "https://github.com/Flenuc/MULTI_VDF_HMI",
   "repository": {
     "type": "git",
@@ -27,8 +27,8 @@
     "dist:win": "electron-builder --win nsis"
   },
   "build": {
-    "appId": "com.flenuc.multivdfhmi",
-    "productName": "MULTI_VDF_HMI",
+    "appId": "com.variofield.app",
+    "productName": "VarioField",
     "directories": {
       "output": "dist",
       "buildResources": "build"

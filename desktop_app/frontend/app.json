@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "MULTI_VDF_HMI",
-    "slug": "multi-vdf-hmi",
-    "version": "0.2.0",
+    "name": "VarioField",
+    "slug": "variofield",
+    "version": "0.3.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",

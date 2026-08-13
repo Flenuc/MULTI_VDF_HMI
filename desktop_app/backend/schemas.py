@@ -68,5 +68,5 @@ class OkResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     ok: bool = True
-    service: str = "multi-vdf-hmi-backend"
-    version: str = "0.2.0-rn"
+    service: str = "variofield-backend"
+    version: str = "0.3.0"
