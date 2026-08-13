@@ -6,7 +6,7 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 
 export EXPO_PUBLIC_ENV="${EXPO_PUBLIC_ENV:-production}"
-VERSION="$(node -p "require('./electron/package.json').version" 2>/dev/null || echo "0.3.2")"
+VERSION="$(node -p "require('./electron/package.json').version" 2>/dev/null || echo "0.3.3")"
 echo "=== VarioField ${VERSION} — build producción (EXPO_PUBLIC_ENV=${EXPO_PUBLIC_ENV}) ==="
 
 echo "=== 1) Python backend binary (PyInstaller) ==="
@@ -38,6 +38,7 @@ pyinstaller --noconfirm --clean \
   --hidden-import backend.session \
   --hidden-import backend.schemas \
   --hidden-import backend.param_api \
+  --hidden-import backend.broker \
   --hidden-import comms \
   --hidden-import comms.serial_client \
   --hidden-import comms.mqtt_client \
@@ -95,4 +96,4 @@ echo "  chmod +x electron/dist/VarioField-*.AppImage"
 echo "  ./electron/dist/VarioField-*-*.AppImage"
 echo ""
 echo "Host arch: ${ARCH}  (arm64 Pi → AppImage arm64; x86_64 PC → AppImage x64)"
-echo "Notas: RELEASE_NOTES_0.3.2.md"
+echo "Notas: RELEASE_NOTES_${VERSION}.md (o RELEASE_NOTES_0.3.3.md)"

@@ -171,11 +171,13 @@
 ### Fase 6 — Empaque y release producción (2–3 días)
 
 - [x] Build AppImage con `EXPO_PUBLIC_ENV=production`
-- [x] Versión semántica **0.3.2** (app Electron + brand + backend health)
-- [x] Checklist QA de campo en `RELEASE_NOTES_0.3.2.md`
-- [x] Release notes operario + tag GitHub **v0.3.2**
-- [x] Artifact: `VarioField-0.3.2-arm64.AppImage`
-- [ ] NSIS Windows (generar en PC x64 con `build_desktop_windows.bat`)
+- [x] Versión semántica **0.3.2** / **0.3.3** (app Electron + brand + backend health)
+- [x] Checklist QA de campo en `RELEASE_NOTES_0.3.3.md`
+- [x] Release notes operario + tag GitHub **v0.3.2** / **v0.3.3**
+- [x] Artifact: `VarioField-*-arm64.AppImage`
+- [x] NSIS Windows (Electron nativo desde Linux + Python embed)
+- [x] BT Classic SPP estable Windows/Linux (0.3.3)
+- [x] Asistente Mosquitto (scripts + API + botón UI) (0.3.3)
 - [ ] Sin consola del backend en Windows (opcional log a archivo)
 - [ ] (Opcional) Telemetría de uso anónima off-by-default
 

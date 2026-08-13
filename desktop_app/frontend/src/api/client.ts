@@ -95,6 +95,31 @@ export type ParamFileInfo = {
 
 export const api = {
   health: () => json<{ ok: boolean; version: string }>("/health"),
+  brokerStatus: (port = 1883) =>
+    json<{
+      ok: boolean;
+      listening: boolean;
+      host: string;
+      port: number;
+      installed: boolean;
+      service: string;
+      hint: string;
+      setup_script?: string;
+      needs_elevation?: boolean;
+      elevated_command?: string;
+      output?: string;
+      detail?: string;
+    }>(`/broker/status?port=${port}`),
+  brokerSetup: (port = 1883) =>
+    json<{
+      ok: boolean;
+      listening: boolean;
+      hint: string;
+      needs_elevation?: boolean;
+      elevated_command?: string;
+      output?: string;
+      detail?: string;
+    }>(`/broker/setup?port=${port}`, { method: "POST", body: "{}" }),
   status: () => json<StatusResponse>("/status"),
   telemetry: () => json<{ telemetry: Telemetry }>("/telemetry"),
   ports: () => json<PortInfo[]>("/ports"),

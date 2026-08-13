@@ -16,7 +16,13 @@ PKG="$DIR/packaging/windows_electron"
 CACHE="$PKG/cache"
 STAGE="$PKG/stage/VarioField"
 OUT_DIR="$DIR/dist/windows"
-VERSION="0.3.2"
+VERSION="$(cd "$DIR" && node -p "require('./electron/package.json').version" 2>/dev/null || echo "0.3.3")"
+# Ensure NSIS OutFile matches package version
+if [[ -f "$PKG/variofield_electron_setup.nsi" ]]; then
+  sed -i -E "s/VarioField-Setup-[0-9.]+\\.exe/VarioField-Setup-${VERSION}.exe/g" "$PKG/variofield_electron_setup.nsi" || true
+  sed -i -E "s/PRODUCT_VERSION \"[0-9.]+\"/PRODUCT_VERSION \"${VERSION}\"/g" "$PKG/variofield_electron_setup.nsi" || true
+  sed -i -E "s/VIProductVersion \"[0-9.]+\"/VIProductVersion \"${VERSION}.0\"/g" "$PKG/variofield_electron_setup.nsi" || true
+fi
 SETUP_NAME="VarioField-Setup-${VERSION}.exe"
 
 PYTHON_VER="3.12.10"
@@ -238,9 +244,17 @@ cp -f "$DIR/backend/main.py" "$PYAPP/backend/"
 cp -f "$DIR/backend/session.py" "$PYAPP/backend/"
 cp -f "$DIR/backend/schemas.py" "$PYAPP/backend/"
 cp -f "$DIR/backend/param_api.py" "$PYAPP/backend/"
+cp -f "$DIR/backend/broker.py" "$PYAPP/backend/"
 cp -f "$DIR/comms/"*.py "$PYAPP/comms/"
 cp -f "$DIR/param_lists/"*.json "$PYAPP/param_lists/"
 cp -f "$DIR/config/connection_profiles.example.json" "$PYAPP/config/"
+
+# Scripts (Mosquitto setup)
+echo "--- 6b) scripts (Mosquitto) ---"
+mkdir -p "$STAGE/resources/scripts"
+cp -f "$DIR/scripts/setup_mosquitto.sh" "$STAGE/resources/scripts/" 2>/dev/null || true
+cp -f "$DIR/scripts/setup_mosquitto.ps1" "$STAGE/resources/scripts/"
+cp -f "$DIR/scripts/mosquitto-variofield.conf" "$STAGE/resources/scripts/"
 
 # LEEME + diagnóstico de campo
 cat > "$STAGE/LEEME.txt" << EOF

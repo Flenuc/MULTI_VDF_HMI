@@ -60,6 +60,10 @@ export const t = {
   portLabel: "Cable / puerto",
   baudLabel: "Velocidad (solo si te lo indica el técnico)",
   mqttProfileLabel: "Perfil de red / broker",
+  brokerSetup: "Preparar broker local (Mosquitto)",
+  brokerChecking: "Comprobando broker…",
+  brokerOk: "Broker local listo en este PC",
+  brokerNeedSudo: "Hace falta instalar Mosquitto con permisos de administrador",
   btDeviceLabel: "Equipo Bluetooth",
 
   // Telemetry

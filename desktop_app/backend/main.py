@@ -25,7 +25,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from backend import param_api
+from backend import broker as broker_api
 from backend.schemas import (
+    BrokerStatusResponse,
     BtDevice,
     CommandRequest,
     ConnectRequest,
@@ -88,7 +90,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="MULTI_VDF_HMI Backend",
-    version="0.2.0-rn",
+    version="0.3.3",
     description="Python transport layer for USB / MQTT / BT / BLE — UI-agnostic.",
     lifespan=lifespan,
 )
@@ -112,6 +114,27 @@ async def _run_sync(fn, *args, **kwargs):
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     return HealthResponse()
+
+
+def _broker_response(data: dict) -> BrokerStatusResponse:
+    keys = set(BrokerStatusResponse.model_fields.keys())
+    return BrokerStatusResponse(**{k: v for k, v in data.items() if k in keys})
+
+
+@app.get("/broker/status", response_model=BrokerStatusResponse)
+def broker_status(port: int = Query(1883, ge=1, le=65535)) -> BrokerStatusResponse:
+    return _broker_response(broker_api.broker_status(port=port))
+
+
+@app.post("/broker/setup", response_model=BrokerStatusResponse)
+async def broker_setup(port: int = Query(1883, ge=1, le=65535)) -> BrokerStatusResponse:
+    """Install/configure Mosquitto when possible; may require elevation."""
+    data = await _run_sync(broker_api.run_setup, port)
+    try:
+        broker_api.ensure_local_mqtt_profile()
+    except Exception:
+        pass
+    return _broker_response(data)
 
 
 @app.get("/status", response_model=StatusResponse)
@@ -368,6 +391,7 @@ if _UI is not None:
             "redoc",
             "profiles",
             "param-lists",
+            "broker",
         }:
             raise HTTPException(status_code=404, detail="Not found")
         candidate = (_UI / full_path).resolve()

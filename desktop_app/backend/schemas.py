@@ -69,4 +69,23 @@ class OkResponse(BaseModel):
 class HealthResponse(BaseModel):
     ok: bool = True
     service: str = "variofield-backend"
-    version: str = "0.3.2"
+    version: str = "0.3.3"
+
+
+class BrokerStatusResponse(BaseModel):
+    ok: bool = False
+    listening: bool = False
+    host: str = "127.0.0.1"
+    port: int = 1883
+    mosquitto_path: str = ""
+    installed: bool = False
+    service: str = "unknown"
+    setup_script: str = ""
+    platform: str = ""
+    hint: str = ""
+    ran: bool = False
+    exit_code: Optional[int] = None
+    output: str = ""
+    detail: str = ""
+    needs_elevation: bool = False
+    elevated_command: str = ""

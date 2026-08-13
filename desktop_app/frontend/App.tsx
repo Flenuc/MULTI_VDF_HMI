@@ -1293,6 +1293,7 @@ export default function App() {
                 <Text style={styles.label}>{t.mqttProfileLabel}</Text>
                 <Text style={styles.hint}>
                   Elige el perfil de esta planta. Si no hay ninguno, créalo en “Red del equipo”.
+                  Para broker en este PC usá «Local Mosquitto» (127.0.0.1).
                 </Text>
                 <View style={styles.chips}>
                   {(profiles?.mqtt_profiles || []).map((p) => (
@@ -1305,6 +1306,50 @@ export default function App() {
                     />
                   ))}
                 </View>
+                <Pressable
+                  style={[styles.btnSec, { marginTop: 10 }, busy && styles.dis]}
+                  disabled={busy || connected}
+                  onPress={async () => {
+                    setBusy(true);
+                    setOpName(t.brokerSetup);
+                    try {
+                      pushLog("Comprobando / preparando Mosquitto…");
+                      const st = await api.brokerSetup(1883);
+                      if (st.ok || st.listening) {
+                        pushLog(t.brokerOk);
+                        setAppError(null);
+                        const pr = await api.profiles();
+                        setProfiles(pr);
+                        if (!mqttName) setMqttName("Local Mosquitto");
+                      } else if (st.needs_elevation && st.elevated_command) {
+                        setAppError(
+                          classifyError(
+                            new Error(
+                              `${t.brokerNeedSudo}\n\n${st.elevated_command}\n\n${st.hint || ""}`
+                            ),
+                            { context: "mqtt" }
+                          )
+                        );
+                        pushLog(st.elevated_command);
+                      } else {
+                        setAppError(
+                          classifyError(
+                            new Error(st.hint || st.detail || "Broker no disponible"),
+                            { context: "mqtt" }
+                          )
+                        );
+                      }
+                      if (st.output) pushLog(st.output.slice(-500));
+                    } catch (e) {
+                      reportError(e, "mqtt");
+                    } finally {
+                      setBusy(false);
+                      setOpName("");
+                    }
+                  }}
+                >
+                  <Text style={styles.btnText}>{t.brokerSetup}</Text>
+                </Pressable>
               </View>
             )}
 

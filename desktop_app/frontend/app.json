@@ -2,7 +2,7 @@
   "expo": {
     "name": "VarioField",
     "slug": "variofield",
-    "version": "0.3.2",
+    "version": "0.3.3",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
