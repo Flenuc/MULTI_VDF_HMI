@@ -31,6 +31,15 @@ import type { BtDevice, PortInfo, Telemetry, Transport } from "./src/api/types";
 import { ErrorBanner } from "./src/components/ErrorBanner";
 import { BRAND } from "./src/config/brand";
 import { isProductionUi, setDevToolsUnlocked, showDevTools } from "./src/config/env";
+import {
+  getRole,
+  lockToOperator,
+  roleLabel,
+  setTechPin,
+  unlockTechnician,
+  DEFAULT_TECH_PIN,
+} from "./src/lib/roles";
+import { exportJsonFile, importJsonObject } from "./src/lib/jsonFile";
 import { t } from "./src/i18n/es";
 import {
   classifyError,
@@ -116,7 +125,10 @@ function userLogLine(raw: string): string | null {
 
 export default function App() {
   const dev = showDevTools();
-  const [devTick, setDevTick] = useState(0); // re-render when unlocking dev tools
+  const [devTick, setDevTick] = useState(0); // re-render when role changes
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinInput, setPinInput] = useState("");
+  const [pinNew, setPinNew] = useState("");
   const [tab, setTab] = useState<Tab>("home");
   const [backendOk, setBackendOk] = useState<boolean | null>(null);
   const [wsState, setWsState] = useState<"open" | "close" | "error" | "idle">("idle");
@@ -1020,11 +1032,25 @@ export default function App() {
               setMoreSection("help");
               setTab("more");
             }}
+            onLongPress={() => {
+              if (showDevTools()) {
+                lockToOperator();
+                setDevTick((x) => x + 1);
+                Alert.alert(t.roleOperator, "Volviste al modo operario.");
+              } else {
+                setPinInput("");
+                setShowPinModal(true);
+              }
+            }}
+            delayLongPress={700}
             accessibilityLabel="Ayuda"
           >
             <Text style={styles.helpBtnText}>?</Text>
           </Pressable>
         </View>
+        <Text style={styles.roleBadge}>
+          {showDevTools() ? t.roleBadgeTech : t.roleBadgeOp}
+        </Text>
 
         <View style={styles.row}>
           <Badge
@@ -1779,6 +1805,15 @@ export default function App() {
             {moreSection === "help" && (
           <>
             <Text style={styles.section}>Ayuda</Text>
+            <View style={styles.cardInfo}>
+              <Text style={styles.cardInfoText}>
+                Rol actual: <Text style={{ fontWeight: "700" }}>{roleLabel(getRole())}</Text>
+                {"\n"}
+                {showDevTools()
+                  ? "Modo técnico: CLI, simulado, log detallado y opciones avanzadas."
+                  : "Modo operario: camino de campo. Puedes editar perfiles Wi‑Fi/MQTT de planta."}
+              </Text>
+            </View>
             <Pressable style={[styles.btnPri, styles.btnLarge]} onPress={openTutorial}>
               <Text style={styles.btnTextLarge}>{t.tutorialAgain}</Text>
             </Pressable>
@@ -1795,24 +1830,108 @@ export default function App() {
             <Pressable style={styles.btnSec} onPress={() => setShowAbout(true)}>
               <Text style={styles.btnText}>{t.about}</Text>
             </Pressable>
+
+            <Text style={[styles.section, { marginTop: 16 }]}>{t.profilesTemplateHint}</Text>
             <Pressable
               style={styles.btnSec}
+              onPress={async () => {
+                try {
+                  const pr = profiles || (await api.profiles());
+                  const path = await exportJsonFile("variofield-perfiles-planta.json", pr);
+                  pushLog(
+                    path
+                      ? `Plantilla exportada: ${path}`
+                      : "Plantilla de perfiles exportada"
+                  );
+                  Alert.alert("OK", t.exportProfiles);
+                } catch (e) {
+                  reportError(e, "connect");
+                }
+              }}
+            >
+              <Text style={styles.btnText}>{t.exportProfiles}</Text>
+            </Pressable>
+            <Pressable
+              style={styles.btnSec}
+              onPress={async () => {
+                try {
+                  const data = await importJsonObject();
+                  if (!data || typeof data !== "object") return;
+                  const body = data as ProfilesStore;
+                  if (!Array.isArray(body.mqtt_profiles) && !Array.isArray(body.wifi_profiles)) {
+                    throw new Error("El JSON no parece una plantilla de perfiles VarioField");
+                  }
+                  const saved = await api.saveProfiles({
+                    wifi_profiles: body.wifi_profiles || [],
+                    mqtt_profiles: body.mqtt_profiles || [],
+                    last_mode: body.last_mode || "MQTT",
+                    last_wifi: body.last_wifi || "",
+                    last_mqtt: body.last_mqtt || "",
+                    last_serial_port: body.last_serial_port || "",
+                    last_serial_baud: body.last_serial_baud || 115200,
+                    last_bt_address: body.last_bt_address || "",
+                    last_bt_name: body.last_bt_name || "",
+                  });
+                  setProfiles(saved);
+                  if (saved.mqtt_profiles[0]) setMqttName(saved.mqtt_profiles[0].name);
+                  if (saved.wifi_profiles[0]) setWifiName(saved.wifi_profiles[0].name);
+                  pushLog(t.profilesTemplateOk);
+                  Alert.alert("OK", t.profilesTemplateOk);
+                } catch (e) {
+                  reportError(e, "connect");
+                }
+              }}
+            >
+              <Text style={styles.btnText}>{t.importProfiles}</Text>
+            </Pressable>
+
+            <Pressable
+              style={[styles.btnSec, { marginTop: 16 }]}
               onPress={() => {
-                const next = !showDevTools();
-                setDevToolsUnlocked(next);
-                setDevTick((x) => x + 1);
-                Alert.alert(
-                  t.diagnostics,
-                  next
-                    ? "Herramientas técnicas visibles (CLI, simulado, URL)."
-                    : "Herramientas técnicas ocultas."
-                );
+                if (showDevTools()) {
+                  lockToOperator();
+                  setDevToolsUnlocked(false);
+                  setDevTick((x) => x + 1);
+                  if (mode === "dummy") setMode("mqtt");
+                  Alert.alert(t.roleOperator, "Herramientas técnicas ocultas.");
+                } else {
+                  setPinInput("");
+                  setShowPinModal(true);
+                }
               }}
             >
               <Text style={styles.btnText}>
                 {showDevTools() ? t.diagnosticsLock : t.diagnosticsUnlock}
               </Text>
             </Pressable>
+            {showDevTools() && (
+              <View style={{ marginTop: 8 }}>
+                <Text style={styles.label}>{t.pinChange}</Text>
+                <TextInput
+                  style={styles.input}
+                  value={pinNew}
+                  onChangeText={setPinNew}
+                  placeholder={`Nuevo PIN (actual por defecto ${DEFAULT_TECH_PIN})`}
+                  placeholderTextColor="#6b7280"
+                  secureTextEntry
+                  keyboardType="number-pad"
+                />
+                <Pressable
+                  style={styles.btnSec}
+                  onPress={() => {
+                    try {
+                      setTechPin(pinNew || DEFAULT_TECH_PIN);
+                      setPinNew("");
+                      Alert.alert("OK", t.pinChanged);
+                    } catch (e) {
+                      Alert.alert("PIN", String((e as Error).message || e));
+                    }
+                  }}
+                >
+                  <Text style={styles.btnText}>{t.pinChange}</Text>
+                </Pressable>
+              </View>
+            )}
             <Pressable
               style={styles.btnSec}
               onPress={() => setTab("home")}
@@ -1843,7 +1962,9 @@ export default function App() {
                 ["username", "Usuario (opcional)"],
                 ["password", "Contraseña (opcional)"],
               ] as const
-            ).map(([k, lab]) => (
+            )
+              .filter(([k]) => dev || k !== "topic_prefix")
+              .map(([k, lab]) => (
               <View key={k}>
                 <Text style={styles.label}>{lab}</Text>
                 <TextInput
@@ -1891,6 +2012,53 @@ export default function App() {
               <Text style={styles.btnText}>{t.close}</Text>
             </Pressable>
           </ScrollView>
+        </View>
+      </Modal>
+
+      {/* PIN técnico (Fase 5) */}
+      <Modal visible={showPinModal} animationType="fade" transparent>
+        <View style={styles.modalBg}>
+          <View style={styles.tutorialCard}>
+            <Text style={styles.tutorialTitle}>{t.pinTitle}</Text>
+            <Text style={styles.tutorialBody}>{t.pinHint}</Text>
+            <TextInput
+              style={styles.input}
+              value={pinInput}
+              onChangeText={setPinInput}
+              placeholder={t.pinPlaceholder}
+              placeholderTextColor="#6b7280"
+              secureTextEntry
+              keyboardType="number-pad"
+              autoFocus
+            />
+            <View style={styles.row}>
+              <Pressable
+                style={styles.btnSec}
+                onPress={() => {
+                  setShowPinModal(false);
+                  setPinInput("");
+                }}
+              >
+                <Text style={styles.btnText}>{t.pinCancel}</Text>
+              </Pressable>
+              <Pressable
+                style={styles.btnPri}
+                onPress={() => {
+                  if (unlockTechnician(pinInput)) {
+                    setDevToolsUnlocked(true);
+                    setDevTick((x) => x + 1);
+                    setShowPinModal(false);
+                    setPinInput("");
+                    Alert.alert(t.roleTech, "CLI, simulado y log técnico disponibles.");
+                  } else {
+                    Alert.alert(t.pinWrong, `PIN por defecto de fábrica: ${DEFAULT_TECH_PIN}`);
+                  }
+                }}
+              >
+                <Text style={styles.btnText}>{t.pinOk}</Text>
+              </Pressable>
+            </View>
+          </View>
         </View>
       </Modal>
 
@@ -1952,9 +2120,13 @@ export default function App() {
               {"\n"}
               {BRAND.tagline}
               {"\n\n"}
+              Rol: {roleLabel(getRole())}
+              {"\n\n"}
               Multi-variador: el módulo de campo puede ampliarse a distintos equipos.
               {"\n\n"}
-              {dev ? `Interno: ${BRAND.codename} · ${apiBase()}` : ""}
+              {dev
+                ? `Interno: ${BRAND.codename} · ${apiBase()}\nPIN técnico (fábrica): ${DEFAULT_TECH_PIN}`
+                : "Mantén pulsado «?» para acceso técnico (PIN)."}
             </Text>
             <Pressable style={styles.btnPri} onPress={() => setShowAbout(false)}>
               <Text style={styles.btnText}>{t.close}</Text>
@@ -2096,6 +2268,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   tagline: { color: colors.textMuted, fontSize: font.sm, marginTop: 2 },
+  roleBadge: {
+    color: colors.textMuted,
+    fontSize: font.xs,
+    marginTop: 4,
+    marginBottom: 2,
+  },
   helpBtn: {
     width: touchMin,
     height: touchMin,

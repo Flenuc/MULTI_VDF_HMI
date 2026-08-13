@@ -81,6 +81,57 @@ export function serializeParamList(pl: ParameterList): string {
   );
 }
 
+/** Download arbitrary JSON (web) or native save (Electron). */
+export async function exportJsonFile(
+  filename: string,
+  data: unknown
+): Promise<string | null> {
+  const text = JSON.stringify(data, null, 2);
+  const bridge = typeof window !== "undefined" ? window.multiVdfDesktop : undefined;
+  if (bridge?.saveJsonFile) {
+    const res = await bridge.saveJsonFile({ defaultPath: filename, content: text });
+    return res?.path ?? null;
+  }
+  // Browser download
+  const blob = new Blob([text], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename.endsWith(".json") ? filename : `${filename}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  return a.download;
+}
+
+/** Open JSON file and parse as object. */
+export async function importJsonObject(): Promise<unknown | null> {
+  const bridge = typeof window !== "undefined" ? window.multiVdfDesktop : undefined;
+  if (bridge?.openJsonFile) {
+    const res = await bridge.openJsonFile();
+    if (!res?.text) return null;
+    return JSON.parse(res.text);
+  }
+  return new Promise((resolve, reject) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json,.json";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) {
+        resolve(null);
+        return;
+      }
+      try {
+        const text = await file.text();
+        resolve(JSON.parse(text));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    input.click();
+  });
+}
+
 /** Open a JSON file from disk (Electron dialog or browser file picker). */
 export async function importParamListJson(): Promise<{
   list: ParameterList;

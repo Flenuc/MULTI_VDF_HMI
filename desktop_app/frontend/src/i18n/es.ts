@@ -201,6 +201,26 @@ export const t = {
 
   about: "Acerca de",
   diagnostics: "Diagnóstico (técnicos)",
-  diagnosticsUnlock: "Mostrar herramientas técnicas",
-  diagnosticsLock: "Ocultar herramientas técnicas",
+  diagnosticsUnlock: "Modo técnico (PIN)",
+  diagnosticsLock: "Volver a modo operario",
+  roleOperator: "Operario",
+  roleTech: "Técnico",
+  roleBadgeOp: "Modo operario",
+  roleBadgeTech: "Modo técnico",
+  pinTitle: "Acceso técnico",
+  pinHint:
+    "Introduce el PIN de técnico para ver CLI, simulado, log crudo y opciones avanzadas.\n" +
+    "El modo operario sigue pudiendo editar perfiles Wi‑Fi/MQTT de planta.",
+  pinPlaceholder: "PIN (4+ dígitos)",
+  pinOk: "Entrar como técnico",
+  pinCancel: "Cancelar",
+  pinWrong: "PIN incorrecto",
+  pinChange: "Cambiar PIN de técnico",
+  pinChanged: "PIN actualizado",
+  exportProfiles: "Exportar plantilla de perfiles (planta)",
+  importProfiles: "Importar plantilla de perfiles",
+  profilesTemplateOk: "Plantilla de perfiles aplicada",
+  profilesTemplateHint:
+    "Guarda o carga un JSON con perfiles Wi‑Fi y MQTT de esta planta " +
+    "(útil para clonar configuración entre PCs).",
 } as const;
