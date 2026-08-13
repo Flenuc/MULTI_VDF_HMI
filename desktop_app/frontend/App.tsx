@@ -28,9 +28,16 @@ import {
   type ProfilesStore,
 } from "./src/api/client";
 import type { BtDevice, PortInfo, Telemetry, Transport } from "./src/api/types";
+import { ErrorBanner } from "./src/components/ErrorBanner";
 import { BRAND } from "./src/config/brand";
 import { isProductionUi, setDevToolsUnlocked, showDevTools } from "./src/config/env";
 import { t } from "./src/i18n/es";
+import {
+  classifyError,
+  classifyFromLine,
+  type AppError,
+  type RetryAction,
+} from "./src/lib/errors";
 import {
   exportParamListJson,
   importParamListJson,
@@ -155,6 +162,7 @@ export default function App() {
   const [tutorialStep, setTutorialStep] = useState(0);
   const [showAbout, setShowAbout] = useState(false);
   const [moreSection, setMoreSection] = useState<"network" | "help">("help");
+  const [appError, setAppError] = useState<AppError | null>(null);
   const [mForm, setMForm] = useState({
     name: "Local",
     host: "127.0.0.1",
@@ -182,6 +190,83 @@ export default function App() {
       return next.length > 200 ? next.slice(-200) : next;
     });
   }, []);
+
+  const reportError = useCallback(
+    (
+      err: unknown,
+      context?:
+        | "connect"
+        | "usb"
+        | "mqtt"
+        | "bt"
+        | "bt_scan"
+        | "sync"
+        | "compare"
+        | "ping"
+        | "save"
+        | "load"
+        | "import"
+        | "export"
+        | "wifi"
+        | "profiles"
+    ) => {
+      const appErr = classifyError(err, context ? { context } : undefined);
+      setAppError(appErr);
+      pushLog(`${appErr.title}: ${appErr.message.split("\n")[0]}`);
+      return appErr;
+    },
+    [pushLog]
+  );
+
+  const handleRetry = useCallback(() => {
+    const action: RetryAction | undefined = appError?.retry;
+    setAppError(null);
+    if (!action || action === "none") return;
+    switch (action) {
+      case "go_connect":
+        setTab("connect");
+        break;
+      case "go_recipes":
+        setTab("params");
+        break;
+      case "open_profiles":
+        setMoreSection("network");
+        setTab("more");
+        setShowProfiles(true);
+        break;
+      case "refresh_ports":
+        setTab("connect");
+        setMode("serial");
+        void refreshPortsRef.current?.();
+        break;
+      case "scan_bt":
+        setTab("connect");
+        void scanBtRef.current?.();
+        break;
+      case "reconnect":
+        setTab("connect");
+        void doConnectRef.current?.();
+        break;
+      case "retry_compare":
+        void compareVfdRef.current?.();
+        break;
+      case "retry_sync":
+        void runSyncRef.current?.();
+        break;
+      case "retry_ping":
+        void sendCmdRef.current?.("ping");
+        break;
+      default:
+        break;
+    }
+  }, [appError]);
+
+  const refreshPortsRef = useRef<(() => Promise<void>) | null>(null);
+  const scanBtRef = useRef<(() => Promise<void>) | null>(null);
+  const doConnectRef = useRef<(() => Promise<void>) | null>(null);
+  const compareVfdRef = useRef<(() => Promise<void>) | null>(null);
+  const runSyncRef = useRef<(() => Promise<void>) | null>(null);
+  const sendCmdRef = useRef<((line?: string) => Promise<void>) | null>(null);
 
   const endOp = useCallback((msg?: string) => {
     setBusy(false);
@@ -245,6 +330,7 @@ export default function App() {
         if (!cancelled) {
           setBackendOk(false);
           setStatusMsg(t.statusServiceError);
+          setAppError(classifyError(new Error("failed to fetch")));
         }
       }
       if (!cancelled && !isTutorialDone()) {
@@ -258,11 +344,19 @@ export default function App() {
         if (ev.type === "line" && typeof ev.payload === "string") {
           const line = ev.payload;
           pushLog(line);
+          const lineErr = classifyFromLine(line);
+          if (lineErr && lineErr.code === "DRIVE_NO_LINK") {
+            setAppError(lineErr);
+          } else if (lineErr && lineErr.code === "DRIVE_OK") {
+            setAppError(null);
+          }
           if (dumpActive.current) {
             if (line.startsWith("ERR:")) {
               dumpActive.current = false;
               endOp("No se pudo leer el variador.");
-              Alert.alert("Comparar", "El equipo reportó un error al leer parámetros.");
+              setAppError(
+                classifyError(line, { context: "compare" })
+              );
               return;
             }
             const parsed = parseDumpCsvLine(line);
@@ -333,10 +427,16 @@ export default function App() {
       setPorts(list);
       if (list.length === 1) setPort(list[0].device);
       else if (list.length && !port) setPort(list[0].device);
+      else if (!list.length) {
+        setAppError(classifyError(new Error("no cable"), { context: "usb" }));
+      } else {
+        setAppError(null);
+      }
     } catch (e) {
-      pushLog(`No se pudieron listar cables: ${e}`);
+      reportError(e, "usb");
     }
-  }, [port, pushLog]);
+  }, [port, reportError]);
+  refreshPortsRef.current = refreshPorts;
 
   useEffect(() => {
     if (mode === "serial") refreshPorts();
@@ -364,25 +464,32 @@ export default function App() {
         const saj = devs.find((d) => /SAJ|PDM|VARIO|EDGE/i.test(d.name)) || devs[0];
         setBtAddress(saj.address);
         pushLog(`Encontrados ${devs.length} equipo(s).`);
+        setAppError(null);
       } else {
-        pushLog("No se encontró ningún equipo. Acércalo y vuelve a buscar.");
+        setAppError(
+          classifyError(new Error("ningún dispositivo"), { context: "bt" })
+        );
       }
     } catch (e) {
-      pushLog(`Búsqueda Bluetooth: ${e}`);
+      reportError(e, "bt_scan");
     } finally {
       setScanning(false);
     }
   };
+  scanBtRef.current = scanBt;
 
   const doConnect = async () => {
     setBusy(true);
     setOpName("Conectar");
+    setAppError(null);
     try {
       const m = MODE_DEFS.find((x) => x.id === mode)!;
       let body: Parameters<typeof api.connect>[0];
+      let ctx: "usb" | "mqtt" | "bt" | "connect" = "connect";
       if (mode === "serial") {
+        ctx = "usb";
         if (!port || port === "—") {
-          throw new Error("No hay cable detectado. Conéctalo y pulsa Actualizar cables.");
+          throw new Error("No hay cable detectado");
         }
         body = {
           transport: "serial",
@@ -395,13 +502,12 @@ export default function App() {
           last_serial_baud: body.baud,
         });
       } else if (mode === "mqtt") {
+        ctx = "mqtt";
         const pr = profiles || (await api.profiles());
         const mp =
           pr.mqtt_profiles.find((p) => p.name === mqttName) || pr.mqtt_profiles[0];
         if (!mp?.host) {
-          throw new Error(
-            "Falta un perfil de red. Ve a “Red del equipo” y crea uno con la IP del broker."
-          );
+          throw new Error("Falta perfil de red");
         }
         body = {
           transport: "mqtt",
@@ -413,8 +519,9 @@ export default function App() {
         };
         await api.patchLasts({ last_mode: "MQTT", last_mqtt: mp.name });
       } else if (mode === "bluetooth" || mode === "ble") {
+        ctx = "bt";
         if (!btAddress) {
-          throw new Error("Pulsa “Buscar equipos” y elige el módulo en la lista.");
+          throw new Error("Selecciona un dispositivo");
         }
         body = { transport: m.transport, address: btAddress, pair: true };
         await api.patchLasts({
@@ -429,6 +536,7 @@ export default function App() {
       pushLog("OK connected via ok");
       setConnected(true);
       setStatusMsg(t.statusOnline);
+      setAppError(null);
       const delay =
         mode === "serial" ? 2500 : mode === "bluetooth" || mode === "ble" ? 1500 : 800;
       setTimeout(async () => {
@@ -440,14 +548,22 @@ export default function App() {
         }
       }, delay);
     } catch (e) {
-      pushLog(String(e));
-      Alert.alert("No se pudo conectar", String(e));
+      const ctx =
+        mode === "serial"
+          ? "usb"
+          : mode === "mqtt"
+            ? "mqtt"
+            : mode === "bluetooth" || mode === "ble"
+              ? "bt"
+              : "connect";
+      reportError(e, ctx);
       setConnected(false);
     } finally {
       setBusy(false);
       setOpName("");
     }
   };
+  doConnectRef.current = doConnect;
 
   const doDisconnect = async () => {
     try {
@@ -469,7 +585,7 @@ export default function App() {
     const text = (line ?? cmd).trim();
     if (!text) return;
     if (!connected) {
-      Alert.alert("Sin conexión", "Conecta el equipo primero.");
+      setAppError(classifyError(new Error("sin conexión")));
       return;
     }
     pushLog(`→ ${text}`);
@@ -477,9 +593,10 @@ export default function App() {
       await api.command(text);
       if (!line) setCmd("");
     } catch (e) {
-      pushLog(String(e));
+      reportError(e, text === "ping" ? "ping" : "connect");
     }
   };
+  sendCmdRef.current = sendCmd;
 
   const loadList = async (filename: string) => {
     try {
@@ -488,8 +605,9 @@ export default function App() {
       setPlist(r.list);
       setSelectedKey(null);
       setStatusMsg(`Receta cargada: ${r.list.name || r.filename}`);
+      setAppError(null);
     } catch (e) {
-      Alert.alert("Abrir receta", String(e));
+      reportError(e, "load");
     }
   };
 
@@ -502,8 +620,9 @@ export default function App() {
       setListFiles((await api.paramListFiles()).files);
       setStatusMsg(`Receta guardada en el PC: ${r.filename}`);
       pushLog(`Guardado ${r.filename}`);
+      setAppError(null);
     } catch (e) {
-      Alert.alert("Guardar", String(e));
+      reportError(e, "save");
     }
   };
 
@@ -516,8 +635,9 @@ export default function App() {
       setSelectedKey(null);
       setStatusMsg(`Archivo abierto: ${r.filename}`);
       pushLog(`Import JSON: ${r.filename} — ${r.list.parameters.length} parámetros`);
+      setAppError(null);
     } catch (e) {
-      Alert.alert("Abrir archivo", String(e));
+      reportError(e, "import");
     }
   };
 
@@ -543,8 +663,9 @@ export default function App() {
         setListFiles((await api.paramListFiles()).files);
         setListFile(name);
       }
+      setAppError(null);
     } catch (e) {
-      Alert.alert("Guardar como", String(e));
+      reportError(e, "export");
     }
   };
 
@@ -591,15 +712,16 @@ export default function App() {
 
   const runSync = async () => {
     if (!connected) {
-      Alert.alert("Sin conexión", "Conecta el equipo primero.");
+      setAppError(classifyError(new Error("sin conexión")));
       return;
     }
     const items = writable(plist);
     if (!items.length) {
-      Alert.alert("Nada que enviar", "No hay parámetros enviables en esta receta.");
+      setAppError(classifyError(new Error("nada enviable"), { context: "sync" }));
       return;
     }
     if (!beginOp("Enviar receta")) return;
+    setAppError(null);
     try {
       const total = items.length;
       for (let i = 0; i < total; i++) {
@@ -616,17 +738,22 @@ export default function App() {
       Alert.alert("Listo", "Los parámetros se enviaron al variador.");
     } catch (e) {
       endOp("El envío se interrumpió.");
-      Alert.alert("Envío interrumpido", String(e));
+      reportError(e, "sync");
     }
   };
+  runSyncRef.current = runSync;
 
   /** Sync allowed without compare — soft recommendation dialog */
   const syncVfd = () => {
     if (!connected) {
-      Alert.alert("Sin conexión", "Conecta el equipo primero.");
+      setAppError(classifyError(new Error("sin conexión")));
       return;
     }
     const items = writable(plist);
+    if (!items.length) {
+      setAppError(classifyError(new Error("nada enviable"), { context: "sync" }));
+      return;
+    }
     const skipped = plist.parameters.length - items.length;
     Alert.alert(t.syncTitle, t.syncBody(items.length, skipped), [
       { text: t.syncCancel, style: "cancel" },
@@ -647,11 +774,11 @@ export default function App() {
 
   const compareVfd = async () => {
     if (!connected) {
-      Alert.alert("Sin conexión", "Conecta el equipo primero.");
+      setAppError(classifyError(new Error("sin conexión")));
       return;
     }
     if (!plist.parameters.length) {
-      Alert.alert("Receta vacía", "Abre o crea una receta antes de comparar.");
+      setAppError(classifyError(new Error("receta vacía")));
       return;
     }
     if (!beginOp("Comparar")) return;
@@ -659,6 +786,7 @@ export default function App() {
     dumpMap.current = {};
     dumpCount.current = 0;
     setPlist((pl) => clearCompare(pl));
+    setAppError(null);
     try {
       await api.command("stream off");
       pushLog("→ stream off");
@@ -673,38 +801,34 @@ export default function App() {
             dumpMap.current
           );
           setPlist(list);
+          setHasCompared(true);
           endOp(
             `Comparación incompleta: ${mismatches} diferencia(s), ${Object.keys(dumpMap.current).length} leídos.`
           );
-          Alert.alert(
-            "Tiempo agotado",
-            "La lectura no terminó a tiempo. Se muestran las diferencias parciales. Puedes reintentar."
-          );
+          setAppError(classifyError(new Error("timeout"), { context: "compare" }));
         }
       }, 120000);
     } catch (e) {
       dumpActive.current = false;
       endOp("No se pudo iniciar la comparación.");
-      Alert.alert("Comparar", String(e));
+      reportError(e, "compare");
     }
   };
+  compareVfdRef.current = compareVfd;
 
   const applyWifiToEdge = async () => {
     if (!connected) {
-      Alert.alert("Sin conexión", "Conecta el módulo primero (cable, red o Bluetooth).");
+      setAppError(classifyError(new Error("sin conexión")));
       return;
     }
     const pr = profiles || (await api.profiles());
     const wp = pr.wifi_profiles.find((p) => p.name === wifiName) || pr.wifi_profiles[0];
     if (!wp) {
-      Alert.alert("Falta perfil Wi‑Fi", "Crea uno en “Crear o editar perfiles”.");
+      setAppError(classifyError(new Error("falta perfil wifi"), { context: "wifi" }));
       return;
     }
     if (/\s/.test(wp.ssid) || (wp.password && /\s/.test(wp.password))) {
-      Alert.alert(
-        "Revisa el perfil",
-        "El nombre de red (SSID) y la contraseña no deben tener espacios."
-      );
+      setAppError(classifyError(new Error("ssid con espacios"), { context: "wifi" }));
       return;
     }
     const pwd = wp.password || '""';
@@ -713,33 +837,30 @@ export default function App() {
       await api.command(`wifi profile use ${wp.name}`);
       pushLog(`→ wifi profile use ${wp.name}`);
       await api.patchLasts({ last_wifi: wp.name });
+      setAppError(null);
       Alert.alert(
         "Wi‑Fi enviado",
         `El módulo intentará unirse a “${wp.ssid}”.\nEspera unos segundos y revisa el estado Wi‑Fi.`
       );
     } catch (e) {
-      Alert.alert("No se pudo enviar el Wi‑Fi", String(e));
+      reportError(e, "wifi");
     }
   };
 
   const applyMqttToEdge = async () => {
     if (!connected) {
-      Alert.alert("Sin conexión", "Conecta el módulo primero.");
+      setAppError(classifyError(new Error("sin conexión")));
       return;
     }
     const pr = profiles || (await api.profiles());
     const mp = pr.mqtt_profiles.find((p) => p.name === mqttName) || pr.mqtt_profiles[0];
     if (!mp) {
-      Alert.alert("Falta perfil de red", "Crea un perfil MQTT en “Crear o editar perfiles”.");
+      setAppError(classifyError(new Error("falta perfil"), { context: "profiles" }));
       return;
     }
     if (mp.host === "127.0.0.1" || mp.host === "localhost") {
-      Alert.alert(
-        "Revisa la dirección",
-        "Desde el módulo, “localhost” es el propio módulo, no este PC.\n" +
-          "Usa la IP del PC o del servidor en la red de planta (ej. 192.168.x.x)."
-      );
-      // still allow continue after dismiss — user may know better; we only warn
+      setAppError(classifyError(new Error("localhost"), { context: "mqtt" }));
+      // still allow continue after user dismisses banner
     }
     try {
       await api.command(`mqtt set ${mp.host} ${mp.port}`);
@@ -749,13 +870,14 @@ export default function App() {
       await api.command("mqtt enable");
       pushLog(`→ mqtt set ${mp.host}:${mp.port}`);
       await api.patchLasts({ last_mqtt: mp.name });
+      if (mp.host !== "127.0.0.1" && mp.host !== "localhost") setAppError(null);
       Alert.alert(
         "Red MQTT enviada",
         `Broker “${mp.name}” (${mp.host}:${mp.port}) configurado en el módulo.\n` +
           "Luego puedes conectar la app en modo “Por red (Wi‑Fi)” con el mismo perfil."
       );
     } catch (e) {
-      Alert.alert("No se pudo configurar la red", String(e));
+      reportError(e, "mqtt");
     }
   };
 
@@ -918,6 +1040,12 @@ export default function App() {
             />
           </View>
         ) : null}
+
+        <ErrorBanner
+          error={appError}
+          onDismiss={() => setAppError(null)}
+          onRetry={handleRetry}
+        />
 
         <View style={styles.tabs}>
           {(
