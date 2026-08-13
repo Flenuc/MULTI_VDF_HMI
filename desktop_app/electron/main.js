@@ -47,47 +47,23 @@ function desktopAppRoot() {
   return path.join(__dirname, "..");
 }
 
-function startBackend() {
-  const env = {
-    ...process.env,
-    MULTI_VDF_HOST: HOST,
-    MULTI_VDF_PORT: String(PORT),
-    MULTI_VDF_UI_DIR: uiDir(),
-    PYTHONUNBUFFERED: "1",
-  };
+/** Packaged embed: resources/python + resources/pyapp (Windows NSIS from Linux). */
+function embeddedPythonPaths() {
+  const res = resourcesDir();
+  const pyDir = path.join(res, "python");
+  const pyapp = path.join(res, "pyapp");
+  const pyExe =
+    process.platform === "win32"
+      ? path.join(pyDir, "python.exe")
+      : path.join(pyDir, "bin", "python3");
+  const runScript = path.join(pyapp, "run_variofield.py");
+  return { pyExe, pyapp, runScript };
+}
 
-  const exe = backendExecutable();
-  if (fs.existsSync(exe)) {
-    console.log("[electron] starting packaged backend:", exe);
-    backendProc = spawn(exe, [], {
-      env,
-      cwd: path.dirname(exe),
-      stdio: ["ignore", "pipe", "pipe"],
-      windowsHide: true,
-    });
-  } else {
-    // Dev: run uvicorn from desktop_app venv / system python
-    const root = desktopAppRoot();
-    const venvPy =
-      process.platform === "win32"
-        ? path.join(root, ".venv", "Scripts", "python.exe")
-        : path.join(root, ".venv", "bin", "python");
-    const py = fs.existsSync(venvPy) ? venvPy : process.platform === "win32" ? "python" : "python3";
-    console.log("[electron] starting dev backend with", py);
-    backendProc = spawn(
-      py,
-      ["-m", "uvicorn", "backend.main:app", "--host", HOST, "--port", String(PORT)],
-      {
-        env: { ...env, PYTHONPATH: root },
-        cwd: root,
-        stdio: ["ignore", "pipe", "pipe"],
-      }
-    );
-  }
-
-  backendProc.stdout?.on("data", (d) => process.stdout.write(`[backend] ${d}`));
-  backendProc.stderr?.on("data", (d) => process.stderr.write(`[backend] ${d}`));
-  backendProc.on("exit", (code, signal) => {
+function attachBackendLogs(proc) {
+  proc.stdout?.on("data", (d) => process.stdout.write(`[backend] ${d}`));
+  proc.stderr?.on("data", (d) => process.stderr.write(`[backend] ${d}`));
+  proc.on("exit", (code, signal) => {
     console.log(`[electron] backend exited code=${code} signal=${signal}`);
     backendProc = null;
     if (!quitting && mainWindow) {
@@ -97,6 +73,67 @@ function startBackend() {
       );
     }
   });
+}
+
+function startBackend() {
+  const env = {
+    ...process.env,
+    MULTI_VDF_HOST: HOST,
+    MULTI_VDF_PORT: String(PORT),
+    MULTI_VDF_UI_DIR: uiDir(),
+    PYTHONUNBUFFERED: "1",
+  };
+
+  const spawnOpts = {
+    env,
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+  };
+
+  // 1) PyInstaller one-file binary (AppImage / electron-builder Windows CI)
+  const exe = backendExecutable();
+  if (fs.existsSync(exe)) {
+    console.log("[electron] starting packaged backend binary:", exe);
+    backendProc = spawn(exe, [], { ...spawnOpts, cwd: path.dirname(exe) });
+    attachBackendLogs(backendProc);
+    return;
+  }
+
+  // 2) Embedded CPython (Windows NSIS built on Linux) + pyapp sources
+  const { pyExe, pyapp, runScript } = embeddedPythonPaths();
+  if (fs.existsSync(pyExe) && fs.existsSync(runScript)) {
+    console.log("[electron] starting embedded Python backend:", pyExe, runScript);
+    backendProc = spawn(pyExe, [runScript], {
+      ...spawnOpts,
+      env: { ...env, PYTHONPATH: pyapp },
+      cwd: pyapp,
+    });
+    attachBackendLogs(backendProc);
+    return;
+  }
+
+  // 3) Dev: uvicorn from desktop_app venv / system python
+  const root = desktopAppRoot();
+  const venvPy =
+    process.platform === "win32"
+      ? path.join(root, ".venv", "Scripts", "python.exe")
+      : path.join(root, ".venv", "bin", "python");
+  const py = fs.existsSync(venvPy)
+    ? venvPy
+    : process.platform === "win32"
+      ? "python"
+      : "python3";
+  console.log("[electron] starting dev backend with", py);
+  backendProc = spawn(
+    py,
+    ["-m", "uvicorn", "backend.main:app", "--host", HOST, "--port", String(PORT)],
+    {
+      ...spawnOpts,
+      env: { ...env, PYTHONPATH: root },
+      cwd: root,
+    }
+  );
+  attachBackendLogs(backendProc);
 }
 
 function waitForHealth(timeoutMs = 45000) {
@@ -181,7 +218,7 @@ function registerIpc() {
   ipcMain.handle("dialog:openJson", async () => {
     const win = BrowserWindow.getFocusedWindow() || mainWindow;
     const res = await dialog.showOpenDialog(win || undefined, {
-      title: "Abrir lista de parámetros JSON",
+      title: "VarioField — Abrir receta JSON",
       filters: [
         { name: "JSON", extensions: ["json"] },
         { name: "Todos", extensions: ["*"] },
@@ -198,7 +235,7 @@ function registerIpc() {
     const win = BrowserWindow.getFocusedWindow() || mainWindow;
     const defaultPath = opts.defaultPath || "lista.json";
     const res = await dialog.showSaveDialog(win || undefined, {
-      title: "Guardar lista de parámetros JSON",
+      title: "VarioField — Guardar receta JSON",
       defaultPath: defaultPath.endsWith(".json")
         ? defaultPath
         : `${defaultPath}.json`,
@@ -239,7 +276,7 @@ if (!gotLock) {
       createWindow();
     } catch (e) {
       console.error(e);
-      dialog.showErrorBox("MULTI_VDF_HMI — error de arranque", String(e.message || e));
+      dialog.showErrorBox("VarioField — error de arranque", String(e.message || e));
       stopBackend();
       app.quit();
     }

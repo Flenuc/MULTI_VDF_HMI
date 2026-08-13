@@ -1,0 +1,33 @@
+# Packages downloaded as win_amd64 / py3 wheels on the build host (Linux OK).
+# Use with: pip download --no-deps --platform win_amd64 --python-version 312 ...
+fastapi
+uvicorn
+pydantic
+pydantic-core
+starlette
+anyio
+sniffio
+idna
+typing-extensions
+typing-inspection
+annotated-types
+annotated-doc
+httptools
+watchfiles
+websockets
+h11
+click
+colorama
+pyyaml
+pyserial
+paho-mqtt
+bleak
+winrt-runtime
+winrt-Windows.Foundation
+winrt-Windows.Foundation.Collections
+winrt-Windows.Devices.Bluetooth
+winrt-Windows.Devices.Bluetooth.Advertisement
+winrt-Windows.Devices.Bluetooth.GenericAttributeProfile
+winrt-Windows.Devices.Enumeration
+winrt-Windows.Devices.Radios
+winrt-Windows.Storage.Streams

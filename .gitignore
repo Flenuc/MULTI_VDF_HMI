@@ -91,3 +91,7 @@ desktop_app/packaging/**/payload/python-*.exe
 
 # VarioField Windows setup: UI se regenera en cada build
 desktop_app/packaging/windows_variofield/payload/ui/
+
+# Windows Electron setup stage + downloads (large)
+desktop_app/packaging/windows_electron/cache/
+desktop_app/packaging/windows_electron/stage/
