@@ -123,30 +123,27 @@ rm -rf "$PY_ROOT"
 mkdir -p "$PY_ROOT"
 unzip -q "$CACHE/$PYTHON_EMBED" -d "$PY_ROOT"
 
-# Enable site-packages (required for third-party wheels)
+# Enable site-packages + pyapp (._pth ignores PYTHONPATH)
 PTH="$(echo "$PY_ROOT"/python*._pth)"
 if [[ ! -f "$PTH" ]]; then
   echo "ERROR: no se encontro python*._pth en embed"
   ls -la "$PY_ROOT"
   exit 1
 fi
-cat > "$PTH" <<'EOF'
-python312.zip
-.
-Lib\site-packages
-import site
-EOF
-# Handle non-3.12 name if version changes
+ZIP_NAME="python312.zip"
 if [[ ! -f "$PY_ROOT/python312.zip" ]]; then
-  Z="$(ls "$PY_ROOT"/python3*.zip | head -1)"
-  BASE="$(basename "$Z")"
-  cat > "$PTH" <<EOF
-${BASE}
+  ZIP_NAME="$(basename "$(ls "$PY_ROOT"/python3*.zip | head -1)")"
+fi
+# Paths relative to the directory that contains python.exe
+cat > "$PTH" <<EOF
+${ZIP_NAME}
 .
 Lib\\site-packages
+..\\pyapp
 import site
 EOF
-fi
+echo "--- python._pth ---"
+cat "$PTH"
 
 SITE="$PY_ROOT/Lib/site-packages"
 mkdir -p "$SITE"
@@ -177,6 +174,15 @@ shopt -u nullglob
 # Clean wheel metadata clutter is fine to keep for imports
 echo "site-packages entries: $(ls "$SITE" | wc -l)"
 
+# Native wheels (pydantic_core, winrt, …) need MSVC runtime next to python.exe.
+# winrt wheel ships msvcp140.dll; copy it (and any siblings) into python/.
+echo "Copiando runtimes MSVC al lado de python.exe..."
+find "$SITE" -iname 'msvcp*.dll' -o -iname 'vcruntime*.dll' -o -iname 'concrt*.dll' 2>/dev/null \
+  | while read -r dll; do
+      cp -n "$dll" "$PY_ROOT/" 2>/dev/null || cp -f "$dll" "$PY_ROOT/"
+    done
+ls -lh "$PY_ROOT"/msvcp*.dll "$PY_ROOT"/vcruntime*.dll 2>/dev/null || true
+
 # ---------------------------------------------------------------------------
 # 6) pyapp sources
 # ---------------------------------------------------------------------------
@@ -199,7 +205,7 @@ cp -f "$DIR/comms/"*.py "$PYAPP/comms/"
 cp -f "$DIR/param_lists/"*.json "$PYAPP/param_lists/"
 cp -f "$DIR/config/connection_profiles.example.json" "$PYAPP/config/"
 
-# LEEME
+# LEEME + diagnóstico de campo
 cat > "$STAGE/LEEME.txt" << EOF
 VarioField ${VERSION} — Windows (Electron nativo)
 ================================================
@@ -212,8 +218,45 @@ Instalado con VarioField-Setup-${VERSION}.exe
 No requiere Python ni Node del sistema.
 Cierre la ventana de la app para detener el backend.
 
+Si no arranca:
+1) Ejecute Diagnose_Backend.bat (consola con el error)
+2) Revise %APPDATA%\\VarioField\\backend.log  (o userData de Electron)
+3) Revise resources\\pyapp\\backend-boot.log
+
 Repo: https://github.com/Flenuc/MULTI_VDF_HMI
 EOF
+
+cat > "$STAGE/Diagnose_Backend.bat" << 'EOF'
+@echo off
+setlocal
+cd /d "%~dp0"
+echo === VarioField backend diagnose ===
+echo DIR=%CD%
+if not exist "resources\python\python.exe" (
+  echo ERROR: falta resources\python\python.exe
+  pause
+  exit /b 1
+)
+if not exist "resources\pyapp\run_variofield.py" (
+  echo ERROR: falta resources\pyapp\run_variofield.py
+  pause
+  exit /b 1
+)
+set "PATH=%CD%\resources\python;%PATH%"
+set "MULTI_VDF_HOST=127.0.0.1"
+set "MULTI_VDF_PORT=8765"
+set "MULTI_VDF_UI_DIR=%CD%\resources\ui"
+set "PYTHONUNBUFFERED=1"
+set "VARIOFIELD_EMBED=1"
+echo.
+echo Arrancando backend (Ctrl+C para salir)...
+echo.
+"resources\python\python.exe" "resources\pyapp\run_variofield.py"
+echo.
+echo Exit code=%ERRORLEVEL%
+pause
+EOF
+
 
 echo "Stage size:"
 du -sh "$STAGE"

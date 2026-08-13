@@ -59,7 +59,9 @@ Section "VarioField" SecMain
   SetOutPath "$INSTDIR"
   DetailPrint "Copiando VarioField (Electron + Python + UI)..."
   ; stage/VarioField/* generado por el script de build
-  File /r "stage\VarioField\*.*"
+  ; Usar \ al final + * (no *.*) para no omitir ficheros sin extensión
+  ; (METADATA, LICENSE, version, etc.) — *.* de NSIS los salta.
+  File /r "stage\VarioField\"
 
   CreateDirectory "$SMPROGRAMS\MULTI_VDF_HMI"
   CreateShortCut "$SMPROGRAMS\MULTI_VDF_HMI\VarioField.lnk" "$INSTDIR\VarioField.exe" "" "$INSTDIR\VarioField.exe" 0
