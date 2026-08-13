@@ -53,20 +53,22 @@
     "linux": {
       "target": ["AppImage"],
       "category": "Science",
+      "icon": "app-icons/icon.png",
       "maintainer": "Flenuc <flenuc@users.noreply.github.com>",
       "vendor": "Flenuc",
-      "synopsis": "SAJ PDM-30 field tool (USB / MQTT / BT)",
+      "synopsis": "VarioField — recetas y enlace a variadores en campo",
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "win": {
       "target": ["nsis"],
+      "icon": "app-icons/icon.ico",
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "shortcutName": "MULTI_VDF_HMI"
+      "shortcutName": "VarioField"
     }
   },
   "devDependencies": {
