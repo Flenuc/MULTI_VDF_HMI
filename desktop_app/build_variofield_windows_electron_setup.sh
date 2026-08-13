@@ -152,6 +152,9 @@ WHEEL_DIR="$CACHE/wheels-win_amd64"
 mkdir -p "$WHEEL_DIR"
 REQ="$PKG/requirements-wheels.txt"
 
+# Drop stale pydantic* wheels so --no-deps cannot leave mismatched pair
+rm -f "$WHEEL_DIR"/pydantic-*.whl "$WHEEL_DIR"/pydantic_core-*.whl
+
 echo "Descargando wheels win_amd64..."
 # shellcheck disable=SC2046
 python3 -m pip download -d "$WHEEL_DIR" --no-deps \
@@ -165,11 +168,45 @@ python3 -m pip download -d "$WHEEL_DIR" --no-deps \
   $(grep -v '^\s*#' "$REQ" | grep -v '^\s*$' | tr '\n' ' ')
 
 echo "Extrayendo wheels → site-packages..."
+# Fresh site-packages (avoid leftover wrong pydantic_core from prior builds)
+rm -rf "$SITE"
+mkdir -p "$SITE"
 shopt -s nullglob
 for whl in "$WHEEL_DIR"/*.whl; do
   unzip -qo "$whl" -d "$SITE"
 done
 shopt -u nullglob
+
+# Fail build if pydantic / pydantic-core are out of sync (common --no-deps trap)
+SITE_PACKAGES="$SITE" python3 - <<'PY'
+from pathlib import Path
+import os, re, sys
+site = Path(os.environ["SITE_PACKAGES"])
+def ver(name_prefix):
+    for p in site.glob(f"{name_prefix}-*.dist-info"):
+        m = re.match(rf"{re.escape(name_prefix)}-([^-]+)\.dist-info$", p.name)
+        if m:
+            return m.group(1), p
+    return None, None
+pv, pdir = ver("pydantic")
+cv, cdir = ver("pydantic_core")
+print(f"pydantic={pv}  pydantic_core={cv}")
+if not pv or not cv:
+    print("ERROR: pydantic or pydantic-core missing after wheel extract", file=sys.stderr)
+    sys.exit(1)
+meta = (pdir / "METADATA").read_text(encoding="utf-8", errors="replace")
+req = None
+for line in meta.splitlines():
+    if line.lower().startswith("requires-dist:") and "pydantic-core" in line.lower():
+        m = re.search(r"pydantic-core\s*==\s*([0-9.]+)", line, re.I)
+        if m:
+            req = m.group(1)
+            break
+if req and req != cv:
+    print(f"ERROR: pydantic requires pydantic-core=={req} but we have {cv}", file=sys.stderr)
+    sys.exit(1)
+print("pydantic pair OK")
+PY
 
 # Clean wheel metadata clutter is fine to keep for imports
 echo "site-packages entries: $(ls "$SITE" | wc -l)"
