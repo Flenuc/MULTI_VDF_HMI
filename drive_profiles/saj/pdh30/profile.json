@@ -3,8 +3,8 @@
   "vendor": "SAJ",
   "family": "PDH",
   "model": "PDH-30",
-  "version": "0.2.0",
-  "status": "catalog_from_manual",
+  "version": "0.3.0",
+  "status": "field_mapped",
   "source": [
     "docs/PDH30_User_Manual.txt Chapter 4 + Ch.6",
     "tools/catalog_builder/extract_pdh30_from_manual.py",
@@ -70,7 +70,10 @@
       "scale": 10,
       "default": null,
       "access": "rw",
-      "notes": "F0.00 pressure"
+      "notes": "F0.00 pressure",
+      "live_raw": 26,
+      "live_eng": 2.6,
+      "map_status": "ok"
     },
     {
       "id": "F0.01",
@@ -83,7 +86,10 @@
       "scale": 10,
       "default": 0.3,
       "access": "rw",
-      "notes": "F0.01 pressure 0.0~F0.00 bar 0.3 ○ when the pressure is lower derivation than pre-set pressure Motor Rotation direction can be 0: Forward"
+      "notes": "F0.01 pressure 0.0~F0.00 bar 0.3 ○ when the pressure is lower derivation than pre-set pressure Motor Rotation direction can be 0: Forward",
+      "live_raw": 5,
+      "live_eng": 0.5,
+      "map_status": "ok"
     },
     {
       "id": "F0.02",
@@ -96,7 +102,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw_stop",
-      "notes": "F0.02 rotation 1: Reverse \\ 0 ● changed by modifying this direction parameter - 23 - PDH30 Series Function Revision Description Set range Unit Default Remark…"
+      "notes": "F0.02 rotation 1: Reverse \\ 0 ● changed by modifying this direction parameter - 23 - PDH30 Series Function Revision Description Set range Unit Default Remark…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.03",
@@ -109,7 +118,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F0.03 function 2: Enabled (in \\ 0 ○ F0.12~F0.14 minutes) The antifreeze function for 3: inlet pressure each VFD need to be set control separately in multi-pu…"
+      "notes": "F0.03 function 2: Enabled (in \\ 0 ○ F0.12~F0.14 minutes) The antifreeze function for 3: inlet pressure each VFD need to be set control separately in multi-pu…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.04",
@@ -122,7 +134,10 @@
       "scale": 1,
       "default": 2.5,
       "access": "rw",
-      "notes": "F0.04 leakage 0.0~100.0 \\ 2.5 ○ the smaller the coefficient. coefficient 0:Keyboard start/stop Start/stop 1:Terminal start/stop"
+      "notes": "F0.04 leakage 0.0~100.0 \\ 2.5 ○ the smaller the coefficient. coefficient 0:Keyboard start/stop Start/stop 1:Terminal start/stop",
+      "live_raw": 25,
+      "live_eng": 25.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.05",
@@ -135,7 +150,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F0.05 signal option 0~2 \\ 0 ○ 2:Start/stop by communication control Auto-startin"
+      "notes": "F0.05 signal option 0~2 \\ 0 ○ 2:Start/stop by communication control Auto-startin",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.06",
@@ -148,7 +166,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F0.06 g option 0~1 \\ 0 ○ 0:Disabled 1:Enabled Auto-startin Delay time while auto-starting"
+      "notes": "F0.06 g option 0~1 \\ 0 ○ 0:Disabled 1:Enabled Auto-startin Delay time while auto-starting",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.07",
@@ -161,7 +182,10 @@
       "scale": 10,
       "default": 5.0,
       "access": "rw",
-      "notes": "F0.07 g delay time 0.0~100.0 s 5.0 ○ at power on"
+      "notes": "F0.07 g delay time 0.0~100.0 s 5.0 ○ at power on",
+      "live_raw": 10,
+      "live_eng": 1.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.08",
@@ -174,7 +198,10 @@
       "scale": 10,
       "default": 16.0,
       "access": "rw",
-      "notes": "F0.08 Sensor range 0.0~200.0 bar 16.0 ○ The maximum range of sensor 0:AI1 The 1:AI2 selection of AI1 and AI2 can be connected 2: Max"
+      "notes": "F0.08 Sensor range 0.0~200.0 bar 16.0 ○ The maximum range of sensor 0:AI1 The 1:AI2 selection of AI1 and AI2 can be connected 2: Max",
+      "live_raw": 100,
+      "live_eng": 10.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.09",
@@ -187,7 +214,10 @@
       "scale": 10,
       "default": 2.0,
       "access": "rw",
-      "notes": "F0.09 sensor (AI1,AI2) \\ 2 ○ to the default sensor feedback randomly. 3:Min(AI1,AI2) channel When feedback pressure is bigger than this set pressure, it High…"
+      "notes": "F0.09 sensor (AI1,AI2) \\ 2 ○ to the default sensor feedback randomly. 3:Min(AI1,AI2) channel When feedback pressure is bigger than this set pressure, it High…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.10",
@@ -200,7 +230,10 @@
       "scale": 10,
       "default": 3.0,
       "access": "rw",
-      "notes": "F4.01~F0.10 bar 3.0 ○ only need to set parameters of the host drive. Startup Wakeup from standby mode"
+      "notes": "F4.01~F0.10 bar 3.0 ○ only need to set parameters of the host drive. Startup Wakeup from standby mode",
+      "live_raw": 90,
+      "live_eng": 9.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.11",
@@ -213,7 +246,10 @@
       "scale": 10,
       "default": 0.0,
       "access": "rw",
-      "notes": "F0.11 pressure 0.0~F4.01 bar 0.0 ○ parameter is set as 0. When alarm value the pressure returns to normal, setting the fault is solved automatically after th…"
+      "notes": "F0.11 pressure 0.0~F4.01 bar 0.0 ○ parameter is set as 0. When alarm value the pressure returns to normal, setting the fault is solved automatically after th…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.12",
@@ -226,7 +262,10 @@
       "scale": 10,
       "default": 3.5,
       "access": "rw",
-      "notes": "F0.12 pressure 0.0Bar～F0.08 Bar 3.5Bar ○ Effective when F0.05=3, the converter starts when the inlet pressure is less than F0.13, Intake and stops when the i…"
+      "notes": "F0.12 pressure 0.0Bar～F0.08 Bar 3.5Bar ○ Effective when F0.05=3, the converter starts when the inlet pressure is less than F0.13, Intake and stops when the i…",
+      "live_raw": 35,
+      "live_eng": 3.5,
+      "map_status": "ok"
     },
     {
       "id": "F0.13",
@@ -239,7 +278,10 @@
       "scale": 10,
       "default": 2.5,
       "access": "rw",
-      "notes": "F0.13 starting 0.0Bar～F0.12 Bar 2.5Bar ○ pressure is greater than pressure F0.12.The inlet pressure Intake sensor can choose AI1 or AI2"
+      "notes": "F0.13 starting 0.0Bar～F0.12 Bar 2.5Bar ○ pressure is greater than pressure F0.12.The inlet pressure Intake sensor can choose AI1 or AI2",
+      "live_raw": 25,
+      "live_eng": 2.5,
+      "map_status": "ok"
     },
     {
       "id": "F0.14",
@@ -252,7 +294,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F0.14 feedback 0:AI1 1:AI2 0 0 ○ as signal detection. channel Working 0:Pressure mode"
+      "notes": "F0.14 feedback 0:AI1 1:AI2 0 0 ○ as signal detection. channel Working 0:Pressure mode",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.15",
@@ -265,7 +310,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F0.15 mode of 0~1 \\ 0 ○ 1:General mode VFD"
+      "notes": "F0.15 mode of 0~1 \\ 0 ○ 1:General mode VFD",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.16",
@@ -278,7 +326,10 @@
       "scale": 1,
       "default": null,
       "access": "ro",
-      "notes": "F0.16 Product number \\ ◎ Product predefined by manufacturer This instruction is only"
+      "notes": "F0.16 Product number \\ ◎ Product predefined by manufacturer This instruction is only",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.17",
@@ -291,7 +342,10 @@
       "scale": 1,
       "default": null,
       "access": "ro",
-      "notes": "F0.17 Software version 2.000~2.999 \\ ◎ applicable to the software in this version."
+      "notes": "F0.17 Software version 2.000~2.999 \\ ◎ applicable to the software in this version.",
+      "live_raw": 2006,
+      "live_eng": 2006.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.18",
@@ -304,7 +358,10 @@
       "scale": 10,
       "default": 5.0,
       "access": "rw",
-      "notes": "F0.18 Acceleration time 0.0 ~6500.0 s 5.0 ○ Differentiating from the power range"
+      "notes": "F0.18 Acceleration time 0.0 ~6500.0 s 5.0 ○ Differentiating from the power range",
+      "live_raw": 25,
+      "live_eng": 2.5,
+      "map_status": "ok"
     },
     {
       "id": "F0.19",
@@ -317,7 +374,10 @@
       "scale": 10,
       "default": 5.0,
       "access": "rw",
-      "notes": "F0.19 Deceleration time 0.0~6500.0 s 5.0 ○ Differentiating from the power range - 25 - PDH30 Series Function Revision Description Set range Unit Default Rema…"
+      "notes": "F0.19 Deceleration time 0.0~6500.0 s 5.0 ○ Differentiating from the power range - 25 - PDH30 Series Function Revision Description Set range Unit Default Rema…",
+      "live_raw": 50,
+      "live_eng": 5.0,
+      "map_status": "ok"
     },
     {
       "id": "F0.20",
@@ -330,7 +390,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw_stop",
-      "notes": "F0.20 Macro function 0~15 \\ 0 ● （Chapter 3） 4.4 Common Parameter Groups of Multi-drive Mode Function Revision Description Set range Unit Default Remarks code…"
+      "notes": "F0.20 Macro function 0~15 \\ 0 ● （Chapter 3） 4.4 Common Parameter Groups of Multi-drive Mode Function Revision Description Set range Unit Default Remarks code…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F1.00",
@@ -343,7 +406,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "ro",
-      "notes": "F1.00 communicati 0-5 \\ 0 ◎ drives. The address of host on address drive is 0. 0: auxiliaries shut down after The 0: closing down the host is disconnected. s…"
+      "notes": "F1.00 communicati 0-5 \\ 0 ◎ drives. The address of host on address drive is 0. 0: auxiliaries shut down after The 0: closing down the host is disconnected. s…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F1.01",
@@ -356,7 +422,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F1.01 standby host(auxiliar speed 2: constant \\ 0 ○ constant speed without connecting pressure sensors. y) pressure 2: auxiliaries can operate at a constant …"
+      "notes": "F1.01 standby host(auxiliar speed 2: constant \\ 0 ○ constant speed without connecting pressure sensors. y) pressure 2: auxiliaries can operate at a constant …",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F1.02",
@@ -369,7 +438,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "ro",
-      "notes": "F1.02 communicati 0~1 \\ 0 ◎ 0: CAN was set to auxiliary 1: CAN was set to host on network mode 0: Cancel the control function of the host drives over the Num…"
+      "notes": "F1.02 communicati 0~1 \\ 0 ◎ 0: CAN was set to auxiliary 1: CAN was set to host on network mode 0: Cancel the control function of the host drives over the Num…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F1.03",
@@ -382,7 +454,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "ro",
-      "notes": "F1.03 the auxiliary 0~5 Set 0 ◎ Note: This parameter only drives serves as PID frequency source and is only set in CAN host drive. - 26 - PDH30 Series Functi…"
+      "notes": "F1.03 the auxiliary 0~5 Set 0 ◎ Note: This parameter only drives serves as PID frequency source and is only set in CAN host drive. - 26 - PDH30 Series Functi…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F1.04",
@@ -395,7 +470,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw_stop",
-      "notes": "F1.04 operation control \\ 0 ● enough, host and auxiliary mode 2: Standby Operating frequency is the mode same. 2: Only one VFD runs at any time and the rest …"
+      "notes": "F1.04 operation control \\ 0 ● enough, host and auxiliary mode 2: Standby Operating frequency is the mode same. 2: Only one VFD runs at any time and the rest …",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F1.05",
@@ -408,7 +486,10 @@
       "scale": 10,
       "default": 240.0,
       "access": "rw",
-      "notes": "F1.05 time 0~3600 min 240 ○ 0: Cancel the alternating function of host drives and the auxiliary drives. It is invalid when this address Address is bigger tha…"
+      "notes": "F1.05 time 0~3600 min 240 ○ 0: Cancel the alternating function of host drives and the auxiliary drives. It is invalid when this address Address is bigger tha…",
+      "live_raw": 1,
+      "live_eng": 0.1,
+      "map_status": "ok"
     },
     {
       "id": "F1.06",
@@ -421,7 +502,10 @@
       "scale": 1,
       "default": 6.0,
       "access": "rw",
-      "notes": "F1.06 small pump 0~6 \\ 6 ○ auxiliary drives. 0 means that the host drive is the small pump. Delay time It means the delay time of"
+      "notes": "F1.06 small pump 0~6 \\ 6 ○ auxiliary drives. 0 means that the host drive is the small pump. Delay time It means the delay time of",
+      "live_raw": 5,
+      "live_eng": 5.0,
+      "map_status": "ok"
     },
     {
       "id": "F1.07",
@@ -434,7 +518,10 @@
       "scale": 10,
       "default": 5.0,
       "access": "rw",
-      "notes": "F1.07 of adding 0.0~100.0 s 5.0 ○ adding pumps when the pumps pressure is not enough. 0：Controlled Alternate by the original When the alternate host is host …"
+      "notes": "F1.07 of adding 0.0~100.0 s 5.0 ○ adding pumps when the pumps pressure is not enough. 0：Controlled Alternate by the original When the alternate host is host …",
+      "live_raw": 1,
+      "live_eng": 0.1,
+      "map_status": "ok"
     },
     {
       "id": "F1.17",
@@ -447,7 +534,10 @@
       "scale": 1,
       "default": 1.0,
       "access": "rw",
-      "notes": "F1.17 command start signal 1 1 ○ parameters to choose how to control 1：Automatic start the command. start 0：Host When the host computer is Communicat compute…"
+      "notes": "F1.17 command start signal 1 1 ○ parameters to choose how to control 1：Automatic start the command. start 0：Host When the host computer is Communicat compute…",
+      "live_raw": 1,
+      "live_eng": 1.0,
+      "map_status": "ok"
     },
     {
       "id": "F1.18",
@@ -460,7 +550,10 @@
       "scale": 1,
       "default": 1.0,
       "access": "rw",
-      "notes": "F1.18 command 1：Multi-line 1 1 ○ parameter to select the machine to directly start and control communication stop the machine. control - 27 - PDH30 Series 4.…"
+      "notes": "F1.18 command 1：Multi-line 1 1 ○ parameter to select the machine to directly start and control communication stop the machine. control - 27 - PDH30 Series 4.…",
+      "live_raw": 1,
+      "live_eng": 1.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.00",
@@ -473,7 +566,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F2.00 feedback 0-2 / 0 ○ 2:0.5-4.5V types 3:0-5V AI1 signal Correction of AI1 channel"
+      "notes": "F2.00 feedback 0-2 / 0 ○ 2:0.5-4.5V types 3:0-5V AI1 signal Correction of AI1 channel",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.01",
@@ -486,7 +582,10 @@
       "scale": 1,
       "default": 1.0,
       "access": "rw",
-      "notes": "F2.01 correction 0.750-1.250 0.001 1.000 ○ signal deviation coefficient Selection of 0:4-20mA AI2 channel 1:0-10V"
+      "notes": "F2.01 correction 0.750-1.250 0.001 1.000 ○ signal deviation coefficient Selection of 0:4-20mA AI2 channel 1:0-10V",
+      "live_raw": 1000,
+      "live_eng": 1000.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.02",
@@ -499,7 +598,10 @@
       "scale": 1,
       "default": 1.0,
       "access": "rw",
-      "notes": "F2.02 feedback 0-2 / 1 ○ 2:0.5-4.5V types 3:0-5V AI2 signal Correction of AI2 channel"
+      "notes": "F2.02 feedback 0-2 / 1 ○ 2:0.5-4.5V types 3:0-5V AI2 signal Correction of AI2 channel",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.03",
@@ -512,7 +614,10 @@
       "scale": 1,
       "default": 1.0,
       "access": "rw",
-      "notes": "F2.03 correction 0.750-1.250 0.001 1.000 ○ signal deviation coefficient Motor 0：SVC 0：AM-SVC；"
+      "notes": "F2.03 correction 0.750-1.250 0.001 1.000 ○ signal deviation coefficient Motor 0：SVC 0：AM-SVC；",
+      "live_raw": 1000,
+      "live_eng": 1000.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.04",
@@ -525,7 +630,10 @@
       "scale": 1,
       "default": 1.0,
       "access": "rw_stop",
-      "notes": "F2.04 control 1：VF 1 1 ● 1：AM-VF； mode 1: Up/Down is digital set 2: AI1 3: AI2 Choose 8 for the host drives Frequency 5: Emergent Choose 9 for auxiliary drives"
+      "notes": "F2.04 control 1：VF 1 1 ● 1：AM-VF； mode 1: Up/Down is digital set 2: AI1 3: AI2 Choose 8 for the host drives Frequency 5: Emergent Choose 9 for auxiliary drives",
+      "live_raw": 1,
+      "live_eng": 1.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.05",
@@ -538,7 +646,10 @@
       "scale": 10,
       "default": 8.0,
       "access": "rw_stop",
-      "notes": "F2.05 source water supply / 8 ● Choose 5 for emergent choice 8: PID water supply. 9:Setting-by communicatio n Upper limit The upper limit of VFD’s"
+      "notes": "F2.05 source water supply / 8 ● Choose 5 for emergent choice 8: PID water supply. 9:Setting-by communicatio n Upper limit The upper limit of VFD’s",
+      "live_raw": 8,
+      "live_eng": 0.8,
+      "map_status": "ok"
     },
     {
       "id": "F2.06",
@@ -551,7 +662,10 @@
       "scale": 100,
       "default": 50.0,
       "access": "rw",
-      "notes": "F2.06 of running F2.08~F2.07 Hz 50.00 ○ running frequency"
+      "notes": "F2.06 of running F2.08~F2.07 Hz 50.00 ○ running frequency",
+      "live_raw": 6300,
+      "live_eng": 63.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.07",
@@ -564,7 +678,10 @@
       "scale": 100,
       "default": 50.0,
       "access": "rw",
-      "notes": "F2.06 of running F2.08~F2.07 Hz 50.00 ○ running frequency frequency - 28 - PDH30 Series Function Revision Description Set range Unit Default Remarks code lev…"
+      "notes": "F2.06 of running F2.08~F2.07 Hz 50.00 ○ running frequency frequency - 28 - PDH30 Series Function Revision Description Set range Unit Default Remarks code lev…",
+      "live_raw": 6300,
+      "live_eng": 63.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.08",
@@ -577,7 +694,10 @@
       "scale": 100,
       "default": 50.0,
       "access": "rw",
-      "notes": "F2.06 of running F2.08~F2.07 Hz 50.00 ○ running frequency"
+      "notes": "F2.06 of running F2.08~F2.07 Hz 50.00 ○ running frequency",
+      "live_raw": 4000,
+      "live_eng": 40.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.09",
@@ -590,7 +710,10 @@
       "scale": 1,
       "default": 2.0,
       "access": "rw",
-      "notes": "F2.09 reaches the frequency \\ 2 ○ lower limit 1: stop frequency 2: standby Set Setting of accordin Noise of the motor can be"
+      "notes": "F2.09 reaches the frequency \\ 2 ○ lower limit 1: stop frequency 2: standby Set Setting of accordin Noise of the motor can be",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.10",
@@ -603,7 +726,10 @@
       "scale": 10,
       "default": null,
       "access": "rw",
-      "notes": "F2.10 carrier 0.5~15.0 kHz g to the ○ adjusted by modifying this frequency machine value type 0: Running constantly when start-up Fan running"
+      "notes": "F2.10 carrier 0.5~15.0 kHz g to the ○ adjusted by modifying this frequency machine value type 0: Running constantly when start-up Fan running",
+      "live_raw": 150,
+      "live_eng": 15.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.11",
@@ -616,7 +742,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F2.11 mode 1: Running \\ 0 ○ constantly when power on 0: Stop by Selection of deceleration The selection for the halt"
+      "notes": "F2.11 mode 1: Running \\ 0 ○ constantly when power on 0: Stop by Selection of deceleration The selection for the halt",
+      "live_raw": 2,
+      "live_eng": 2.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.12",
@@ -629,7 +758,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F2.12 the halt 1:Stop \\ 0 ○ mode of VFD. mode automatically Number of (E015/E024/E027/E028/E029/"
+      "notes": "F2.12 the halt 1:Stop \\ 0 ○ mode of VFD. mode automatically Number of (E015/E024/E027/E028/E029/",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.13",
@@ -642,7 +774,10 @@
       "scale": 1,
       "default": 3.0,
       "access": "rw",
-      "notes": "F2.13 automatic 0~5 \\ 3 ○ E031) These are not affected reset failures by this function. - 29 - PDH30 Series Function Revision Description Set range Unit Defa…"
+      "notes": "F2.13 automatic 0~5 \\ 3 ○ E031) These are not affected reset failures by this function. - 29 - PDH30 Series Function Revision Description Set range Unit Defa…",
+      "live_raw": 3,
+      "live_eng": 3.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.14",
@@ -655,7 +790,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F2.14 carrier of the output 1001 0 ○ improved frequency 1: Related to the output frequency LED hundred: random PWM depth 0: shut down 1-8: Open and adjust th…"
+      "notes": "F2.14 carrier of the output 1001 0 ○ improved frequency 1: Related to the output frequency LED hundred: random PWM depth 0: shut down 1-8: Open and adjust th…",
+      "live_raw": 4097,
+      "live_eng": 4097.0,
+      "map_status": "ok"
     },
     {
       "id": "F2.15",
@@ -668,7 +806,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "F2.15 0~100.0 % 80.0% operating frequency of host(auxiliar constant speed mode. y) - 30 - PDH30 Series 4.6 PID and Standby Parameter Sets Function Revision D…"
+      "notes": "F2.15 0~100.0 % 80.0% operating frequency of host(auxiliar constant speed mode. y) - 30 - PDH30 Series 4.6 PID and Standby Parameter Sets Function Revision D…",
+      "live_raw": 800,
+      "live_eng": 800.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.00",
@@ -681,7 +822,10 @@
       "scale": 10,
       "default": 20.0,
       "access": "rw",
-      "notes": "F3.00 gain 0.00~100.0 % 20.0 ○ too big, the system will oscillate. The value should be adjusted according to different water supply system."
+      "notes": "F3.00 gain 0.00~100.0 % 20.0 ○ too big, the system will oscillate. The value should be adjusted according to different water supply system.",
+      "live_raw": 1200,
+      "live_eng": 120.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.01",
@@ -694,7 +838,10 @@
       "scale": 100,
       "default": 1.0,
       "access": "rw",
-      "notes": "F3.01 Integral time 0.01~10.00 s 1.00 ○ Differential"
+      "notes": "F3.01 Integral time 0.01~10.00 s 1.00 ○ Differential",
+      "live_raw": 100,
+      "live_eng": 1.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.02",
@@ -707,7 +854,10 @@
       "scale": 10,
       "default": 0.0,
       "access": "rw",
-      "notes": "F3.02 time 0.000~10.000 s 0.00 ○ Start-up time"
+      "notes": "F3.02 time 0.000~10.000 s 0.00 ○ Start-up time",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.03",
@@ -720,7 +870,10 @@
       "scale": 10,
       "default": 0.1,
       "access": "rw",
-      "notes": "F3.03 of PID 0.00~100.0 s 0.10 ○ Deviation"
+      "notes": "F3.03 of PID 0.00~100.0 s 0.10 ○ Deviation",
+      "live_raw": 10,
+      "live_eng": 1.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.04",
@@ -733,7 +886,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F3.04 limit of PID 0.0~100.0 % 0.0 ○ control PID source 0: setting by keyboard"
+      "notes": "F3.04 limit of PID 0.0~100.0 % 0.0 ○ control PID source 0: setting by keyboard",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.05",
@@ -746,7 +902,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F3.05 setting 0~2 \\ 0 ○ 1: setting by AI1 choice 2: setting by AI2 - 31 - PDH30 Series Function Revision Description Set range Unit Default Remarks code leve…"
+      "notes": "F3.05 setting 0~2 \\ 0 ○ 1: setting by AI1 choice 2: setting by AI2 - 31 - PDH30 Series Function Revision Description Set range Unit Default Remarks code leve…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.06",
@@ -759,7 +918,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "F3.06 characteristi Tens: \\ 0000 ○ increases. c choice Reserved 0001: Negative control: When Hundreds: the feedback signal is bigger Reserved than the PID se…"
+      "notes": "F3.06 characteristi Tens: \\ 0000 ○ increases. c choice Reserved 0001: Negative control: When Hundreds: the feedback signal is bigger Reserved than the PID se…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.07",
@@ -772,7 +934,10 @@
       "scale": 10,
       "default": 30.0,
       "access": "rw",
-      "notes": "F3.07 detection 0.0~100.0 s 30.0 ○ still 0, the PID feedback time of PID disconnection fault is feedback reported. This function is invalid when the setting …"
+      "notes": "F3.07 detection 0.0~100.0 s 30.0 ○ still 0, the PID feedback time of PID disconnection fault is feedback reported. This function is invalid when the setting …",
+      "live_raw": 300,
+      "live_eng": 30.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.08",
@@ -785,7 +950,10 @@
       "scale": 1,
       "default": 1.0,
       "access": "rw",
-      "notes": "F3.08 function 1: Sleep mode 1 \\ 1 ○ pressure holding detection option 2: Sleep mode 2 time and the sleep rate are effective. Sleep mode 2:Sleep based on pre…"
+      "notes": "F3.08 function 1: Sleep mode 1 \\ 1 ○ pressure holding detection option 2: Sleep mode 2 time and the sleep rate are effective. Sleep mode 2:Sleep based on pre…",
+      "live_raw": 2,
+      "live_eng": 2.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.09",
@@ -798,7 +966,10 @@
       "scale": 10,
       "default": 3.0,
       "access": "rw",
-      "notes": "F3.09 detection 0.0~100.0 s 3.0 ○ PID wakeup detection delay delay - 32 - PDH30 Series Function Revision Description Set range Unit Default Remarks code leve…"
+      "notes": "F3.09 detection 0.0~100.0 s 3.0 ○ PID wakeup detection delay delay - 32 - PDH30 Series Function Revision Description Set range Unit Default Remarks code leve…",
+      "live_raw": 1,
+      "live_eng": 0.1,
+      "map_status": "ok"
     },
     {
       "id": "F3.10",
@@ -811,7 +982,10 @@
       "scale": 10,
       "default": 0.5,
       "access": "rw",
-      "notes": "F3.10 detection 0.0~100.0 s 0.5 ○ value. If it enters standby in delay advance or it is started and stopped frequently, increase this value. When the feedbac…"
+      "notes": "F3.10 detection 0.0~100.0 s 0.5 ○ value. If it enters standby in delay advance or it is started and stopped frequently, increase this value. When the feedbac…",
+      "live_raw": 50,
+      "live_eng": 5.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.11",
@@ -824,7 +998,10 @@
       "scale": 10,
       "default": 0.1,
       "access": "rw",
-      "notes": "F3.11 deviation 0.0~1.0 bar 0.1 ○ within standby deviation range, it starts standby. pressure PID runs at standby hold PID standby frequency. After the standby"
+      "notes": "F3.11 deviation 0.0~1.0 bar 0.1 ○ within standby deviation range, it starts standby. pressure PID runs at standby hold PID standby frequency. After the standby",
+      "live_raw": 1,
+      "live_eng": 0.1,
+      "map_status": "ok"
     },
     {
       "id": "F3.12",
@@ -837,7 +1014,10 @@
       "scale": 100,
       "default": 20.0,
       "access": "rw",
-      "notes": "F3.12 hold 0.00~F3.13 Hz 20.00 ○ duration, PID enters standby"
+      "notes": "F3.12 hold 0.00~F3.13 Hz 20.00 ○ duration, PID enters standby",
+      "live_raw": 3900,
+      "live_eng": 39.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.13",
@@ -850,7 +1030,10 @@
       "scale": 100,
       "default": 20.0,
       "access": "rw",
-      "notes": "F3.12 hold 0.00~F3.13 Hz 20.00 ○ duration, PID enters standby frequency status. Standby The system will judge whether F3.13 detection F3.12~F2.07 Hz 25.00 ○ …"
+      "notes": "F3.12 hold 0.00~F3.13 Hz 20.00 ○ duration, PID enters standby frequency status. Standby The system will judge whether F3.13 detection F3.12~F2.07 Hz 25.00 ○ …",
+      "live_raw": 3900,
+      "live_eng": 39.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.14",
@@ -863,7 +1046,10 @@
       "scale": 10,
       "default": 3.0,
       "access": "rw",
-      "notes": "F3.14 operation 0~120.0 s 3.0 ○ sleep, the running time of PID standby hold frequency. hold time Pressure After this time, the system"
+      "notes": "F3.14 operation 0~120.0 s 3.0 ○ sleep, the running time of PID standby hold frequency. hold time Pressure After this time, the system",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.15",
@@ -876,7 +1062,10 @@
       "scale": 100,
       "default": null,
       "access": "rw",
-      "notes": "F3.15 check 0~120.0 s 30.0 automatically detects the interval pressure hold status. The frequency Used in the mode of average for half dividing frequency. It…"
+      "notes": "F3.15 check 0~120.0 s 30.0 automatically detects the interval pressure hold status. The frequency Used in the mode of average for half dividing frequency. It…",
+      "live_raw": 300,
+      "live_eng": 3.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.16",
@@ -889,7 +1078,10 @@
       "scale": 1,
       "default": 30.0,
       "access": "rw",
-      "notes": "F3.16 pumping 20.00~F2.07 (%) 30.00 ○ the parameter is reused in the flow ratio small pump, serving as the between flow percentage for small small pump pumps…"
+      "notes": "F3.16 pumping 20.00~F2.07 (%) 30.00 ○ the parameter is reused in the flow ratio small pump, serving as the between flow percentage for small small pump pumps…",
+      "live_raw": 3780,
+      "live_eng": 3780.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.17",
@@ -902,7 +1094,10 @@
       "scale": 1,
       "default": 9.0,
       "access": "rw",
-      "notes": "F3.17 Ratio 0~30 \\ 9 ○ Set bigger make sleep quicker The feedback of Sampling minimum value in"
+      "notes": "F3.17 Ratio 0~30 \\ 9 ○ Set bigger make sleep quicker The feedback of Sampling minimum value in",
+      "live_raw": 9,
+      "live_eng": 9.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.18",
@@ -915,7 +1110,10 @@
       "scale": 1,
       "default": 0.2,
       "access": "rw",
-      "notes": "F3.18 disconnected 0~1.00 V 0.20 ○ the system. It is judged by the detection voltage. value Proportional"
+      "notes": "F3.18 disconnected 0~1.00 V 0.20 ○ the system. It is judged by the detection voltage. value Proportional",
+      "live_raw": 3,
+      "live_eng": 3.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.19",
@@ -928,7 +1126,10 @@
       "scale": 1,
       "default": 20.0,
       "access": "rw",
-      "notes": "F3.19 gain 2 0.0~100.0 % 20.0 ○ Integral time"
+      "notes": "F3.19 gain 2 0.0~100.0 % 20.0 ○ Integral time",
+      "live_raw": 20,
+      "live_eng": 20.0,
+      "map_status": "ok"
     },
     {
       "id": "F3.20",
@@ -941,7 +1142,10 @@
       "scale": 10,
       "default": 2.0,
       "access": "rw",
-      "notes": "F3.20 2 0.00~10.00 s 2.00 ○ 4.7 Parameter Sets of Pump Protection Function Revision Description Set range Unit Default Remarks code level 0: Disabled Water 1…"
+      "notes": "F3.20 2 0.00~10.00 s 2.00 ○ 4.7 Parameter Sets of Pump Protection Function Revision Description Set range Unit Default Remarks code level 0: Disabled Water 1…",
+      "live_raw": 20,
+      "live_eng": 2.0,
+      "map_status": "ok"
     },
     {
       "id": "F4.00",
@@ -954,7 +1158,10 @@
       "scale": 10,
       "default": 2.0,
       "access": "rw",
-      "notes": "F4.00 shortage 0~2 \\ 2 ○ frequency, pressure and current protection 2: Enabled. Judge by outlet pressure Threshold of When feedback pressure is water F4.01 s…"
+      "notes": "F4.00 shortage 0~2 \\ 2 ○ frequency, pressure and current protection 2: Enabled. Judge by outlet pressure Threshold of When feedback pressure is water F4.01 s…",
+      "live_raw": 2,
+      "live_eng": 0.2,
+      "map_status": "ok"
     },
     {
       "id": "F4.01",
@@ -967,7 +1174,10 @@
       "scale": 10,
       "default": 3.0,
       "access": "rw",
-      "notes": "F4.01~F0.10 bar 3.0 ○ only need to set parameters of"
+      "notes": "F4.01~F0.10 bar 3.0 ○ only need to set parameters of",
+      "live_raw": 6,
+      "live_eng": 0.6,
+      "map_status": "ok"
     },
     {
       "id": "F4.02",
@@ -980,7 +1190,10 @@
       "scale": 100,
       "default": 48.0,
       "access": "rw",
-      "notes": "F4.02 water 0~F2.07 Hz 48.00 ○ When running frequency is shortage bigger than this frequency, it is protection judged as water shortage. - 34 - PDH30 Series …"
+      "notes": "F4.02 water 0~F2.07 Hz 48.00 ○ When running frequency is shortage bigger than this frequency, it is protection judged as water shortage. - 34 - PDH30 Series …",
+      "live_raw": 5000,
+      "live_eng": 50.0,
+      "map_status": "ok"
     },
     {
       "id": "F4.03",
@@ -993,7 +1206,10 @@
       "scale": 10,
       "default": 60.0,
       "access": "rw",
-      "notes": "F4.03 water 0.0~200.0 s 60.0 ○ fault will be reported after this shortage time. protection Current It is valid only when F4.00 = 1. percentage The percentage…"
+      "notes": "F4.03 water 0.0~200.0 s 60.0 ○ fault will be reported after this shortage time. protection Current It is valid only when F4.00 = 1. percentage The percentage…",
+      "live_raw": 300,
+      "live_eng": 30.0,
+      "map_status": "ok"
     },
     {
       "id": "F4.04",
@@ -1006,7 +1222,10 @@
       "scale": 1,
       "default": 40.0,
       "access": "rw",
-      "notes": "F4.04 shortage 0~100.0 % 40.0 ○ current. When running current is less than this current, it is protection judged as water shortage. detection Automatic resta…"
+      "notes": "F4.04 shortage 0~100.0 % 40.0 ○ current. When running current is less than this current, it is protection judged as water shortage. detection Automatic resta…",
+      "live_raw": 700,
+      "live_eng": 700.0,
+      "map_status": "ok"
     },
     {
       "id": "F4.05",
@@ -1019,7 +1238,10 @@
       "scale": 10,
       "default": 15.0,
       "access": "rw",
-      "notes": "F4.05 of water 0~9999 min 15 ○ reset water shortage faults. If it shortage is not the “Set 0” protection When water shortage fault is reported, after the per…"
+      "notes": "F4.05 of water 0~9999 min 15 ○ reset water shortage faults. If it shortage is not the “Set 0” protection When water shortage fault is reported, after the per…",
+      "live_raw": 5,
+      "live_eng": 0.5,
+      "map_status": "ok"
     },
     {
       "id": "F4.06",
@@ -1032,7 +1254,10 @@
       "scale": 1,
       "default": 10.0,
       "access": "rw",
-      "notes": "F4.06 of water 0~9999 \\ 10 ○ reaches reset times, water shortage shortage fault can’t be cleared protection automatically. Press REST manually to reset the f…"
+      "notes": "F4.06 of water 0~9999 \\ 10 ○ reaches reset times, water shortage shortage fault can’t be cleared protection automatically. Press REST manually to reset the f…",
+      "live_raw": 9999,
+      "live_eng": 9999.0,
+      "map_status": "ok"
     },
     {
       "id": "F4.07",
@@ -1045,7 +1270,10 @@
       "scale": 10,
       "default": 1.0,
       "access": "rw",
-      "notes": "F4.07 pressure 0~F0.00 bar 1.0 ○ When the VFD detection pressure is greater or equal to detection pressure of setting input water, and the time is Input wate…"
+      "notes": "F4.07 pressure 0~F0.00 bar 1.0 ○ When the VFD detection pressure is greater or equal to detection pressure of setting input water, and the time is Input wate…",
+      "live_raw": 30,
+      "live_eng": 3.0,
+      "map_status": "ok"
     },
     {
       "id": "F4.08",
@@ -1058,7 +1286,10 @@
       "scale": 10,
       "default": 20.0,
       "access": "rw",
-      "notes": "F4.08 detect time 0~100.0 s 20.0 ○ reset to E027. This is applicable to pressurization system .of water inlet This is pressure value of output water - 35 - P…"
+      "notes": "F4.08 detect time 0~100.0 s 20.0 ○ reset to E027. This is applicable to pressurization system .of water inlet This is pressure value of output water - 35 - P…",
+      "live_raw": 200,
+      "live_eng": 20.0,
+      "map_status": "ok"
     },
     {
       "id": "F4.09",
@@ -1071,7 +1302,10 @@
       "scale": 10,
       "default": 3.0,
       "access": "rw",
-      "notes": "F4.09 abnormal 0.0~120.0 s 3.0 ○ pressure alarm and failure pressure alarm alarm Antifreeze 0.00Hz ~ upper"
+      "notes": "F4.09 abnormal 0.0~120.0 s 3.0 ○ pressure alarm and failure pressure alarm alarm Antifreeze 0.00Hz ~ upper",
+      "live_raw": 30,
+      "live_eng": 3.0,
+      "map_status": "ok"
     },
     {
       "id": "F4.10",
@@ -1084,7 +1318,10 @@
       "scale": 100,
       "default": 10.0,
       "access": "rw",
-      "notes": "F4.10 operation Hz 10.00 ○ frequency F2.07 frequency The time unit of antifreeze and antirust can be seconds or Antifreeze 0s/min～ minutes, refer to the sett…"
+      "notes": "F4.10 operation Hz 10.00 ○ frequency F2.07 frequency The time unit of antifreeze and antirust can be seconds or Antifreeze 0s/min～ minutes, refer to the sett…",
+      "live_raw": 2,
+      "live_eng": 0.02,
+      "map_status": "ok"
     },
     {
       "id": "F4.11",
@@ -1097,7 +1334,10 @@
       "scale": 10,
       "default": 60.0,
       "access": "rw",
-      "notes": "F4.11 running time 65000s/min s/min 60 ○ F0.03.When the interval is set to 0, always run at the antifreeze operating frequency. Antifreeze 0s/min～"
+      "notes": "F4.11 running time 65000s/min s/min 60 ○ F0.03.When the interval is set to 0, always run at the antifreeze operating frequency. Antifreeze 0s/min～",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F4.12",
@@ -1110,7 +1350,10 @@
       "scale": 10,
       "default": 300.0,
       "access": "rw",
-      "notes": "F4.12 operation 65000s/min s/min 300 ○ interval time The running frequency of all drives in system is greater or equal than F4.02, and the Detection pressure…"
+      "notes": "F4.12 operation 65000s/min s/min 300 ○ interval time The running frequency of all drives in system is greater or equal than F4.02, and the Detection pressure…",
+      "live_raw": 100,
+      "live_eng": 10.0,
+      "map_status": "ok"
     },
     {
       "id": "F4.13",
@@ -1123,7 +1366,10 @@
       "scale": 10,
       "default": 0.0,
       "access": "rw",
-      "notes": "F4.13 time of burst 0~1000 s 0 ○ starting pressure. It will report pipes E030 fault after the time of"
+      "notes": "F4.13 time of burst 0~1000 s 0 ○ starting pressure. It will report pipes E030 fault after the time of",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F4.15",
@@ -1135,8 +1381,11 @@
       "unit": "",
       "scale": 1,
       "default": null,
-      "access": "rw",
-      "notes": "F4.15. Set“0”: The detection of burst pipes is invalid. - 36 - PDH30 Series 4.8 Parameter Sets of Motor Function Revision Description Set range Unit Default …"
+      "access": "unknown",
+      "notes": "Not readable on bench Guition map (illegal addr or reserved)",
+      "live_raw": null,
+      "live_eng": null,
+      "map_status": "fail"
     },
     {
       "id": "F5.00",
@@ -1149,7 +1398,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw_stop",
-      "notes": "F5.00 The motor type 0～2 1 0 ● synchronous motor (PM) 2: Single-phase motor Default value of Motor rated Set according to motor"
+      "notes": "F5.00 The motor type 0～2 1 0 ● synchronous motor (PM) 2: Single-phase motor Default value of Motor rated Set according to motor",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F5.01",
@@ -1162,7 +1414,10 @@
       "scale": 10,
       "default": null,
       "access": "rw_stop",
-      "notes": "F5.01 power 0.75~18.5 kW correspo ● nameplate. nding motor Default Motor rated value of Set according to motor"
+      "notes": "F5.01 power 0.75~18.5 kW correspo ● nameplate. nding motor Default Motor rated value of Set according to motor",
+      "live_raw": 22,
+      "live_eng": 2.2,
+      "map_status": "ok"
     },
     {
       "id": "F5.02",
@@ -1175,7 +1430,10 @@
       "scale": 100,
       "default": null,
       "access": "rw_stop",
-      "notes": "F5.02 voltage 1~440 V correspo ● nameplate. nding motor Default 0.01A value of Motor rated Set according to motor"
+      "notes": "F5.02 voltage 1~440 V correspo ● nameplate. nding motor Default 0.01A value of Motor rated Set according to motor",
+      "live_raw": 380,
+      "live_eng": 3.8,
+      "map_status": "ok"
     },
     {
       "id": "F5.03",
@@ -1188,7 +1446,10 @@
       "scale": 100,
       "default": null,
       "access": "rw_stop",
-      "notes": "F5.03 current 0.01A～50A / correspo ● nameplate. 0.1A nding motor Default value of Motor rated Set according to motor"
+      "notes": "F5.03 current 0.01A～50A / correspo ● nameplate. 0.1A nding motor Default value of Motor rated Set according to motor",
+      "live_raw": 100,
+      "live_eng": 1.0,
+      "map_status": "ok"
     },
     {
       "id": "F5.04",
@@ -1201,7 +1462,10 @@
       "scale": 100,
       "default": null,
       "access": "rw_stop",
-      "notes": "F5.04 frequency 0.01~F2.07 Hz correspo ● nameplate. nding motor Default value of Motor rated Set according to motor"
+      "notes": "F5.04 frequency 0.01~F2.07 Hz correspo ● nameplate. nding motor Default value of Motor rated Set according to motor",
+      "live_raw": 5000,
+      "live_eng": 50.0,
+      "map_status": "ok"
     },
     {
       "id": "F5.05",
@@ -1214,7 +1478,10 @@
       "scale": 1,
       "default": null,
       "access": "rw_stop",
-      "notes": "F5.05 speed 1~36000 rpm correspo ● nameplate. nding motor The number of"
+      "notes": "F5.05 speed 1~36000 rpm correspo ● nameplate. nding motor The number of",
+      "live_raw": 3000,
+      "live_eng": 3000.0,
+      "map_status": "ok"
     },
     {
       "id": "F5.06",
@@ -1227,7 +1494,10 @@
       "scale": 1,
       "default": 4.0,
       "access": "rw_stop",
-      "notes": "F5.06 motor 2～48 4 ● Motor no-load"
+      "notes": "F5.06 motor 2～48 4 ● Motor no-load",
+      "live_raw": 2,
+      "live_eng": 2.0,
+      "map_status": "ok"
     },
     {
       "id": "F5.07",
@@ -1240,7 +1510,10 @@
       "scale": 1,
       "default": null,
       "access": "rw_stop",
-      "notes": "F5.07 current 0.1～50.0A ● - 37 - PDH30 Series Function Revision Description Set range Unit Default Remarks code level"
+      "notes": "F5.07 current 0.1～50.0A ● - 37 - PDH30 Series Function Revision Description Set range Unit Default Remarks code level",
+      "live_raw": 51,
+      "live_eng": 51.0,
+      "map_status": "ok"
     },
     {
       "id": "F5.08",
@@ -1253,7 +1526,10 @@
       "scale": 1,
       "default": null,
       "access": "rw_stop",
-      "notes": "F5.08 Motor stator resistance 0.001～ ● 65.000 0.001～"
+      "notes": "F5.08 Motor stator resistance 0.001～ ● 65.000 0.001～",
+      "live_raw": 1140,
+      "live_eng": 1140.0,
+      "map_status": "ok"
     },
     {
       "id": "F5.09",
@@ -1266,7 +1542,10 @@
       "scale": 1,
       "default": null,
       "access": "rw_stop",
-      "notes": "F5.09 Motor rotor resistance ● 65.000 0.1～"
+      "notes": "F5.09 Motor rotor resistance ● 65.000 0.1～",
+      "live_raw": 907,
+      "live_eng": 907.0,
+      "map_status": "ok"
     },
     {
       "id": "F5.10",
@@ -1279,7 +1558,10 @@
       "scale": 1,
       "default": null,
       "access": "rw_stop",
-      "notes": "F5.10 Motor stator inductance ● 6500.0mH Motor stator"
+      "notes": "F5.10 Motor stator inductance ● 6500.0mH Motor stator",
+      "live_raw": 1566,
+      "live_eng": 1566.0,
+      "map_status": "ok"
     },
     {
       "id": "F5.11",
@@ -1292,7 +1574,10 @@
       "scale": 1,
       "default": null,
       "access": "rw_stop",
-      "notes": "F5.11 rotor mutual 0.1～ ● inductance 6500.0mH Different learning classes will 0: No be adopted according to F0.00 operation Motor and F5.00; 1: Rotary"
+      "notes": "F5.11 rotor mutual 0.1～ ● inductance 6500.0mH Different learning classes will 0: No be adopted according to F0.00 operation Motor and F5.00; 1: Rotary",
+      "live_raw": 1499,
+      "live_eng": 1499.0,
+      "map_status": "ok"
     },
     {
       "id": "F5.12",
@@ -1305,7 +1590,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw_stop",
-      "notes": "F5.12 parameters self-tuning self-learning 0 ● Synchronizer needs to learn rotation, PG synchronization 2: static selection vector will learn encoder self-le…"
+      "notes": "F5.12 parameters self-tuning self-learning 0 ● Synchronizer needs to learn rotation, PG synchronization 2: static selection vector will learn encoder self-le…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F7.00",
@@ -1318,7 +1606,10 @@
       "scale": 1,
       "default": 1.0,
       "access": "rw_stop",
-      "notes": "F7.00 input terminal 1: Forward 1 ● running function 2: Reverse Choose DI2 running 7: Fault"
+      "notes": "F7.00 input terminal 1: Forward 1 ● running function 2: Reverse Choose DI2 running 7: Fault",
+      "live_raw": 1,
+      "live_eng": 1.0,
+      "map_status": "ok"
     },
     {
       "id": "F7.01",
@@ -1331,7 +1622,10 @@
       "scale": 1,
       "default": 11.0,
       "access": "rw_stop",
-      "notes": "F7.01 input terminal resetting 11 ● function 11:Water - 38 - PDH30 Series Function Revision Description Set range Unit Default Remarks code level shortage pr…"
+      "notes": "F7.01 input terminal resetting 11 ● function 11:Water - 38 - PDH30 Series Function Revision Description Set range Unit Default Remarks code level shortage pr…",
+      "live_raw": 11,
+      "live_eng": 11.0,
+      "map_status": "ok"
     },
     {
       "id": "F7.02",
@@ -1344,7 +1638,10 @@
       "scale": 1,
       "default": 18.0,
       "access": "rw_stop",
-      "notes": "F7.02 input terminal 18: Emergency 18 ● water shortage function switch Attention：This form is not listed the function of the data is used to set prohibited O…"
+      "notes": "F7.02 input terminal 18: Emergency 18 ● water shortage function switch Attention：This form is not listed the function of the data is used to set prohibited O…",
+      "live_raw": 18,
+      "live_eng": 18.0,
+      "map_status": "ok"
     },
     {
       "id": "F7.07",
@@ -1357,7 +1654,10 @@
       "scale": 1,
       "default": 2.0,
       "access": "rw_stop",
-      "notes": "F7.07 terminal 1 0: No function 1 2 ● (DO1) 1: Run the Relay RO1 output output 2: Fault output"
+      "notes": "F7.07 terminal 1 0: No function 1 2 ● (DO1) 1: Run the Relay RO1 output output 2: Fault output",
+      "live_raw": 2,
+      "live_eng": 2.0,
+      "map_status": "ok"
     },
     {
       "id": "F7.08",
@@ -1370,7 +1670,10 @@
       "scale": 1,
       "default": 1.0,
       "access": "rw_stop",
-      "notes": "F7.08 function 1 1 ● selection - 39 - PDH30 Series 4.10 Communication Parameter Sets Function Revision Description Set range Unit Default Remarks code level …"
+      "notes": "F7.08 function 1 1 ● selection - 39 - PDH30 Series 4.10 Communication Parameter Sets Function Revision Description Set range Unit Default Remarks code level …",
+      "live_raw": 1,
+      "live_eng": 1.0,
+      "map_status": "ok"
     },
     {
       "id": "F8.00",
@@ -1383,7 +1686,10 @@
       "scale": 1,
       "default": 1.0,
       "access": "rw",
-      "notes": "F8.00 communicati 1~6 / 1 ○ This address is used for PC communication. on address 0:300BPS 1:600BPS 2:1200BPS RS485 Baud 3:2400BPS The baud rate of the rate …"
+      "notes": "F8.00 communicati 1~6 / 1 ○ This address is used for PC communication. on address 0:300BPS 1:600BPS 2:1200BPS RS485 Baud 3:2400BPS The baud rate of the rate …",
+      "live_raw": 1,
+      "live_eng": 1.0,
+      "map_status": "ok"
     },
     {
       "id": "F8.01",
@@ -1396,7 +1702,10 @@
       "scale": 1,
       "default": 5.0,
       "access": "rw",
-      "notes": "F8.01 of 4:4800BPS 5:9600BPS \\ 5 ○ VFD must be the same as the baud rate of the communicati 6:19200BPS PC. on 7:38400BPS 8:57.6kBPS 9:115.2kBPS 0: No check (…"
+      "notes": "F8.01 of 4:4800BPS 5:9600BPS \\ 5 ○ VFD must be the same as the baud rate of the communicati 6:19200BPS PC. on 7:38400BPS 8:57.6kBPS 9:115.2kBPS 0: No check (…",
+      "live_raw": 5,
+      "live_eng": 5.0,
+      "map_status": "ok"
     },
     {
       "id": "F8.02",
@@ -1409,7 +1718,10 @@
       "scale": 1,
       "default": 3.0,
       "access": "rw",
-      "notes": "F8.02 Data bit 2: Odd check \\ 3 ○ must be the same as check setting (8 ,0 ,1) the data bit check 3: No check setting of the PC. (8, N ,1) RS485"
+      "notes": "F8.02 Data bit 2: Odd check \\ 3 ○ must be the same as check setting (8 ,0 ,1) the data bit check 3: No check setting of the PC. (8, N ,1) RS485",
+      "live_raw": 3,
+      "live_eng": 3.0,
+      "map_status": "ok"
     },
     {
       "id": "F8.03",
@@ -1422,7 +1734,10 @@
       "scale": 10,
       "default": 2.0,
       "access": "rw",
-      "notes": "F8.03 Response 0~20 ms 2 ○ delay RS485"
+      "notes": "F8.03 Response 0~20 ms 2 ○ delay RS485",
+      "live_raw": 4,
+      "live_eng": 0.4,
+      "map_status": "ok"
     },
     {
       "id": "F8.04",
@@ -1435,7 +1750,10 @@
       "scale": 10,
       "default": 0.0,
       "access": "rw",
-      "notes": "F8.04 Time out 0.0~60.0 s 0.0 ○ 0.0: The function is disabled. fault time RS485 read This is to determine"
+      "notes": "F8.04 Time out 0.0~60.0 s 0.0 ○ 0.0: The function is disabled. fault time RS485 read This is to determine",
+      "live_raw": 10,
+      "live_eng": 1.0,
+      "map_status": "ok"
     },
     {
       "id": "F8.05",
@@ -1448,7 +1766,10 @@
       "scale": 100,
       "default": 0.0,
       "access": "rw",
-      "notes": "F8.05 current 0: 0.01A 1: 0.1A \\ 0 ○ the current unit read by resolution the communication. - 40 - PDH30 Series Function Revision Description Set range Unit …"
+      "notes": "F8.05 current 0: 0.01A 1: 0.1A \\ 0 ○ the current unit read by resolution the communication. - 40 - PDH30 Series Function Revision Description Set range Unit …",
+      "live_raw": 1,
+      "live_eng": 0.01,
+      "map_status": "ok"
     },
     {
       "id": "F9.00",
@@ -1461,7 +1782,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "ro",
-      "notes": "F9.00 Temperature of radiator 0~100 ℃ 0 ◎ Temperature of VFD. Running Running time of this"
+      "notes": "F9.00 Temperature of radiator 0~100 ℃ 0 ◎ Temperature of VFD. Running Running time of this",
+      "live_raw": 25,
+      "live_eng": 25.0,
+      "map_status": "ok"
     },
     {
       "id": "F9.01",
@@ -1474,7 +1798,10 @@
       "scale": 10,
       "default": 0.0,
       "access": "rw",
-      "notes": "F9.01 time of this 0~65535 min 0 ○ VFD. (this is the VFD statistical time). Running"
+      "notes": "F9.01 time of this 0~65535 min 0 ○ VFD. (this is the VFD statistical time). Running",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F9.12",
@@ -1487,7 +1814,10 @@
       "scale": 10,
       "default": 65535.0,
       "access": "ro",
-      "notes": "F9.12 time of this 0~65535 min ◎ host drives The time is The host drives will Running decided by"
+      "notes": "F9.12 time of this 0~65535 min ◎ host drives The time is The host drives will Running decided by",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "F9.13",
@@ -1500,7 +1830,10 @@
       "scale": 10,
       "default": null,
       "access": "ro",
-      "notes": "F9.13 time of No. 0~65535 min the host and ◎ count the running time of each machine and 1 auxiliary auxiliary conduct the rotation. drive Running"
+      "notes": "F9.13 time of No. 0~65535 min the host and ◎ count the running time of each machine and 1 auxiliary auxiliary conduct the rotation. drive Running",
+      "live_raw": 29999,
+      "live_eng": 2999.9,
+      "map_status": "ok"
     },
     {
       "id": "F9.14",
@@ -1513,7 +1846,10 @@
       "scale": 10,
       "default": 65535.0,
       "access": "ro",
-      "notes": "F9.14 time of No. 0~65535 min ◎ 2 auxiliary - 41 - PDH30 Series Function Revision Description Set range Unit Default Remarks code level Running"
+      "notes": "F9.14 time of No. 0~65535 min ◎ 2 auxiliary - 41 - PDH30 Series Function Revision Description Set range Unit Default Remarks code level Running",
+      "live_raw": 29999,
+      "live_eng": 2999.9,
+      "map_status": "ok"
     },
     {
       "id": "F9.15",
@@ -1526,7 +1862,10 @@
       "scale": 10,
       "default": 65535.0,
       "access": "ro",
-      "notes": "F9.15 time of No. 0~65535 min ◎ 3 auxiliary Running"
+      "notes": "F9.15 time of No. 0~65535 min ◎ 3 auxiliary Running",
+      "live_raw": 29999,
+      "live_eng": 2999.9,
+      "map_status": "ok"
     },
     {
       "id": "F9.16",
@@ -1539,7 +1878,10 @@
       "scale": 10,
       "default": 65535.0,
       "access": "ro",
-      "notes": "F9.16 time of No. 0~65535 min ◎ 4 auxiliary Running"
+      "notes": "F9.16 time of No. 0~65535 min ◎ 4 auxiliary Running",
+      "live_raw": 29999,
+      "live_eng": 2999.9,
+      "map_status": "ok"
     },
     {
       "id": "F9.17",
@@ -1552,7 +1894,10 @@
       "scale": 10,
       "default": 65535.0,
       "access": "ro",
-      "notes": "F9.17 time of No. 0~65535 min ◎ 5 auxiliary 4.12 User Parameter Sets Function Revision Description Set range Unit Default Remarks code level"
+      "notes": "F9.17 time of No. 0~65535 min ◎ 5 auxiliary 4.12 User Parameter Sets Function Revision Description Set range Unit Default Remarks code level",
+      "live_raw": 29999,
+      "live_eng": 2999.9,
+      "map_status": "ok"
     },
     {
       "id": "FD.00",
@@ -1565,7 +1910,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "FD.00 Password of the agent 00000~65535 \\ 0000 ○ Password to enter group FD. 0: No operation Restore"
+      "notes": "Password register — read may be denied",
+      "live_raw": null,
+      "live_eng": null,
+      "map_status": "fail"
     },
     {
       "id": "FD.01",
@@ -1578,7 +1926,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw_stop",
-      "notes": "FD.01 factory 0~2 \\ 0 ● 1: Restore factory defaults defaults 2: Clear fault records"
+      "notes": "FD.01 factory 0~2 \\ 0 ● 1: Restore factory defaults defaults 2: Clear fault records",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "FD.02",
@@ -1591,7 +1942,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "FD.02 Parameter locked 0~1 \\ 0 ○ 0: unlocked 1: locked - 42 - PDH30 Series 4.13 Agent Parameter Sets Function Revision Description Set range Unit Default Rem…"
+      "notes": "FD.02 Parameter locked 0~1 \\ 0 ○ 0: unlocked 1: locked - 42 - PDH30 Series 4.13 Agent Parameter Sets Function Revision Description Set range Unit Default Rem…",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "FE.00",
@@ -1604,7 +1958,10 @@
       "scale": 1,
       "default": 0.0,
       "access": "rw",
-      "notes": "FE.00 Password 0000~9999 \\ 0000 ○ The password to enter group FE. Number of"
+      "notes": "FE.00 Password 0000~9999 \\ 0000 ○ The password to enter group FE. Number of",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "FE.01",
@@ -1617,7 +1974,10 @@
       "scale": 10,
       "default": 0.0,
       "access": "rw",
-      "notes": "FE.01 times the fault record 0~15 h 0000 ○ is displayed Power-on After the power-on"
+      "notes": "FE.01 times the fault record 0~15 h 0000 ○ is displayed Power-on After the power-on",
+      "live_raw": 3,
+      "live_eng": 0.3,
+      "map_status": "ok"
     },
     {
       "id": "FE.02",
@@ -1630,7 +1990,10 @@
       "scale": 10,
       "default": 0.0,
       "access": "rw",
-      "notes": "FE.02 arrival time 0~65535 h 0 ○ time is reached, the setting VFD will stop. Run time After the Running time"
+      "notes": "FE.02 arrival time 0~65535 h 0 ○ time is reached, the setting VFD will stop. Run time After the Running time",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "FE.03",
@@ -1643,7 +2006,10 @@
       "scale": 10,
       "default": 0.0,
       "access": "rw",
-      "notes": "FE.03 arrival 0~65535 h 0 ○ is reached, the VFD setting will stop. 4.14 D0 group monitoring parameters Function code Description Unit"
+      "notes": "FE.03 arrival 0~65535 h 0 ○ is reached, the VFD setting will stop. 4.14 D0 group monitoring parameters Function code Description Unit",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.00",
@@ -1656,7 +2022,10 @@
       "scale": 100,
       "default": null,
       "access": "rw",
-      "notes": "D0.00 Operating frequency 0.01 Hz"
+      "notes": "D0.00 Operating frequency 0.01 Hz",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.01",
@@ -1669,7 +2038,10 @@
       "scale": 100,
       "default": null,
       "access": "rw",
-      "notes": "D0.01 Setting frequency 0.01 Hz"
+      "notes": "D0.01 Setting frequency 0.01 Hz",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.02",
@@ -1682,7 +2054,10 @@
       "scale": 10,
       "default": null,
       "access": "rw",
-      "notes": "D0.02 Bus voltage 0.1V"
+      "notes": "D0.02 Bus voltage 0.1V",
+      "live_raw": 5517,
+      "live_eng": 551.7,
+      "map_status": "ok"
     },
     {
       "id": "D0.03",
@@ -1695,7 +2070,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "D0.03 Output voltage 1V"
+      "notes": "D0.03 Output voltage 1V",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.04",
@@ -1708,7 +2086,10 @@
       "scale": 100,
       "default": null,
       "access": "rw",
-      "notes": "D0.04 Output current 0.01A（>55Kw，0.1A）"
+      "notes": "D0.04 Output current 0.01A（>55Kw，0.1A）",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.05",
@@ -1721,7 +2102,10 @@
       "scale": 10,
       "default": null,
       "access": "rw",
-      "notes": "D0.05 Output Power 0.1kW"
+      "notes": "D0.05 Output Power 0.1kW",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.06",
@@ -1734,7 +2118,10 @@
       "scale": 10,
       "default": null,
       "access": "rw",
-      "notes": "D0.06 Output torque 0.1%"
+      "notes": "D0.06 Output torque 0.1%",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.07",
@@ -1747,7 +2134,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "D0.07 DI input status 1"
+      "notes": "D0.07 DI input status 1",
+      "live_raw": 2,
+      "live_eng": 2.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.08",
@@ -1760,7 +2150,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "D0.08 DO output status 1"
+      "notes": "D0.08 DO output status 1",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.09",
@@ -1773,7 +2166,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "D0.09 AI1 voltage 0.01V - 43 - PDH30 Series"
+      "notes": "D0.09 AI1 voltage 0.01V - 43 - PDH30 Series",
+      "live_raw": 197,
+      "live_eng": 197.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.10",
@@ -1786,7 +2182,10 @@
       "scale": 10,
       "default": null,
       "access": "rw",
-      "notes": "D0.10 AI2 voltage 0.01V"
+      "notes": "D0.10 AI2 voltage 0.01V",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.11",
@@ -1799,7 +2198,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "D0.11 Cumulative power-on time 1H"
+      "notes": "D0.11 Cumulative power-on time 1H",
+      "live_raw": 1505,
+      "live_eng": 1505.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.12",
@@ -1812,7 +2214,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "D0.12 Cumulative running time 1H"
+      "notes": "D0.12 Cumulative running time 1H",
+      "live_raw": 76,
+      "live_eng": 76.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.13",
@@ -1825,7 +2230,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "D0.13 Cumulative power consumption 1kWh"
+      "notes": "D0.13 Cumulative power consumption 1kWh",
+      "live_raw": 33,
+      "live_eng": 33.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.14",
@@ -1838,7 +2246,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "D0.14 Load speed 1RPM"
+      "notes": "D0.14 Load speed 1RPM",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "D0.15",
@@ -1851,7 +2262,10 @@
       "scale": 10,
       "default": null,
       "access": "rw",
-      "notes": "D0.15 PID setting 0.1Bar"
+      "notes": "D0.15 PID setting 0.1Bar",
+      "live_raw": 26,
+      "live_eng": 2.6,
+      "map_status": "ok"
     },
     {
       "id": "D0.16",
@@ -1864,7 +2278,10 @@
       "scale": 10,
       "default": null,
       "access": "rw",
-      "notes": "D0.16 PID feedback 0.1Bar 4.15 Fault record parameter groups Function Revision level Description Default code"
+      "notes": "D0.16 PID feedback 0.1Bar 4.15 Fault record parameter groups Function Revision level Description Default code",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "E0.00",
@@ -1877,7 +2294,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "E0.00 Last fault type"
+      "notes": "E0.00 Last fault type",
+      "live_raw": 15,
+      "live_eng": 15.0,
+      "map_status": "ok"
     },
     {
       "id": "E0.01",
@@ -1890,7 +2310,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "E0.01 Frequency at the last fault"
+      "notes": "E0.01 Frequency at the last fault",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "E0.02",
@@ -1903,7 +2326,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "E0.02 Current at the last fault"
+      "notes": "E0.02 Current at the last fault",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "E0.03",
@@ -1916,7 +2342,10 @@
       "scale": 1,
       "default": null,
       "access": "ro",
-      "notes": "E0.03 Bus voltage at the last fault \\ ◎"
+      "notes": "E0.03 Bus voltage at the last fault \\ ◎",
+      "live_raw": 5538,
+      "live_eng": 5538.0,
+      "map_status": "ok"
     },
     {
       "id": "E0.04",
@@ -1929,7 +2358,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "E0.04 input terminal status at the last fault"
+      "notes": "E0.04 input terminal status at the last fault",
+      "live_raw": 2,
+      "live_eng": 2.0,
+      "map_status": "ok"
     },
     {
       "id": "E0.05",
@@ -1942,7 +2374,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "E0.05 Output terminal status at the last fault"
+      "notes": "E0.05 Output terminal status at the last fault",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "E0.06",
@@ -1955,7 +2390,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "E0.06 VFD status at the last fault"
+      "notes": "E0.06 VFD status at the last fault",
+      "live_raw": 21,
+      "live_eng": 21.0,
+      "map_status": "ok"
     },
     {
       "id": "E0.07",
@@ -1968,7 +2406,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "E0.07 Failure time at the last fault (Starting from this power-on) - 44 - PDH30 Series"
+      "notes": "E0.07 Failure time at the last fault (Starting from this power-on) - 44 - PDH30 Series",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "E0.08",
@@ -1981,7 +2422,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "E0.08 Failure time at the last fault (Starting from the run)"
+      "notes": "E0.08 Failure time at the last fault (Starting from the run)",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "E0.09",
@@ -1994,7 +2438,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "E0.09 Reserved"
+      "notes": "E0.09 Reserved",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     },
     {
       "id": "E0.10",
@@ -2007,7 +2454,10 @@
       "scale": 1,
       "default": null,
       "access": "rw",
-      "notes": "E0.10 Reserved - 45 - PDH30 Series"
+      "notes": "E0.10 Reserved - 45 - PDH30 Series",
+      "live_raw": 0,
+      "live_eng": 0.0,
+      "map_status": "ok"
     }
   ],
   "telemetry": [
@@ -2086,5 +2536,19 @@
   "cli": {
     "raw": "raw {register}",
     "notes": "Edge firmware still uses PDM r0/w0 map; use raw for PDH until profile runtime lands."
+  },
+  "validation": {
+    "date": "20260813T165408Z",
+    "edge": "guition_jc_esp32p4_m3",
+    "port": "/dev/ttyACM0",
+    "slave": 1,
+    "ok": 148,
+    "fail": 2,
+    "ok_pct": 98.7,
+    "result_file": "pdh30_catalog_map_20260813T165408Z.json",
+    "fails": [
+      "F4.15",
+      "FD.00"
+    ]
   }
 }
