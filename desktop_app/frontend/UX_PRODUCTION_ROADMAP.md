@@ -161,10 +161,10 @@
 
 ### Fase 5 — Roles y simplificación de perfiles (2 días)
 
-- [ ] **Operario:** no edita perfiles MQTT/Wi‑Fi a menos que se habilite
-- [ ] **Técnico / Admin:** pin o menú largo para perfiles Edge, CLI, simulado
-- [ ] Plantillas de perfil por planta (importar JSON de perfiles)
-- [ ] Valores por defecto sensatos (MQTT perfil único preconfigurado en instalación)
+- [x] **Operario (default):** camino feliz; **sí** edita perfiles Wi‑Fi/MQTT (decisión de producto) con textos guiados; sin CLI/simulado
+- [x] **Técnico:** PIN (default `2580`, cambiable) o long-press «?» → CLI, simulado, log crudo, topic_prefix, baud
+- [x] Plantillas de perfil por planta (exportar / importar JSON en Ayuda)
+- [x] Valores por defecto sensatos (Local Mosquitto + setup broker 0.3.3)
 
 ---
 
