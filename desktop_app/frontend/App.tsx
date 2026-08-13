@@ -456,18 +456,34 @@ export default function App() {
 
   const scanBt = async () => {
     setScanning(true);
-    pushLog("Buscando equipos Bluetooth…");
+    pushLog(
+      mode === "ble"
+        ? "Buscando equipos Bluetooth LE…"
+        : "Buscando Bluetooth Classic (SPP)… En Windows deben estar emparejados en el sistema."
+    );
     try {
       const devs = mode === "ble" ? await api.btBle(8) : await api.btClassic(10);
       setBtDevices(devs);
       if (devs.length) {
-        const saj = devs.find((d) => /SAJ|PDM|VARIO|EDGE/i.test(d.name)) || devs[0];
+        const saj =
+          devs.find((d) => /SAJ|PDM|VARIO|EDGE/i.test(d.name || "")) ||
+          devs.find((d) => d.paired) ||
+          devs[0];
         setBtAddress(saj.address);
-        pushLog(`Encontrados ${devs.length} equipo(s).`);
+        pushLog(
+          `Encontrados ${devs.length} equipo(s). Preferido: ${saj.name || "?"} (${saj.address})`
+        );
         setAppError(null);
       } else {
         setAppError(
-          classifyError(new Error("ningún dispositivo"), { context: "bt" })
+          classifyError(
+            new Error(
+              mode === "bluetooth"
+                ? "ningún dispositivo Classic: emparejá SAJ-PDM30-Edge en Configuración → Bluetooth y volvé a buscar"
+                : "ningún dispositivo"
+            ),
+            { context: "bt" }
+          )
         );
       }
     } catch (e) {
@@ -1323,15 +1339,22 @@ export default function App() {
                 ) : (
                   <Text style={styles.hint}>Pulsa “Buscar equipos” y elige uno de la lista.</Text>
                 )}
-                {btDevices.map((d) => (
-                  <Pressable key={d.address} onPress={() => setBtAddress(d.address)}>
-                    <Text
-                      style={[styles.hint, d.address === btAddress && styles.hintOn]}
-                    >
-                      {d.name || "Equipo"} {d.paired ? "✓" : ""}
-                    </Text>
-                  </Pressable>
-                ))}
+                {btDevices.map((d) => {
+                  const labelName =
+                    d.name && d.name.toUpperCase() !== d.address.toUpperCase()
+                      ? d.name
+                      : "Sin nombre";
+                  return (
+                    <Pressable key={d.address} onPress={() => setBtAddress(d.address)}>
+                      <Text
+                        style={[styles.hint, d.address === btAddress && styles.hintOn]}
+                      >
+                        {labelName} · {d.address}
+                        {d.paired ? " ✓" : ""}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
             )}
 
