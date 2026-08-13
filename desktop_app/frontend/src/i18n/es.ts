@@ -5,10 +5,38 @@ export const t = {
   tagline: "Recetas y enlace a variadores en campo",
 
   // Tabs
+  tabHome: "Inicio",
   tabConnect: "Equipo",
   tabParams: "Recetas",
+  tabMore: "Más",
   tabEdge: "Red del equipo",
   tabHelp: "Ayuda",
+
+  // Home — 4 big steps
+  homeTitle: "¿Qué quieres hacer?",
+  homeSubtitle: "Sigue los pasos en orden. Puedes saltar al que necesites.",
+  step1Title: "1 · Conectar el módulo",
+  step1Body: "Cable USB, red Wi‑Fi o Bluetooth. Sin esto no se habla con el variador.",
+  step1Cta: "Ir a conectar",
+  step1Done: "Módulo conectado",
+  step2Title: "2 · Elegir la receta",
+  step2Body: "Abre o edita la lista de parámetros que quieres en el variador.",
+  step2Cta: "Ir a recetas",
+  step2Done: (n: number) => `Receta lista (${n} parámetros)`,
+  step3Title: "3 · Comprobar el variador",
+  step3Body: "Verifica que responde y compara la receta con lo que hay instalado.",
+  step3CtaCheck: "Comprobar enlace",
+  step3CtaCompare: "Comparar receta",
+  step3Done: "Comprobación hecha",
+  step4Title: "4 · Enviar la receta",
+  step4Body: "Escribe los valores en el variador. Puedes enviar sin comparar; te avisaremos.",
+  step4Cta: "Enviar al variador",
+  step4Done: "Último envío OK",
+  stepNeedConnect: "Conecta el módulo antes (paso 1).",
+  stepNeedRecipe: "Elige o crea una receta (paso 2).",
+  homeLive: "Lectura en vivo",
+  homeMoreNetwork: "Configurar red del módulo (Wi‑Fi / MQTT)",
+  homeMoreHelp: "Ayuda y tutorial",
 
   // Connection status
   statusReady: "Listo",
