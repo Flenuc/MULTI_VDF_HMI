@@ -52,13 +52,36 @@ raw 0x1001          # run freq
 raw 0x3000          # status
 ```
 
-## Siguiente después del spike
+## Catálogo de parámetros (post-spike)
 
-1. Actualizar `drive_profiles/saj/pdh30/profile.json`:
-   - `status`: `validated` si f_style (u otro) confirmado
-   - rellenar `parameters[]` desde manual + escalas
-2. Firmware: `profile set saj.pdh30` + address scheme runtime
-3. App: selector de modelo + recetas con `drive_profile_id`
+Ya generado desde el manual (grupos pedidos):
+
+```bash
+python3 tools/catalog_builder/extract_pdh30_from_manual.py
+```
+
+- `drive_profiles/saj/pdh30/profile.json` — F0–F9, FD, FE, D0, E0  
+- `drive_profiles/saj/pdh30/parameters.csv` — hoja de trabajo  
+- `drive_profiles/saj/pdh30/plant_priority_ids.json` — subset planta (F0,F2,F3,F8,D0)
+
+### Lectura de un F-code con firmware actual
+
+```
+raw 0xF000    # F0.00 pre-set pressure
+raw 0xF008    # F0.08 sensor range
+raw 0xF207    # F2.07 max output frequency
+raw 0xF800    # F8.00 comm address
+raw 0x1001    # D0.00 operating frequency
+```
+
+Fórmula: **Fn.mm → registro `0xF(n)mm`** (ej. F3.15 → `0xF30F`).
+
+## Siguiente después del spike + catálogo
+
+1. Validar en banco 10–20 IDs del subset planta (raw + display HMI)
+2. Ajustar escalas en profile si eng≠display
+3. Firmware: `profile set saj.pdh30` + address scheme runtime
+4. App: selector de modelo + recetas con `drive_profile_id`
 
 ## Checklist de campo (imprimir)
 
