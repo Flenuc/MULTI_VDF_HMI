@@ -35,12 +35,16 @@ pyinstaller --noconfirm --clean ^
   --hidden-import backend.main ^
   --hidden-import backend.session ^
   --hidden-import backend.schemas ^
+  --hidden-import backend.param_api ^
   --hidden-import comms ^
   --hidden-import comms.serial_client ^
   --hidden-import comms.mqtt_client ^
   --hidden-import comms.bluetooth_client ^
   --hidden-import comms.ble_nus_client ^
   --hidden-import comms.dummy_client ^
+  --hidden-import models ^
+  --hidden-import profiles ^
+  --hidden-import storage ^
   --hidden-import serial.tools.list_ports ^
   --collect-all bleak ^
   "%~dp0backend\main.py"

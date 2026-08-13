@@ -1,0 +1,252 @@
+# Build VarioField desktop packs (Windows NSIS + Linux x64 AppImage)
+# and attach them to the GitHub Release when run on a version tag or manually.
+
+name: Build VarioField Desktop
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "GitHub release tag to attach installers (e.g. v0.3.2). Leave empty to only upload artifacts."
+        required: false
+        default: "v0.3.2"
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  EXPO_PUBLIC_ENV: production
+  CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+jobs:
+  windows:
+    name: Windows x64 Setup.exe
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop_app
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            desktop_app/frontend/package-lock.json
+            desktop_app/electron/package-lock.json
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install -U pip wheel
+          pip install -r requirements.txt -r backend/requirements.txt pyinstaller
+
+      - name: Build multi_vdf_backend.exe
+        env:
+          PYTHONPATH: ${{ github.workspace }}/desktop_app
+        run: |
+          mkdir -p electron/resources/backend electron/resources/ui
+          pyinstaller --noconfirm --clean \
+            --onefile \
+            --name multi_vdf_backend \
+            --paths . \
+            --distpath electron/resources/backend \
+            --workpath build/pyi \
+            --specpath build/pyi \
+            --console \
+            --hidden-import uvicorn.logging \
+            --hidden-import uvicorn.loops.auto \
+            --hidden-import uvicorn.protocols.http.auto \
+            --hidden-import uvicorn.protocols.websockets.auto \
+            --hidden-import uvicorn.lifespan.on \
+            --hidden-import backend.main \
+            --hidden-import backend.session \
+            --hidden-import backend.schemas \
+            --hidden-import backend.param_api \
+            --hidden-import comms \
+            --hidden-import comms.serial_client \
+            --hidden-import comms.mqtt_client \
+            --hidden-import comms.bluetooth_client \
+            --hidden-import comms.ble_nus_client \
+            --hidden-import comms.dummy_client \
+            --hidden-import models \
+            --hidden-import profiles \
+            --hidden-import storage \
+            --hidden-import serial.tools.list_ports \
+            --collect-all bleak \
+            backend/main.py
+          ls -lh electron/resources/backend/
+
+      - name: Export Expo web UI (production)
+        working-directory: desktop_app/frontend
+        env:
+          EXPO_PUBLIC_ENV: production
+        run: |
+          npm ci || npm install
+          npx expo export --platform web --output-dir dist --clear
+          rm -rf ../electron/resources/ui/*
+          cp -a dist/. ../electron/resources/ui/
+          test -f ../electron/resources/ui/index.html
+          find ../electron/resources/ui -type f | wc -l
+
+      - name: Electron Builder (NSIS)
+        working-directory: desktop_app/electron
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: |
+          npm ci || npm install
+          npx electron-builder --win nsis --x64
+          ls -lh dist/ || true
+          ls -lh dist/*.exe || true
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: variofield-windows-x64
+          path: |
+            desktop_app/electron/dist/VarioField-Setup-*.exe
+            desktop_app/electron/dist/*.exe
+          if-no-files-found: error
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd desktop_app/electron/dist
+          EXE=$(ls VarioField-Setup-*.exe 2>/dev/null | head -1 || ls *.exe | head -1)
+          echo "Uploading $EXE → release $TAG"
+          # If release missing, create draft from notes if present
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            NOTES="${GITHUB_WORKSPACE}/desktop_app/RELEASE_NOTES_0.3.2.md"
+            if [[ -f "$NOTES" ]]; then
+              gh release create "$TAG" --title "VarioField ${TAG#v}" --notes-file "$NOTES" --repo "$GITHUB_REPOSITORY"
+            else
+              gh release create "$TAG" --title "VarioField ${TAG#v}" --generate-notes --repo "$GITHUB_REPOSITORY"
+            fi
+          fi
+          gh release upload "$TAG" "$EXE" --clobber --repo "$GITHUB_REPOSITORY"
+
+  linux-x64:
+    name: Linux x64 AppImage
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: desktop_app
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            desktop_app/frontend/package-lock.json
+            desktop_app/electron/package-lock.json
+
+      - name: Install system deps (AppImage)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libfuse2 || true
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install -U pip wheel
+          pip install -r requirements.txt -r backend/requirements.txt pyinstaller
+
+      - name: Build multi_vdf_backend
+        env:
+          PYTHONPATH: ${{ github.workspace }}/desktop_app
+        run: |
+          mkdir -p electron/resources/backend electron/resources/ui
+          pyinstaller --noconfirm --clean \
+            --onefile \
+            --name multi_vdf_backend \
+            --paths . \
+            --distpath electron/resources/backend \
+            --workpath build/pyi \
+            --specpath build/pyi \
+            --console \
+            --hidden-import uvicorn.logging \
+            --hidden-import uvicorn.loops.auto \
+            --hidden-import uvicorn.protocols.http.auto \
+            --hidden-import uvicorn.protocols.websockets.auto \
+            --hidden-import uvicorn.lifespan.on \
+            --hidden-import backend.main \
+            --hidden-import backend.session \
+            --hidden-import backend.schemas \
+            --hidden-import backend.param_api \
+            --hidden-import comms \
+            --hidden-import comms.serial_client \
+            --hidden-import comms.mqtt_client \
+            --hidden-import comms.bluetooth_client \
+            --hidden-import comms.ble_nus_client \
+            --hidden-import comms.dummy_client \
+            --hidden-import models \
+            --hidden-import profiles \
+            --hidden-import storage \
+            --hidden-import serial.tools.list_ports \
+            --collect-all bleak \
+            backend/main.py
+          chmod +x electron/resources/backend/multi_vdf_backend
+
+      - name: Export Expo web UI (production)
+        working-directory: desktop_app/frontend
+        env:
+          EXPO_PUBLIC_ENV: production
+        run: |
+          npm ci || npm install
+          npx expo export --platform web --output-dir dist --clear
+          rm -rf ../electron/resources/ui/*
+          cp -a dist/. ../electron/resources/ui/
+          test -f ../electron/resources/ui/index.html
+
+      - name: Electron Builder (AppImage x64)
+        working-directory: desktop_app/electron
+        run: |
+          npm ci || npm install
+          npx electron-builder --linux AppImage --x64
+          ls -lh dist/
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: variofield-linux-x64
+          path: desktop_app/electron/dist/VarioField-*.AppImage
+          if-no-files-found: error
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          cd desktop_app/electron/dist
+          APP=$(ls VarioField-*.AppImage | head -1)
+          echo "Uploading $APP → release $TAG"
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            NOTES="${GITHUB_WORKSPACE}/desktop_app/RELEASE_NOTES_0.3.2.md"
+            if [[ -f "$NOTES" ]]; then
+              gh release create "$TAG" --title "VarioField ${TAG#v}" --notes-file "$NOTES" --repo "$GITHUB_REPOSITORY"
+            else
+              gh release create "$TAG" --title "VarioField ${TAG#v}" --generate-notes --repo "$GITHUB_REPOSITORY"
+            fi
+          fi
+          gh release upload "$TAG" "$APP" --clobber --repo "$GITHUB_REPOSITORY"
