@@ -1,7 +1,7 @@
 /**
  * MULTI_VDF_HMI — Electron shell
  *
- * 1) Spawns embedded Python backend (packaged binary or dev uvicorn)
+ * 1) Spawns embedded Python backend (packaged binary, embed CPython, or dev)
  * 2) Waits for GET /health
  * 3) Opens BrowserWindow → http://127.0.0.1:8765 (API + static UI)
  */
@@ -19,14 +19,60 @@ const HEALTH_URL = `http://${HOST}:${PORT}/health`;
 let mainWindow = null;
 let backendProc = null;
 let quitting = false;
+let healthReady = false;
+let backendLog = "";
+let backendLogPath = "";
 
 function isPackaged() {
   return app.isPackaged;
 }
 
+function logLine(msg) {
+  const line = `[electron] ${msg}`;
+  console.log(line);
+  try {
+    if (backendLogPath) {
+      fs.appendFileSync(backendLogPath, line + "\n", "utf8");
+    }
+  } catch (_) {
+    /* ignore */
+  }
+}
+
+/**
+ * Resolve resources/ robustly (packaged Electron win/linux, NSIS layout, dev).
+ * Prefer a directory that actually contains backend bits.
+ */
 function resourcesDir() {
-  // Packaged: process.resourcesPath/…  Dev: electron/resources
-  if (isPackaged()) return process.resourcesPath;
+  const candidates = [];
+  if (process.resourcesPath) candidates.push(process.resourcesPath);
+  // Next to VarioField.exe / electron binary
+  try {
+    candidates.push(path.join(path.dirname(process.execPath), "resources"));
+  } catch (_) {
+    /* ignore */
+  }
+  // resources/app → parent is resources/
+  candidates.push(path.join(__dirname, ".."));
+  // Dev: electron/resources
+  candidates.push(path.join(__dirname, "resources"));
+
+  const looksGood = (dir) => {
+    if (!dir || !fs.existsSync(dir)) return false;
+    return (
+      fs.existsSync(path.join(dir, "pyapp", "run_variofield.py")) ||
+      fs.existsSync(path.join(dir, "ui", "index.html")) ||
+      fs.existsSync(path.join(dir, "backend", "multi_vdf_backend.exe")) ||
+      fs.existsSync(path.join(dir, "backend", "multi_vdf_backend")) ||
+      fs.existsSync(path.join(dir, "python", "python.exe"))
+    );
+  };
+
+  for (const c of candidates) {
+    if (looksGood(c)) return c;
+  }
+  // Fallback
+  if (isPackaged() && process.resourcesPath) return process.resourcesPath;
   return path.join(__dirname, "resources");
 }
 
@@ -43,11 +89,9 @@ function uiDir() {
 }
 
 function desktopAppRoot() {
-  // …/desktop_app/electron → …/desktop_app
   return path.join(__dirname, "..");
 }
 
-/** Packaged embed: resources/python + resources/pyapp (Windows NSIS from Linux). */
 function embeddedPythonPaths() {
   const res = resourcesDir();
   const pyDir = path.join(res, "python");
@@ -57,62 +101,131 @@ function embeddedPythonPaths() {
       ? path.join(pyDir, "python.exe")
       : path.join(pyDir, "bin", "python3");
   const runScript = path.join(pyapp, "run_variofield.py");
-  return { pyExe, pyapp, runScript };
+  return { res, pyDir, pyExe, pyapp, runScript };
+}
+
+function initLogFile() {
+  try {
+    const dir = app.getPath("userData");
+    fs.mkdirSync(dir, { recursive: true });
+    backendLogPath = path.join(dir, "backend.log");
+    fs.writeFileSync(
+      backendLogPath,
+      `=== VarioField backend log ${new Date().toISOString()} ===\n` +
+        `execPath=${process.execPath}\n` +
+        `resourcesPath=${process.resourcesPath}\n` +
+        `resourcesDir=${resourcesDir()}\n` +
+        `isPackaged=${isPackaged()}\n` +
+        `__dirname=${__dirname}\n\n`,
+      "utf8"
+    );
+  } catch (e) {
+    backendLogPath = "";
+    console.error("cannot create backend log", e);
+  }
+}
+
+function appendBackendChunk(chunk) {
+  const s = String(chunk);
+  backendLog += s;
+  if (backendLog.length > 80000) {
+    backendLog = backendLog.slice(-60000);
+  }
+  process.stdout.write(`[backend] ${s}`);
+  try {
+    if (backendLogPath) fs.appendFileSync(backendLogPath, s, "utf8");
+  } catch (_) {
+    /* ignore */
+  }
 }
 
 function attachBackendLogs(proc) {
-  proc.stdout?.on("data", (d) => process.stdout.write(`[backend] ${d}`));
-  proc.stderr?.on("data", (d) => process.stderr.write(`[backend] ${d}`));
+  proc.stdout?.on("data", (d) => appendBackendChunk(d));
+  proc.stderr?.on("data", (d) => appendBackendChunk(d));
+  proc.on("error", (err) => {
+    appendBackendChunk(`spawn error: ${err}\n`);
+    logLine(`backend spawn error: ${err}`);
+  });
   proc.on("exit", (code, signal) => {
-    console.log(`[electron] backend exited code=${code} signal=${signal}`);
+    logLine(`backend exited code=${code} signal=${signal}`);
     backendProc = null;
-    if (!quitting && mainWindow) {
+    if (!quitting && mainWindow && healthReady) {
       dialog.showErrorBox(
         "VarioField",
-        "El servicio de comunicación se detuvo. Cierra la app e inténtalo de nuevo."
+        "El servicio de comunicación se detuvo. Cierra la app e inténtalo de nuevo." +
+          (backendLogPath ? `\n\nLog: ${backendLogPath}` : "")
       );
     }
   });
 }
 
 function startBackend() {
+  const res = resourcesDir();
+  const ui = uiDir();
+  logLine(`startBackend resourcesDir=${res}`);
+  logLine(`uiDir=${ui} exists=${fs.existsSync(ui)}`);
+
   const env = {
     ...process.env,
     MULTI_VDF_HOST: HOST,
     MULTI_VDF_PORT: String(PORT),
-    MULTI_VDF_UI_DIR: uiDir(),
+    MULTI_VDF_UI_DIR: ui,
     PYTHONUNBUFFERED: "1",
+    VARIOFIELD_EMBED: "1",
   };
 
-  const spawnOpts = {
-    env,
+  const spawnOptsBase = {
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,
   };
 
-  // 1) PyInstaller one-file binary (AppImage / electron-builder Windows CI)
+  // 1) PyInstaller one-file binary
   const exe = backendExecutable();
+  logLine(`backend binary path=${exe} exists=${fs.existsSync(exe)}`);
   if (fs.existsSync(exe)) {
-    console.log("[electron] starting packaged backend binary:", exe);
-    backendProc = spawn(exe, [], { ...spawnOpts, cwd: path.dirname(exe) });
+    logLine(`starting packaged backend binary`);
+    backendProc = spawn(exe, [], {
+      ...spawnOptsBase,
+      env,
+      cwd: path.dirname(exe),
+    });
     attachBackendLogs(backendProc);
     return;
   }
 
-  // 2) Embedded CPython (Windows NSIS built on Linux) + pyapp sources
-  const { pyExe, pyapp, runScript } = embeddedPythonPaths();
+  // 2) Embedded CPython + pyapp (Windows NSIS from Linux)
+  const { pyDir, pyExe, pyapp, runScript } = embeddedPythonPaths();
+  logLine(`embed pyExe=${pyExe} exists=${fs.existsSync(pyExe)}`);
+  logLine(`embed runScript=${runScript} exists=${fs.existsSync(runScript)}`);
   if (fs.existsSync(pyExe) && fs.existsSync(runScript)) {
-    console.log("[electron] starting embedded Python backend:", pyExe, runScript);
+    const pathSep = process.platform === "win32" ? ";" : ":";
+    const embedEnv = {
+      ...env,
+      // PYTHONPATH often ignored with python*._pth; still set for good measure
+      PYTHONPATH: pyapp,
+      // Help Windows load native .pyd deps (msvcp140, etc.)
+      PATH: `${pyDir}${pathSep}${env.PATH || ""}`,
+    };
+    logLine(`starting embedded Python backend`);
     backendProc = spawn(pyExe, [runScript], {
-      ...spawnOpts,
-      env: { ...env, PYTHONPATH: pyapp },
+      ...spawnOptsBase,
+      env: embedEnv,
       cwd: pyapp,
     });
     attachBackendLogs(backendProc);
     return;
   }
 
-  // 3) Dev: uvicorn from desktop_app venv / system python
+  // 3) Dev only — never silent-fail to bare "python" when packaged layout was expected
+  if (isPackaged()) {
+    const detail =
+      `No se encontró el backend empaquetado.\n\n` +
+      `Buscado:\n- ${exe}\n- ${pyExe}\n- ${runScript}\n\n` +
+      `resourcesDir=${res}\n` +
+      (backendLogPath ? `Log: ${backendLogPath}\n` : "");
+    throw new Error(detail);
+  }
+
   const root = desktopAppRoot();
   const venvPy =
     process.platform === "win32"
@@ -123,12 +236,12 @@ function startBackend() {
     : process.platform === "win32"
       ? "python"
       : "python3";
-  console.log("[electron] starting dev backend with", py);
+  logLine(`starting dev backend with ${py}`);
   backendProc = spawn(
     py,
     ["-m", "uvicorn", "backend.main:app", "--host", HOST, "--port", String(PORT)],
     {
-      ...spawnOpts,
+      ...spawnOptsBase,
       env: { ...env, PYTHONPATH: root },
       cwd: root,
     }
@@ -136,15 +249,33 @@ function startBackend() {
   attachBackendLogs(backendProc);
 }
 
-function waitForHealth(timeoutMs = 45000) {
+function waitForHealth(timeoutMs = 60000) {
   const start = Date.now();
   return new Promise((resolve, reject) => {
+    const fail = (reason) => {
+      const tail = backendLog.trim().slice(-2500);
+      const msg =
+        `${reason}\n\n` +
+        (backendLogPath ? `Log completo: ${backendLogPath}\n\n` : "") +
+        (tail ? `--- salida backend ---\n${tail}` : "(sin salida del backend)");
+      reject(new Error(msg));
+    };
+
     const tryOnce = () => {
+      // Fail fast if process already died
+      if (!backendProc && !healthReady) {
+        return fail(
+          `El proceso del backend se cerró antes de responder (${HEALTH_URL}).`
+        );
+      }
       const req = http.get(HEALTH_URL, (res) => {
         let body = "";
         res.on("data", (c) => (body += c));
         res.on("end", () => {
-          if (res.statusCode === 200) return resolve(body);
+          if (res.statusCode === 200) {
+            healthReady = true;
+            return resolve(body);
+          }
           retry();
         });
       });
@@ -156,7 +287,13 @@ function waitForHealth(timeoutMs = 45000) {
     };
     const retry = () => {
       if (Date.now() - start > timeoutMs) {
-        return reject(new Error(`Backend no respondió en ${timeoutMs}ms (${HEALTH_URL})`));
+        return fail(`Backend no respondió en ${timeoutMs}ms (${HEALTH_URL}).`);
+      }
+      // If process died mid-wait, fail with log instead of spinning
+      if (!backendProc && !healthReady) {
+        return fail(
+          `El proceso del backend se cerró antes de responder (${HEALTH_URL}).`
+        );
       }
       setTimeout(tryOnce, 400);
     };
@@ -265,18 +402,22 @@ if (!gotLock) {
 
   app.whenReady().then(async () => {
     try {
+      initLogFile();
       registerIpc();
-      // Ensure UI dir exists for env (may be empty in pure-API dev)
       const ui = uiDir();
       if (!fs.existsSync(ui)) {
-        fs.mkdirSync(ui, { recursive: true });
+        // Don't create empty ui that hides a packaging bug in production
+        if (!isPackaged()) {
+          fs.mkdirSync(ui, { recursive: true });
+        }
       }
       startBackend();
       await waitForHealth();
       createWindow();
     } catch (e) {
       console.error(e);
-      dialog.showErrorBox("VarioField — error de arranque", String(e.message || e));
+      const msg = String(e.message || e);
+      dialog.showErrorBox("VarioField — error de arranque", msg);
       stopBackend();
       app.quit();
     }
