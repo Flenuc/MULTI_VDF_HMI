@@ -50,6 +50,11 @@
         "filter": ["**/*"]
       },
       {
+        "from": "resources/drive_profiles",
+        "to": "drive_profiles",
+        "filter": ["**/*"]
+      },
+      {
         "from": "../scripts",
         "to": "scripts",
         "filter": ["setup_mosquitto.sh", "setup_mosquitto.ps1", "mosquitto-variofield.conf"]

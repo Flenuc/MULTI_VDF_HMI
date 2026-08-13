@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
 import re
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -22,12 +24,75 @@ from profiles import (
 from storage import load_json, save_json
 
 _APP = Path(__file__).resolve().parents[1]
-_ROOT = _APP.parent  # repo root (VF patron)
+_ROOT = _APP.parent  # repo root (VF patron) in source tree
 LISTS_DIR = _APP / "param_lists"
 CONFIG_DIR = _APP / "config"
-DRIVE_PROFILES_DIR = _ROOT / "drive_profiles"
 SAFE_NAME = re.compile(r"^[\w .\-()\[\]]+$")
 SAFE_PROFILE_ID = re.compile(r"^[a-z0-9][a-z0-9._-]*$", re.I)
+
+
+def resolve_drive_profiles_dir() -> Path:
+    """
+    Locate drive_profiles/ in dev and packaged layouts.
+
+    Priority:
+      1) MULTI_VDF_DRIVE_PROFILES
+      2) MULTI_VDF_RESOURCES/drive_profiles  (Electron)
+      3) next to frozen executable / _MEIPASS
+      4) repo root / desktop_app/drive_profiles / cwd
+    """
+    candidates: List[Path] = []
+    env = os.environ.get("MULTI_VDF_DRIVE_PROFILES", "").strip()
+    if env:
+        candidates.append(Path(env))
+    res = os.environ.get("MULTI_VDF_RESOURCES", "").strip()
+    if res:
+        candidates.append(Path(res) / "drive_profiles")
+
+    if getattr(sys, "frozen", False):
+        meipass = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.extend(
+            [
+                exe_dir / "drive_profiles",
+                exe_dir.parent / "drive_profiles",  # resources/ when binary in resources/backend
+                meipass / "drive_profiles",
+            ]
+        )
+    else:
+        candidates.extend(
+            [
+                _ROOT / "drive_profiles",
+                _APP / "drive_profiles",
+                _APP / "electron" / "resources" / "drive_profiles",
+                Path.cwd() / "drive_profiles",
+                Path.cwd().parent / "drive_profiles",
+            ]
+        )
+
+    for c in candidates:
+        try:
+            if c.is_dir() and any(c.glob("**/profile.json")):
+                return c.resolve()
+        except OSError:
+            continue
+    # Default (may be empty until packaged)
+    if env:
+        return Path(env)
+    if res:
+        return (Path(res) / "drive_profiles").resolve()
+    return (_ROOT / "drive_profiles").resolve()
+
+
+# Resolved at import; refresh via get_drive_profiles_dir() if env changes late
+DRIVE_PROFILES_DIR = resolve_drive_profiles_dir()
+
+
+def get_drive_profiles_dir() -> Path:
+    """Re-resolve so Electron-spawned env is always honoured."""
+    global DRIVE_PROFILES_DIR
+    DRIVE_PROFILES_DIR = resolve_drive_profiles_dir()
+    return DRIVE_PROFILES_DIR
 
 
 def lists_dir() -> Path:
@@ -199,8 +264,8 @@ def get_wifi_by_name(name: str) -> Optional[Dict[str, Any]]:
 
 
 def list_drive_profiles() -> List[Dict[str, Any]]:
-    """Index of drive_profiles/**/profile.json under repo root."""
-    root = DRIVE_PROFILES_DIR
+    """Index of drive_profiles/**/profile.json (dev or packaged)."""
+    root = get_drive_profiles_dir()
     out: List[Dict[str, Any]] = []
     if not root.is_dir():
         return out
@@ -231,19 +296,21 @@ def load_drive_profile(profile_id: str) -> Dict[str, Any]:
     pid = (profile_id or "").strip()
     if not pid or not SAFE_PROFILE_ID.match(pid):
         raise ValueError("invalid drive profile id")
+    root = get_drive_profiles_dir()
     # id "saj.pdh30" → drive_profiles/saj/pdh30/profile.json
     parts = pid.split(".")
     if len(parts) >= 2:
         vendor, model = parts[0], parts[1]
-        candidate = DRIVE_PROFILES_DIR / vendor / model / "profile.json"
+        candidate = root / vendor / model / "profile.json"
         if candidate.is_file():
             return json.loads(candidate.read_text(encoding="utf-8"))
     # fallback: scan
-    for p in DRIVE_PROFILES_DIR.glob("**/profile.json"):
-        try:
-            data = json.loads(p.read_text(encoding="utf-8"))
-            if str(data.get("id")) == pid:
-                return data
-        except Exception:
-            continue
+    if root.is_dir():
+        for p in root.glob("**/profile.json"):
+            try:
+                data = json.loads(p.read_text(encoding="utf-8"))
+                if str(data.get("id")) == pid:
+                    return data
+            except Exception:
+                continue
     raise FileNotFoundError(pid)

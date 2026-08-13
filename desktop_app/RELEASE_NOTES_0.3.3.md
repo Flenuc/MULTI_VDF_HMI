@@ -17,6 +17,7 @@
   - App: selector de modelo, recetas por ID, nombres del manual en filas, compare/sync con espera de respuesta
   - Receta planta: `param_lists/ejemplo_pdh30.json`
   - Banco: dump completo ~97 % OK; E2E receta compare+sync
+  - **`drive_profiles/` empaquetado** en Electron (`resources/drive_profiles`, env `MULTI_VDF_DRIVE_PROFILES`)
 - Empaques actualizados (AppImage arm64 + Setup Windows Electron).
 
 ## Archivos de esta release

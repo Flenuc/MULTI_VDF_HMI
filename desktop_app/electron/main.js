@@ -64,7 +64,8 @@ function resourcesDir() {
       fs.existsSync(path.join(dir, "ui", "index.html")) ||
       fs.existsSync(path.join(dir, "backend", "multi_vdf_backend.exe")) ||
       fs.existsSync(path.join(dir, "backend", "multi_vdf_backend")) ||
-      fs.existsSync(path.join(dir, "python", "python.exe"))
+      fs.existsSync(path.join(dir, "python", "python.exe")) ||
+      fs.existsSync(path.join(dir, "drive_profiles"))
     );
   };
 
@@ -167,6 +168,11 @@ function startBackend() {
   logLine(`uiDir=${ui} exists=${fs.existsSync(ui)}`);
   logLine(`scriptsDir=${scriptsDir} exists=${fs.existsSync(scriptsDir)}`);
 
+  const driveProfilesDir = path.join(res, "drive_profiles");
+  logLine(
+    `drive_profilesDir=${driveProfilesDir} exists=${fs.existsSync(driveProfilesDir)}`
+  );
+
   const env = {
     ...process.env,
     MULTI_VDF_HOST: HOST,
@@ -174,6 +180,9 @@ function startBackend() {
     MULTI_VDF_UI_DIR: ui,
     MULTI_VDF_RESOURCES: res,
     MULTI_VDF_SCRIPTS_DIR: fs.existsSync(scriptsDir) ? scriptsDir : "",
+    MULTI_VDF_DRIVE_PROFILES: fs.existsSync(driveProfilesDir)
+      ? driveProfilesDir
+      : "",
     PYTHONUNBUFFERED: "1",
     VARIOFIELD_EMBED: "1",
   };

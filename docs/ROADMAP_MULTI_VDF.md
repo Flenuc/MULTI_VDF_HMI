@@ -325,11 +325,11 @@ Esfuerzo orientativo total: **~10–14 semanas** con 1 dev full-stack embebido+a
 ## 7. Cambios de software por capa (checklist técnico)
 
 ### App (VarioField)
-- [ ] `drive_profiles/` empaquetados en Electron resources
-- [ ] Modelo `DriveProfile` en TS/Python
-- [ ] Receta: campo `drive_profile_id` + validación
-- [ ] Compare/sync parametrizado (no asumir P0/P1 only a medio plazo)
-- [ ] UI: selector de modelo; nombres de manual en lista de params
+- [x] `drive_profiles/` empaquetados en Electron resources (`MULTI_VDF_DRIVE_PROFILES`)
+- [x] Modelo `DriveProfile` en TS/Python (parcial: catálogo + receta)
+- [x] Receta: campo `drive_profile_id` + validación
+- [x] Compare/sync parametrizado (no asumir P0/P1 only a medio plazo)
+- [x] UI: selector de modelo; nombres de manual en lista de params
 - [ ] Modo técnico: Catalog Builder / import profile
 
 ### Edge firmware

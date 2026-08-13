@@ -249,6 +249,19 @@ cp -f "$DIR/comms/"*.py "$PYAPP/comms/"
 cp -f "$DIR/param_lists/"*.json "$PYAPP/param_lists/"
 cp -f "$DIR/config/connection_profiles.example.json" "$PYAPP/config/"
 
+# Drive profiles (multi-VDF catalogs)
+echo "--- 6a) drive_profiles ---"
+REPO_ROOT="$(cd "$DIR/.." && pwd)"
+DP_DST="$STAGE/resources/drive_profiles"
+rm -rf "$DP_DST"
+if [[ -d "$REPO_ROOT/drive_profiles" ]]; then
+  mkdir -p "$DP_DST"
+  cp -a "$REPO_ROOT/drive_profiles/." "$DP_DST/"
+  echo "drive_profiles: $(find "$DP_DST" -name profile.json | wc -l) profile.json"
+else
+  echo "WARN: $REPO_ROOT/drive_profiles missing"
+fi
+
 # Scripts (Mosquitto setup)
 echo "--- 6b) scripts (Mosquitto) ---"
 mkdir -p "$STAGE/resources/scripts"

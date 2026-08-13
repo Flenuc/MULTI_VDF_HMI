@@ -57,6 +57,15 @@ def _prepare() -> None:
                 os.environ["MULTI_VDF_UI_DIR"] = str(candidate)
                 break
 
+    # Multi-VDF catalogs
+    if not os.environ.get("MULTI_VDF_RESOURCES", "").strip():
+        os.environ["MULTI_VDF_RESOURCES"] = str(RESOURCES)
+    if not os.environ.get("MULTI_VDF_DRIVE_PROFILES", "").strip():
+        for candidate in (RESOURCES / "drive_profiles", ROOT / "drive_profiles"):
+            if candidate.is_dir():
+                os.environ["MULTI_VDF_DRIVE_PROFILES"] = str(candidate)
+                break
+
     os.environ.setdefault("MULTI_VDF_HOST", "127.0.0.1")
     os.environ.setdefault("MULTI_VDF_PORT", "8765")
     os.environ.setdefault("VARIOFIELD_EMBED", "1")

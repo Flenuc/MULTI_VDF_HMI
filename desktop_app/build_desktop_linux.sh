@@ -19,7 +19,18 @@ pip install -q -U pip wheel
 pip install -q -r requirements.txt -r backend/requirements.txt pyinstaller
 
 rm -rf build/pyi
-mkdir -p electron/resources/backend electron/resources/ui
+mkdir -p electron/resources/backend electron/resources/ui electron/resources/drive_profiles
+
+# Multi-VDF catalogs (SAJ PDM/PDH …) next to packaged backend
+REPO_ROOT="$(cd "$DIR/.." && pwd)"
+if [[ -d "$REPO_ROOT/drive_profiles" ]]; then
+  rm -rf electron/resources/drive_profiles
+  mkdir -p electron/resources/drive_profiles
+  cp -a "$REPO_ROOT/drive_profiles/." electron/resources/drive_profiles/
+  echo "drive_profiles: $(find electron/resources/drive_profiles -name profile.json | wc -l) profile.json"
+else
+  echo "WARN: $REPO_ROOT/drive_profiles missing — catalog API will be empty in package"
+fi
 
 pyinstaller --noconfirm --clean \
   --onefile \
@@ -81,6 +92,7 @@ cat > resources/backend/LEEME.txt << EOF
 VarioField backend ${VERSION}
 API + UI en http://127.0.0.1:8765
 Electron define MULTI_VDF_UI_DIR hacia resources/ui
+Electron define MULTI_VDF_DRIVE_PROFILES hacia resources/drive_profiles
 EOF
 
 npx electron-builder --linux AppImage
