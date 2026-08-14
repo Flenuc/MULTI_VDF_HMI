@@ -58,7 +58,7 @@
 
 - **ESP32 clásico** (ACM0 vía Uno sin MCU como USB-serial):
   - Discovery mapa: **P0-ii → 0x00ii**, **P1-ii → 0x01ii**
-  - STA a `REDACTED_SSID` → IP **192.168.203.68** (puede cambiar por DHCP)
+  - STA a `.......` → IP **xxx.xxx.xxx.xxx** (puede cambiar por DHCP)
   - mDNS `saj-pdm30.local` OK en esa red
   - MQTT no se validó end-to-end en la última sesión (falta broker en LAN + firmware MQTT flasheado en la unidad de campo)
 - Dump por Wi‑Fi/WebSocket se truncaba; se corrigió con batch+pace (requiere firmware actual flasheado).
@@ -180,8 +180,8 @@ Telemetría ejemplo:
 
 ### Red de prueba usada
 
-- SSID: `REDACTED_SSID`
-- Password: `********` (también en `desktop_app/config/connection_profiles.json` perfil **ROWA**)
+- SSID: `.......`
+- Password: `..........` (también en `desktop_app/config/connection_profiles.json` perfil **PIPO**)
 - Perfil MQTT de ejemplo: `Local Mosquitto` → `127.0.0.1:1883` (solo útil si broker y app están en la misma máquina; el ESP necesita la **IP LAN del broker**)
 
 ---
@@ -232,8 +232,8 @@ mosquitto_sub -h 127.0.0.1 -t 'saj/pdm30/#' -v
 1. Flashear firmware Edge (board correcta).
 2. Conectar Serial → configurar Wi‑Fi o Ethernet:
    ```text
-   wifi profile save ROWA REDACTED_SSID ********
-   wifi profile use ROWA
+   wifi profile save PIPO .......... ..........
+   wifi profile use ........
    wifi status
    mqtt set <IP_PC_EN_LAN> 1883
    mqtt enable
