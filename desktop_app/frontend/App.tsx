@@ -211,6 +211,12 @@ export default function App() {
   const [recipeFilter, setRecipeFilter] = useState<
     "all" | "diff" | "manual" | "ok"
   >("all");
+  /** Confirm send recipe — Alert.alert multi-button is broken on web/Electron. */
+  const [showSyncConfirm, setShowSyncConfirm] = useState(false);
+  const [syncConfirmMeta, setSyncConfirmMeta] = useState({
+    n: 0,
+    skipped: 0,
+  });
 
   const [showProfiles, setShowProfiles] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -274,6 +280,19 @@ export default function App() {
     lineWaiters.current = keep;
   }, []);
 
+  const clearLineWaiters = useCallback((reason = "cancelled") => {
+    const pending = lineWaiters.current;
+    lineWaiters.current = [];
+    for (const w of pending) {
+      clearTimeout(w.timer);
+      try {
+        w.reject(new Error(reason));
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
   const waitForLine = useCallback(
     (pred: (line: string) => boolean, timeoutMs = 8000): Promise<string> => {
       return new Promise((resolve, reject) => {
@@ -295,7 +314,9 @@ export default function App() {
         if (l.startsWith("OK write")) return true;
         if (l.startsWith("OK op")) return true;
         if (l.startsWith("OK profile=")) return true;
+        if (l.startsWith("profile=")) return true; // profile get
         if (l.startsWith("OK wraw")) return true;
+        if (l.startsWith("stream ON") || l.startsWith("stream OFF")) return true;
         if (l.startsWith("ERR: busy")) return true;
         if (l.startsWith("ERR:")) return true;
         // pget style: "F0.00 @0xF000 = …"
@@ -304,29 +325,44 @@ export default function App() {
         if (l.startsWith("0x") && l.includes("=")) return true;
         return false;
       };
+      // Control-only commands: if WS misses the reply, still succeed after a short settle
+      const isControl =
+        cmd.startsWith("profile ") ||
+        cmd.startsWith("stream ") ||
+        cmd === "help";
       for (let attempt = 0; attempt < 4; attempt++) {
         // Arm waiter BEFORE send to avoid missing fast control-path replies
         const pending = waitForLine(isFinal, timeoutMs);
         try {
           await api.command(cmd);
           pushLog(`→ ${cmd}`);
-          const line = await pending;
-          if (line.startsWith("ERR: busy")) {
-            await sleep(250 + attempt * 150);
-            continue;
+          try {
+            const line = await pending;
+            if (line.startsWith("ERR: busy")) {
+              await sleep(250 + attempt * 150);
+              continue;
+            }
+            // Transient RS485 noise — retry a few times
+            if (
+              line.startsWith("ERR:") &&
+              /crc|timeout|frame|busy/i.test(line)
+            ) {
+              await sleep(300 + attempt * 200);
+              continue;
+            }
+            if (line.startsWith("ERR:")) {
+              throw new Error(line);
+            }
+            return line;
+          } catch (waitErr) {
+            // Control cmds often race with serial prompt; don't block whole sync
+            if (isControl && String(waitErr).includes("timeout")) {
+              pushLog(`(sin eco CLI, continuo) ${cmd}`);
+              await sleep(120);
+              return "OK";
+            }
+            throw waitErr;
           }
-          // Transient RS485 noise — retry a few times
-          if (
-            line.startsWith("ERR:") &&
-            /crc|timeout|frame|busy/i.test(line)
-          ) {
-            await sleep(300 + attempt * 200);
-            continue;
-          }
-          if (line.startsWith("ERR:")) {
-            throw new Error(line);
-          }
-          return line;
         } catch (e) {
           if (attempt >= 3) throw e;
           await sleep(250);
@@ -1080,15 +1116,20 @@ export default function App() {
   const runSync = async () => {
     if (!connected) {
       setAppError(classifyError(new Error("sin conexión")));
+      pushLog("Envío cancelado: sin conexión al equipo.");
       return;
     }
     const items = writable(plist);
     if (!items.length) {
       setAppError(classifyError(new Error("nada enviable"), { context: "sync" }));
+      pushLog("Envío cancelado: no hay parámetros escribibles.");
       return;
     }
     if (!beginOp("Enviar receta")) return;
+    setShowSyncConfirm(false);
     setAppError(null);
+    clearLineWaiters("new sync");
+    pushLog(`Enviando receta (${items.length} parámetros)…`);
     let okN = 0;
     let failN = 0;
     const failIds: string[] = [];
@@ -1102,9 +1143,13 @@ export default function App() {
       ) {
         setPlist((pl) => ({ ...pl, drive_profile_id: prof }));
       }
-      await sendAndAwait(`profile set ${prof}`, 3000);
-      await api.command("stream off");
-      pushLog("→ stream off");
+      await sendAndAwait(`profile set ${prof}`, 2500);
+      try {
+        await sendAndAwait("stream off", 2000);
+      } catch {
+        await api.command("stream off").catch(() => undefined);
+        pushLog("→ stream off");
+      }
       await sleep(80);
       const total = items.length;
       for (let i = 0; i < total; i++) {
@@ -1124,9 +1169,11 @@ export default function App() {
       setHasSynced(true);
       if (failN === 0) {
         endOp(`Receta enviada (${okN} parámetros).`);
+        pushLog(`Listo: ${okN} parámetros enviados.`);
         Alert.alert("Listo", `Se enviaron ${okN} parámetros al variador.`);
       } else {
         endOp(`Enviado con fallos: ${okN} ok, ${failN} error(es).`);
+        pushLog(`Envío parcial: ${okN} ok, ${failN} fallos.`);
         Alert.alert(
           "Envío parcial",
           `${okN} ok, ${failN} fallaron.\n` +
@@ -1142,33 +1189,31 @@ export default function App() {
   };
   runSyncRef.current = runSync;
 
-  /** Sync allowed without compare — soft recommendation dialog */
+  /**
+   * Open confirm dialog then send.
+   * Note: Alert.alert with 2+ buttons does NOT fire onPress on RN Web / Electron —
+   * must use a real Modal.
+   */
   const syncVfd = () => {
     if (!connected) {
       setAppError(classifyError(new Error("sin conexión")));
+      pushLog("Conectá el equipo (pestaña Equipo) antes de enviar.");
+      return;
+    }
+    if (busy) {
+      Alert.alert("Ocupado", `Hay una operación en curso: ${opName}`);
       return;
     }
     const items = writable(plist);
     if (!items.length) {
       setAppError(classifyError(new Error("nada enviable"), { context: "sync" }));
+      pushLog("No hay parámetros para enviar (todos manual o receta vacía).");
       return;
     }
     const skipped = plist.parameters.length - items.length;
-    Alert.alert(t.syncTitle, t.syncBody(items.length, skipped), [
-      { text: t.syncCancel, style: "cancel" },
-      {
-        text: t.syncRecommendCompare,
-        onPress: () => {
-          compareVfd();
-        },
-      },
-      {
-        text: t.syncSendAnyway,
-        onPress: () => {
-          runSync();
-        },
-      },
-    ]);
+    setSyncConfirmMeta({ n: items.length, skipped });
+    setShowSyncConfirm(true);
+    pushLog(`Confirmar envío: ${items.length} parámetro(s)…`);
   };
 
   const compareVfd = async () => {
@@ -1459,7 +1504,8 @@ export default function App() {
         </Text>
         {dev ? (
           <Text style={styles.devHint}>
-            Diagnóstico: {apiBase()} · WS {wsState}
+            Diagnóstico: {apiBase()} · WS {wsState} · build{" "}
+            {BRAND.buildId || BRAND.version}
           </Text>
         ) : null}
 
@@ -2055,25 +2101,43 @@ export default function App() {
             </View>
             <View style={styles.row}>
               <Pressable
-                style={[styles.btnPri, styles.btnLarge, (!connected || busy) && styles.dis]}
+                style={[
+                  styles.btnPri,
+                  styles.btnLarge,
+                  (!connected || busy) && styles.dis,
+                ]}
                 onPress={syncVfd}
-                disabled={!connected || busy}
+                disabled={busy}
+                accessibilityRole="button"
+                accessibilityLabel={t.sendToDrive}
               >
                 <Text style={styles.btnTextLarge}>{t.sendToDrive}</Text>
               </Pressable>
               <Pressable
                 style={[styles.btnPri, (!connected || busy) && styles.dis]}
                 onPress={compareVfd}
-                disabled={!connected || busy}
+                disabled={busy}
               >
                 <Text style={styles.btnText}>{t.compareDrive}</Text>
               </Pressable>
               {busy ? (
-                <Pressable style={styles.btnWarn} onPress={() => endOp("Cancelado")}>
+                <Pressable
+                  style={styles.btnWarn}
+                  onPress={() => {
+                    clearLineWaiters("cancelado por usuario");
+                    endOp("Cancelado");
+                    pushLog("Operación cancelada.");
+                  }}
+                >
                   <Text style={styles.btnText}>{t.cancelOp}</Text>
                 </Pressable>
               ) : null}
             </View>
+            {!connected ? (
+              <Text style={styles.warnText}>
+                Conectá el módulo en «Equipo» para enviar o comparar.
+              </Text>
+            ) : null}
 
             <Text style={styles.muted}>
               {catalogLoading
@@ -2509,6 +2573,55 @@ export default function App() {
           </>
         )}
       </ScrollView>
+
+      {/*
+        Sync confirm as absolute overlay (NOT RN Modal).
+        RN Modal is unreliable in Electron BrowserWindow; web browser was fine,
+        which is why the fix looked "web-only".
+      */}
+      {showSyncConfirm ? (
+        <View
+          style={styles.syncOverlay}
+          pointerEvents="box-none"
+          accessibilityViewIsModal
+        >
+          <View style={styles.syncOverlayBackdrop}>
+            <View style={styles.tutorialCard}>
+              <Text style={styles.tutorialTitle}>{t.syncTitle}</Text>
+              <Text style={styles.tutorialBody}>
+                {t.syncBody(syncConfirmMeta.n, syncConfirmMeta.skipped)}
+              </Text>
+              <Pressable
+                style={[styles.btnPri, styles.btnLarge, { marginTop: 8 }]}
+                onPress={() => {
+                  setShowSyncConfirm(false);
+                  void runSync();
+                }}
+              >
+                <Text style={styles.btnTextLarge}>{t.syncSendAnyway}</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.btnSec, { marginTop: 10 }]}
+                onPress={() => {
+                  setShowSyncConfirm(false);
+                  void compareVfd();
+                }}
+              >
+                <Text style={styles.btnText}>{t.syncRecommendCompare}</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.btnSec, { marginTop: 10 }]}
+                onPress={() => {
+                  setShowSyncConfirm(false);
+                  pushLog("Envío cancelado.");
+                }}
+              >
+                <Text style={styles.btnText}>{t.syncCancel}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      ) : null}
 
       {/* Profiles modal */}
       <Modal visible={showProfiles} animationType="slide" transparent>
@@ -3076,6 +3189,18 @@ const styles = StyleSheet.create({
   modalBg: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.75)",
+    justifyContent: "center",
+    padding: space.lg,
+  },
+  /** Full-window overlay for Electron (position fixed on web) */
+  syncOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10000,
+    elevation: 10000,
+  },
+  syncOverlayBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.82)",
     justifyContent: "center",
     padding: space.lg,
   },
