@@ -13,8 +13,12 @@ const fs = require("fs");
 const fsp = fs.promises;
 
 const HOST = process.env.MULTI_VDF_HOST || "127.0.0.1";
-const PORT = parseInt(process.env.MULTI_VDF_PORT || "8765", 10);
-const HEALTH_URL = `http://${HOST}:${PORT}/health`;
+/** Preferred port; may shift if busy so Electron always owns its backend/UI. */
+let PORT = parseInt(process.env.MULTI_VDF_PORT || "8765", 10);
+
+function healthUrl(port = PORT) {
+  return `http://${HOST}:${port}/health`;
+}
 
 let mainWindow = null;
 let backendProc = null;
@@ -160,6 +164,46 @@ function attachBackendLogs(proc) {
   });
 }
 
+/** True if something already answers HTTP on host:port (any process). */
+function probeHealth(port, timeoutMs = 400) {
+  return new Promise((resolve) => {
+    const req = http.get(healthUrl(port), (res) => {
+      res.resume();
+      resolve(res.statusCode === 200);
+    });
+    req.on("error", () => resolve(false));
+    req.setTimeout(timeoutMs, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
+
+/**
+ * Pick a free port so packaged Electron never attaches to a leftover
+ * `run_backend.sh` / browser session serving another UI tree.
+ */
+async function pickBackendPort() {
+  const preferred = PORT;
+  for (let i = 0; i < 20; i++) {
+    const candidate = preferred + i;
+    const busy = await probeHealth(candidate);
+    if (!busy) {
+      PORT = candidate;
+      if (candidate !== preferred) {
+        logLine(
+          `port ${preferred} ocupado por otro servicio; usando ${candidate} para UI empaquetada`
+        );
+      }
+      return PORT;
+    }
+  }
+  // last resort
+  PORT = preferred + 100 + Math.floor(Math.random() * 500);
+  logLine(`fallback port ${PORT}`);
+  return PORT;
+}
+
 function startBackend() {
   const res = resourcesDir();
   const ui = uiDir();
@@ -167,11 +211,16 @@ function startBackend() {
   logLine(`startBackend resourcesDir=${res}`);
   logLine(`uiDir=${ui} exists=${fs.existsSync(ui)}`);
   logLine(`scriptsDir=${scriptsDir} exists=${fs.existsSync(scriptsDir)}`);
+  logLine(`backend port=${PORT}`);
 
   const driveProfilesDir = path.join(res, "drive_profiles");
   logLine(
     `drive_profilesDir=${driveProfilesDir} exists=${fs.existsSync(driveProfilesDir)}`
   );
+
+  if (!fs.existsSync(ui) || !fs.existsSync(path.join(ui, "index.html"))) {
+    logLine(`WARN: packaged UI missing at ${ui}`);
+  }
 
   const env = {
     ...process.env,
@@ -264,6 +313,7 @@ function startBackend() {
 
 function waitForHealth(timeoutMs = 60000) {
   const start = Date.now();
+  const url = healthUrl(PORT);
   return new Promise((resolve, reject) => {
     const fail = (reason) => {
       const tail = backendLog.trim().slice(-2500);
@@ -278,10 +328,10 @@ function waitForHealth(timeoutMs = 60000) {
       // Fail fast if process already died
       if (!backendProc && !healthReady) {
         return fail(
-          `El proceso del backend se cerró antes de responder (${HEALTH_URL}).`
+          `El proceso del backend se cerró antes de responder (${url}).`
         );
       }
-      const req = http.get(HEALTH_URL, (res) => {
+      const req = http.get(url, (res) => {
         let body = "";
         res.on("data", (c) => (body += c));
         res.on("end", () => {
@@ -300,12 +350,12 @@ function waitForHealth(timeoutMs = 60000) {
     };
     const retry = () => {
       if (Date.now() - start > timeoutMs) {
-        return fail(`Backend no respondió en ${timeoutMs}ms (${HEALTH_URL}).`);
+        return fail(`Backend no respondió en ${timeoutMs}ms (${url}).`);
       }
       // If process died mid-wait, fail with log instead of spinning
       if (!backendProc && !healthReady) {
         return fail(
-          `El proceso del backend se cerró antes de responder (${HEALTH_URL}).`
+          `El proceso del backend se cerró antes de responder (${url}).`
         );
       }
       setTimeout(tryOnce, 400);
@@ -331,10 +381,19 @@ function createWindow() {
   });
 
   mainWindow.once("ready-to-show", () => mainWindow.show());
-  mainWindow.loadURL(`http://${HOST}:${PORT}/`);
 
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+  const url = `http://${HOST}:${PORT}/`;
+  logLine(`loadURL ${url} (UI=${uiDir()})`);
+  // Avoid stale HTML/JS from previous web sessions on same host
+  mainWindow.webContents.session
+    .clearCache()
+    .catch(() => undefined)
+    .finally(() => {
+      mainWindow.loadURL(url);
+    });
+
+  mainWindow.webContents.setWindowOpenHandler(({ url: openUrl }) => {
+    shell.openExternal(openUrl);
     return { action: "deny" };
   });
 
@@ -424,6 +483,8 @@ if (!gotLock) {
           fs.mkdirSync(ui, { recursive: true });
         }
       }
+      // Never reuse a foreign process on 8765 (browser/web backend) — wrong UI
+      await pickBackendPort();
       startBackend();
       await waitForHealth();
       createWindow();
