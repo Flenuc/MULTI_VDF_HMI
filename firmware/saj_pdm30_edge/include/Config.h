@@ -55,7 +55,20 @@ static const uint8_t  MB_SLAVE_ID            = 1;
 // 1200 ms still snappy for field use and avoids false Timeouts under Wi‑Fi load.
 static const uint32_t MB_RESPONSE_TIMEOUT_MS = 1200;
 static const uint32_t MB_INTERFRAME_MS       = 5;
+// After UART TX is fully shifted out (flush), keep DE asserted briefly so the
+// last stop bit leaves the SN75176 before RX. Auto-direction boards (Guition)
+// can use a short settle; external DE (esp32dev) needs more margin under Wi‑Fi/BT.
+#if defined(RS485_AUTO_DIRECTION) && RS485_AUTO_DIRECTION
 static const uint32_t MB_POST_TX_GUARD_MS    = 2;
+#else
+static const uint32_t MB_POST_TX_GUARD_MS    = 8;
+#endif
+// Extra quiet time after DE→RX before accepting first RX byte (echo drain).
+#if defined(RS485_AUTO_DIRECTION) && RS485_AUTO_DIRECTION
+static const uint32_t MB_POST_RX_SETTLE_MS   = 0;
+#else
+static const uint32_t MB_POST_RX_SETTLE_MS   = 2;
+#endif
 
 static inline uint32_t mbFrameDurationMs(size_t nbytes) {
   return (uint32_t)((nbytes * 11UL * 1000UL + RS485_BAUD - 1) / RS485_BAUD) + 1UL;

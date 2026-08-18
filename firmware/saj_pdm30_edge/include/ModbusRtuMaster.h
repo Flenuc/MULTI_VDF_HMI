@@ -67,6 +67,7 @@ public:
     _txBuf[_txLen++] = qty;
     appendCrc(_txBuf, _txLen);
     _txLen += 2;
+    _retriesLeft = 2;  // CRC/echo noise common on DevKit+WiFi/BT
     startTx();
     return true;
   }
@@ -90,6 +91,7 @@ public:
     _txBuf[_txLen++] = (uint8_t)(value & 0xFF);
     appendCrc(_txBuf, _txLen);
     _txLen += 2;
+    _retriesLeft = 2;
     startTx();
     return true;
   }
@@ -100,12 +102,26 @@ public:
       case State::Idle:
         break;
       case State::TxWaitEnd:
+        // DE still HIGH until guard elapses (after uart.flush in startTx).
         if ((int32_t)(now - _txEndAt) >= 0) {
           _bus.setTransmit(false);
           while (_bus.uart().available()) (void)_bus.uart().read();
           _rxLen = 0;
           _tFirstByte = 0;
           _tLastByte = 0;
+          if (MB_POST_RX_SETTLE_MS > 0) {
+            _txEndAt = now + MB_POST_RX_SETTLE_MS;
+            _state = State::RxSettle;
+          } else {
+            _deadline = now + MB_RESPONSE_TIMEOUT_MS;
+            _state = State::WaitRx;
+          }
+        }
+        break;
+      case State::RxSettle:
+        // Discard line echo / ringing after DE→RX on external SN75176B.
+        while (_bus.uart().available()) (void)_bus.uart().read();
+        if ((int32_t)(now - _txEndAt) >= 0) {
           _deadline = now + MB_RESPONSE_TIMEOUT_MS;
           _state = State::WaitRx;
         }
@@ -144,7 +160,7 @@ public:
 
 private:
   static const uint8_t kMaxQty = 12;
-  enum class State : uint8_t { Idle, TxWaitEnd, WaitRx };
+  enum class State : uint8_t { Idle, TxWaitEnd, RxSettle, WaitRx };
 
   HwRs485 &_bus;
   State    _state = State::Idle;
@@ -164,6 +180,7 @@ private:
   uint32_t _deadline = 0;
   uint32_t _tFirstByte = 0;
   uint32_t _tLastByte = 0;
+  uint8_t  _retriesLeft = 0;
 
   void appendCrc(uint8_t *buf, size_t lenWithoutCrc) {
     uint16_t c = crc16(buf, lenWithoutCrc);
@@ -177,7 +194,11 @@ private:
     while (_bus.uart().available()) (void)_bus.uart().read();
     _bus.setTransmit(true);
     _bus.uart().write(_txBuf, _txLen);
-    _txEndAt = millis() + mbFrameDurationMs(_txLen) + MB_POST_TX_GUARD_MS;
+    // Critical on ESP32 DevKit + SN75176B: wait until shift register empty
+    // before dropping DE. Frame-duration estimates alone race Wi‑Fi/BT IRQs
+    // and leave echo/partial frames → CRC errors (Guition auto-DE is fine).
+    _bus.uart().flush();
+    _txEndAt = millis() + MB_POST_TX_GUARD_MS;
     _state = State::TxWaitEnd;
   }
 
@@ -200,6 +221,11 @@ private:
     const uint16_t rxCrc =
         (uint16_t)_rxBuf[_rxLen - 2] | ((uint16_t)_rxBuf[_rxLen - 1] << 8);
     if (rxCrc != crc16(_rxBuf, _rxLen - 2)) {
+      if (_retriesLeft > 0) {
+        _retriesLeft--;
+        startTx();  // resend same frame after DE turnaround fix
+        return;
+      }
       complete(MbResult::CrcError);
       return;
     }
