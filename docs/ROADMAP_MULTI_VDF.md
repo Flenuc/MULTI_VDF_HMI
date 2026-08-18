@@ -253,9 +253,10 @@ Fuentes: `Auritorias recibidas/*.md`. Gate: no abrir Catalog Builder hasta A–C
 - [x] `docs/SECURITY.md` + `docs/PROTOCOL.md`
 - [x] Mosquitto setup con auth+ACL por defecto (`VARIOFIELD_MQTT_ANON=1` solo lab)
 - [x] CI gitleaks (`.github/workflows/secret-scan.yml`)
-- [ ] Purga historial git de secretos (`BombasROWA…` / `REDACTED_SSID`) + force push coordinado
-- [ ] Activar GitHub secret scanning / push protection en settings del repo
-- [ ] Re-aplicar Mosquitto en PCs de planta + `mqtt user` en Edges
+- [x] Purga historial git de secretos + force push (`main` reescrito 2026-08-18)
+- [x] Activar GitHub secret scanning / push protection (confirmado por equipo)
+- [x] Mosquitto auth+ACL en broker lab (este PC); `open-lan.conf` deshabilitado
+- [ ] `mqtt user` en Edges (NVS) — pendiente: módulos offline al aplicar; ver `docs/SECURITY.md`
 - [ ] (Deuda) SoftAP password por dispositivo; roles CLI en firmware; TLS 8883
 
 ### Fase M2 — Herramienta de extracción (Catalog Builder) (1–2 semanas)
