@@ -56,18 +56,22 @@ static const uint8_t  MB_SLAVE_ID            = 1;
 static const uint32_t MB_RESPONSE_TIMEOUT_MS = 1200;
 static const uint32_t MB_INTERFRAME_MS       = 5;
 // After UART TX is fully shifted out (flush), keep DE asserted briefly so the
-// last stop bit leaves the SN75176 before RX. Auto-direction boards (Guition)
-// can use a short settle; external DE (esp32dev) needs more margin under Wi‑Fi/BT.
+// last stop bit leaves the SN75176 before RX.
+// DevKit: keep this SHORT (1 ms). Longer guards (e.g. 8 ms) hold DE=TX while the
+// PDH already replies → master sees Timeout. Proven arduino/saj_pdm30_* used
+// ~frameDuration+2 ms from write start or ~100 µs post-TX; with flush(), 1 ms is enough.
+// Guition auto-DE: small guard is harmless.
 #if defined(RS485_AUTO_DIRECTION) && RS485_AUTO_DIRECTION
 static const uint32_t MB_POST_TX_GUARD_MS    = 2;
 #else
-static const uint32_t MB_POST_TX_GUARD_MS    = 8;
+static const uint32_t MB_POST_TX_GUARD_MS    = 1;
 #endif
 // Extra quiet time after DE→RX before accepting first RX byte (echo drain).
+// DevKit default 0: a non-zero settle can discard the start of a fast slave reply.
 #if defined(RS485_AUTO_DIRECTION) && RS485_AUTO_DIRECTION
 static const uint32_t MB_POST_RX_SETTLE_MS   = 0;
 #else
-static const uint32_t MB_POST_RX_SETTLE_MS   = 2;
+static const uint32_t MB_POST_RX_SETTLE_MS   = 0;
 #endif
 
 static inline uint32_t mbFrameDurationMs(size_t nbytes) {
@@ -89,9 +93,13 @@ static const uint16_t REG_OUT_VOLTAGE  = 0x1003;
 static const uint16_t REG_OUT_CURRENT  = 0x1004;
 // 0x100F "setting pressure" on this unit does NOT match P0-00 (shows ~642 bar).
 // Use P0-00 (0x0000) for consigna; 0x1010 feedback 0.1 bar for transducer.
+// PDH monitor D0.15 "PID setting" (0.1 bar) — display/monitor, not plant write path.
 static const uint16_t REG_SET_PRESS    = 0x100F;
-static const uint16_t REG_FB_PRESS     = 0x1010;
+static const uint16_t REG_FB_PRESS     = 0x1010;  // D0.16 / family feedback 0.1 bar
+// Plant pressure setpoint (write + telemetry pset):
+//   PDM → P0-00 @ 0x0000 ;  PDH → F0.00 @ 0xF000
 static const uint16_t REG_P0_00_SET_P  = 0x0000;
+static const uint16_t REG_PDH_F0_00_SET_P = 0xF000;
 static const uint16_t REG_CTRL_CMD     = 0x2000;
 static const uint16_t REG_VFD_STATUS   = 0x3000;
 
@@ -126,6 +134,10 @@ static const uint32_t WIFI_MDNS_REFRESH_MS        = 10000;
 #define WIFI_PROFILE_NAME_MAX 20
 #define WIFI_SSID_MAX        32
 #define WIFI_PASS_MAX        64
+
+// Active drive profile (saj.pdm30 / saj.pdh30) — survives reboot
+#define DRIVE_NVS_NAMESPACE  "drv"
+#define DRIVE_NVS_KEY_ID     "profile"
 
 // ---------------------------------------------------------------------------
 // MQTT (preferred multiplatform link — no WebSocket)

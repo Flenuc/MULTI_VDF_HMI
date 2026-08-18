@@ -28,6 +28,8 @@ void CliEngine::printHelp(const Channel &ch) {
   replyf(ch, "raw <addr> | wraw <addr> <uint>   e.g. raw 0xF000");
   replyf(ch, "start | stop | estop | reset | set <pct>");
   replyf(ch, "slave <id>   values ENGINEERING floats");
+  replyf(ch, "rs485 status | rs485 de normal|invert | rs485 swaptrx");
+  replyf(ch, "rs485 guard <0..20> | rs485 settle <0..10>");
   replyf(ch, "wifi status | wifi set <ssid> <pass> | wifi reconnect");
   replyf(ch, "wifi profile list|save <name> <ssid> <pass>|use <name>|delete <name>");
   replyf(ch, "mqtt status | mqtt set <host> [port] | mqtt user <u> <p>");
@@ -99,7 +101,7 @@ static bool isControlOnlyCmd(int argc, char **argv) {
   if (strcmp(cmd, "mqtt") == 0) return true;   // status/set/user/enable/disable
   if (strcmp(cmd, "bt") == 0) return true;     // status/advertise/clearbonds
   if (strcmp(cmd, "profile") == 0) return true; // drive profile get/set (no Modbus)
-  if (strcmp(cmd, "profile") == 0) return true;
+  if (strcmp(cmd, "rs485") == 0) return true;  // DE polarity / pin swap (no Modbus)
   if (strcmp(cmd, "slave") == 0 && argc < 2) return true;  // query only
   return false;
 }
@@ -351,7 +353,11 @@ void CliEngine::dispatch(const Channel &ch, int argc, char **argv) {
         replyf(ch, "ERR: profile set saj.pdm30|saj.pdh30");
         return;
       }
-      replyf(ch, "OK profile=%s", g_driveProfile.idStr());
+      if (!g_driveProfile.save()) {
+        replyf(ch, "OK profile=%s (WARN: NVS save failed)", g_driveProfile.idStr());
+        return;
+      }
+      replyf(ch, "OK profile=%s (saved)", g_driveProfile.idStr());
       return;
     }
     if (strcmp(argv[1], "list") == 0) {
@@ -359,6 +365,67 @@ void CliEngine::dispatch(const Channel &ch, int argc, char **argv) {
       return;
     }
     replyf(ch, "usage: profile get|list|set <id>");
+    return;
+  }
+
+  // RS485 field diagnosis (DevKit SN75176 DE polarity / TX-RX swap / turnaround)
+  if (strcmp(cmd, "rs485") == 0) {
+    HwRs485 &bus = _mb.bus();
+    if (argc < 2 || strcmp(argv[1], "status") == 0 || strcmp(argv[1], "get") == 0) {
+      replyf(ch,
+             "rs485 tx=%d rx=%d de=%d auto=%d de_active_high=%d baud=%lu "
+             "guard_ms=%lu settle_ms=%lu",
+             bus.txPin(), bus.rxPin(), bus.dePin(), (int)bus.autoDirection(),
+             (int)bus.deActiveHigh(), (unsigned long)RS485_BAUD,
+             (unsigned long)_mb.postTxGuardMs(),
+             (unsigned long)_mb.postRxSettleMs());
+      return;
+    }
+    if (strcmp(argv[1], "de") == 0 && argc >= 3) {
+      if (bus.autoDirection() || bus.dePin() < 0) {
+        replyf(ch, "ERR: DE not software-controlled on this board");
+        return;
+      }
+      if (strcmp(argv[2], "invert") == 0 || strcmp(argv[2], "inv") == 0 ||
+          strcmp(argv[2], "low") == 0 || strcmp(argv[2], "0") == 0) {
+        bus.setDeActiveHigh(false);
+        replyf(ch, "OK rs485 de_active_high=0 (TX when DE=LOW) — retry ping");
+        return;
+      }
+      if (strcmp(argv[2], "normal") == 0 || strcmp(argv[2], "high") == 0 ||
+          strcmp(argv[2], "1") == 0) {
+        bus.setDeActiveHigh(true);
+        replyf(ch, "OK rs485 de_active_high=1 (TX when DE=HIGH) — retry ping");
+        return;
+      }
+      replyf(ch, "usage: rs485 de normal|invert");
+      return;
+    }
+    if (strcmp(argv[1], "swaptrx") == 0 || strcmp(argv[1], "swap") == 0) {
+      int ntx = bus.rxPin();
+      int nrx = bus.txPin();
+      bus.rebegin(ntx, nrx);
+      replyf(ch, "OK rs485 swapped tx=%d rx=%d — retry ping", ntx, nrx);
+      return;
+    }
+    if (strcmp(argv[1], "guard") == 0 && argc >= 3) {
+      int v = atoi(argv[2]);
+      if (v < 0) v = 0;
+      _mb.setPostTxGuardMs((uint32_t)v);
+      replyf(ch, "OK rs485 guard_ms=%lu — retry ping",
+             (unsigned long)_mb.postTxGuardMs());
+      return;
+    }
+    if (strcmp(argv[1], "settle") == 0 && argc >= 3) {
+      int v = atoi(argv[2]);
+      if (v < 0) v = 0;
+      _mb.setPostRxSettleMs((uint32_t)v);
+      replyf(ch, "OK rs485 settle_ms=%lu — retry ping",
+             (unsigned long)_mb.postRxSettleMs());
+      return;
+    }
+    replyf(ch,
+           "usage: rs485 status|de normal|de invert|swaptrx|guard <0..20>|settle <0..10>");
     return;
   }
 
@@ -738,7 +805,8 @@ void CliEngine::pollJob() {
   if (_job == Job::WaitRead) {
     MbResult r = _mb.lastResult();
     if (r != MbResult::Ok) {
-      replyf(_jobCh, "ERR: %s", _mb.resultStr());
+      replyf(_jobCh, "ERR: %s rx_len=%u", _mb.resultStr(),
+             (unsigned)_mb.lastRxLen());
     } else if (_ctxIsPdhId) {
       uint16_t raw = _mb.lastValue();
       float eng = rawToEngScaled(raw, _ctxScale);
@@ -762,7 +830,8 @@ void CliEngine::pollJob() {
   if (_job == Job::WaitWrite) {
     MbResult r = _mb.lastResult();
     if (r != MbResult::Ok) {
-      replyf(_jobCh, "ERR: %s", _mb.resultStr());
+      replyf(_jobCh, "ERR: %s rx_len=%u", _mb.resultStr(),
+             (unsigned)_mb.lastRxLen());
     } else if (_ctxIsPdhId) {
       uint16_t raw = engToRawScaled(_ctxEng, _ctxScale);
       replyf(_jobCh, "OK write %s @0x%04X eng=%.4g raw=%u",
@@ -782,7 +851,8 @@ void CliEngine::pollJob() {
   if (_job == Job::WaitOp) {
     MbResult r = _mb.lastResult();
     if (r != MbResult::Ok) {
-      replyf(_jobCh, "ERR: %s", _mb.resultStr());
+      replyf(_jobCh, "ERR: %s rx_len=%u", _mb.resultStr(),
+             (unsigned)_mb.lastRxLen());
     } else {
       replyf(_jobCh, "OK op raw=%u", (unsigned)_mb.lastValue());
     }
@@ -810,7 +880,8 @@ void CliEngine::pollJob() {
     }
     _dumpAwaiting = false;
     if (_mb.lastResult() != MbResult::Ok) {
-      replyf(_jobCh, "PING FAIL step %u: %s", _pingStep, _mb.resultStr());
+      replyf(_jobCh, "PING FAIL step %u: %s rx_len=%u", _pingStep,
+             _mb.resultStr(), (unsigned)_mb.lastRxLen());
       _job = Job::None;
       restoreStreamIfNeeded();
       return;

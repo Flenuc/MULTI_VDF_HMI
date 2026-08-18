@@ -1,6 +1,7 @@
 # Drive profiles (multi-VDF)
 
-Catálogos de variador para VarioField. Ver roadmap: `docs/ROADMAP_MULTI_VDF.md`.
+Catálogos de variador para VarioField. Ver roadmap: `docs/ROADMAP_MULTI_VDF.md`.  
+Diferencias PDM vs PDH (presión, mapas, transports): `docs/PDH_VS_PDM.md`.
 
 ## Estado
 

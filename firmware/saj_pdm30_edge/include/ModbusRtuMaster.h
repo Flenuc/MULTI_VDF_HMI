@@ -25,7 +25,11 @@ public:
   void begin() {
     _state = State::Idle;
     _result = MbResult::Idle;
+    _postTxGuardMs = MB_POST_TX_GUARD_MS;
+    _postRxSettleMs = MB_POST_RX_SETTLE_MS;
   }
+
+  HwRs485 &bus() { return _bus; }
 
   bool isBusy() const { return _state != State::Idle; }
   MbResult lastResult() const { return _result; }
@@ -33,6 +37,23 @@ public:
   uint16_t lastValue() const { return _value; }
   uint8_t  lastQty() const { return _qty; }
   const uint16_t *lastValues() const { return _values; }
+  /** Bytes captured in the last completed (or timed-out) RX attempt. */
+  size_t lastRxLen() const { return _lastRxLen; }
+
+  uint32_t postTxGuardMs() const { return _postTxGuardMs; }
+  uint32_t postRxSettleMs() const { return _postRxSettleMs; }
+
+  /** Field tune: ms to hold DE after uart.flush() before RX (0..20). */
+  void setPostTxGuardMs(uint32_t ms) {
+    if (ms > 20) ms = 20;
+    _postTxGuardMs = ms;
+  }
+
+  /** Field tune: ms to discard RX after DE→RX (0..10). */
+  void setPostRxSettleMs(uint32_t ms) {
+    if (ms > 10) ms = 10;
+    _postRxSettleMs = ms;
+  }
 
   const char *resultStr() const {
     switch (_result) {
@@ -102,15 +123,15 @@ public:
       case State::Idle:
         break;
       case State::TxWaitEnd:
-        // DE still HIGH until guard elapses (after uart.flush in startTx).
+        // DE still asserted until guard elapses (after uart.flush in startTx).
         if ((int32_t)(now - _txEndAt) >= 0) {
           _bus.setTransmit(false);
           while (_bus.uart().available()) (void)_bus.uart().read();
           _rxLen = 0;
           _tFirstByte = 0;
           _tLastByte = 0;
-          if (MB_POST_RX_SETTLE_MS > 0) {
-            _txEndAt = now + MB_POST_RX_SETTLE_MS;
+          if (_postRxSettleMs > 0) {
+            _txEndAt = now + _postRxSettleMs;
             _state = State::RxSettle;
           } else {
             _deadline = now + MB_RESPONSE_TIMEOUT_MS;
@@ -176,11 +197,14 @@ private:
   size_t   _txLen = 0;
   uint8_t  _rxBuf[5 + kMaxQty * 2 + 2];
   size_t   _rxLen = 0;
+  size_t   _lastRxLen = 0;
   uint32_t _txEndAt = 0;
   uint32_t _deadline = 0;
   uint32_t _tFirstByte = 0;
   uint32_t _tLastByte = 0;
   uint8_t  _retriesLeft = 0;
+  uint32_t _postTxGuardMs = MB_POST_TX_GUARD_MS;
+  uint32_t _postRxSettleMs = MB_POST_RX_SETTLE_MS;
 
   void appendCrc(uint8_t *buf, size_t lenWithoutCrc) {
     uint16_t c = crc16(buf, lenWithoutCrc);
@@ -191,14 +215,14 @@ private:
   void startTx() {
     _result = MbResult::Busy;
     _exception = 0;
+    _lastRxLen = 0;
     while (_bus.uart().available()) (void)_bus.uart().read();
     _bus.setTransmit(true);
     _bus.uart().write(_txBuf, _txLen);
-    // Critical on ESP32 DevKit + SN75176B: wait until shift register empty
-    // before dropping DE. Frame-duration estimates alone race Wi‑Fi/BT IRQs
-    // and leave echo/partial frames → CRC errors (Guition auto-DE is fine).
+    // Wait until shift register empty before dropping DE. Then apply a short
+    // post-TX guard (runtime-tunable). Long guards eat the slave reply.
     _bus.uart().flush();
-    _txEndAt = millis() + MB_POST_TX_GUARD_MS;
+    _txEndAt = millis() + _postTxGuardMs;
     _state = State::TxWaitEnd;
   }
 
@@ -214,6 +238,7 @@ private:
   }
 
   void finishRx() {
+    _lastRxLen = _rxLen;
     if (_rxLen < 5) {
       complete(MbResult::Timeout);
       return;
@@ -223,7 +248,7 @@ private:
     if (rxCrc != crc16(_rxBuf, _rxLen - 2)) {
       if (_retriesLeft > 0) {
         _retriesLeft--;
-        startTx();  // resend same frame after DE turnaround fix
+        startTx();
         return;
       }
       complete(MbResult::CrcError);
@@ -269,6 +294,7 @@ private:
   }
 
   void complete(MbResult r) {
+    _lastRxLen = _rxLen;
     _result = r;
     _state = State::Idle;
     _op = MbOp::None;

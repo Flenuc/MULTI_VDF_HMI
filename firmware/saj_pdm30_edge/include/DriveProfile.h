@@ -2,6 +2,8 @@
  * Active VFD drive profile (multi-VDF).
  * saj.pdm30 — field-proven P0/P1 group_direct
  * saj.pdh30 — F0–F9 / FD / FE / D0 / E0 F-style (+ special regs)
+ *
+ * Persisted in NVS (Preferences) so headless MQTT/BT edges keep PDH after reboot.
  */
 #pragma once
 
@@ -46,6 +48,11 @@ inline uint16_t pdhFAddress(uint8_t fGroup /*0-9*/, uint8_t index) {
 
 class DriveProfileStore {
 public:
+  /** Load profile id from NVS (default saj.pdm30 if missing/invalid). */
+  void begin();
+  void load();
+  bool save() const;
+
   DriveProfileId id() const { return _id; }
   const char *idStr() const { return driveProfileIdStr(_id); }
 

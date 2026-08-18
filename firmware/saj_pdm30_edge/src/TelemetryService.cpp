@@ -1,4 +1,6 @@
 #include "TelemetryService.h"
+#include "DriveProfile.h"
+#include "Config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -13,7 +15,7 @@ const char *TelemetryService::statusName(uint16_t s) {
 
 void TelemetryService::emitJson() {
   // Fixed buffer only — no Arduino String
-  // pset = consigna (P0-00), pfb = presión real (0x1010)
+  // pset = consigna (PDM P0-00 / PDH F0.00), pfb = feedback 0x1010
   snprintf(
       _json, sizeof(_json),
       "{\"freq\":%.2f,\"amp\":%.2f,\"vdc\":%.1f,\"vout\":%.0f,"
@@ -131,8 +133,11 @@ void TelemetryService::poll(bool cliIdle) {
       float p = raw / 10.0f;
       _pfb = (p >= 0.0f && p <= 200.0f) ? p : 0.0f;
     }
-    // Set pressure from P0-00, eng scale 0.1 bar — matches r0 0 (not 0x100F)
-    if (!_vfd.requestReadHolding(REG_P0_00_SET_P, 1)) {
+    // Plant setpoint: PDM P0-00 @ 0x0000 ; PDH F0.00 @ 0xF000 (0.1 bar).
+    // Do not use 0x100F here (PDH D0.15 PID monitor / bad on field PDM).
+    const uint16_t setReg =
+        g_driveProfile.isPdh() ? REG_PDH_F0_00_SET_P : REG_P0_00_SET_P;
+    if (!_vfd.requestReadHolding(setReg, 1)) {
       emitJson();
       _phase = Phase::Idle;
       _nextAt = now + TELEMETRY_PERIOD_MS;

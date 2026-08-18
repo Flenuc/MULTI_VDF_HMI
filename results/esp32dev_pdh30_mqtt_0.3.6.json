@@ -1,0 +1,28 @@
+{
+  "firmware": "0.3.6",
+  "conclusion": "RS485 DE turnaround fix VALIDATED over WiFi/MQTT; USB CDC silent on Pi and Windows",
+  "mqtt": {
+    "broker": "192.168.203.62",
+    "topic_base": "saj/pdm30/saj-pdm30",
+    "rs485_status": "tx=14 rx=25 de=27 guard_ms=1 settle_ms=0",
+    "ping": "Link OK",
+    "pget_F0.00": "2.0",
+    "raw_0x3000": 3,
+    "plant_pget_F0.00_to_F0.09": "10/10 OK"
+  },
+  "usb": {
+    "port": "/dev/ttyACM0",
+    "vid_pid": "2341:0043 Arduino",
+    "status": "silent 0 bytes RX",
+    "windows_monitor": "also silent (user confirmed)",
+    "note": "Flash path may still work (download); app Serial CLI broken \u2014 use WiFi/BT"
+  },
+  "summary": {
+    "modbus_ok": true,
+    "usb_cli_ok": false,
+    "recommended_transport": [
+      "wifi_mqtt",
+      "bt_spp"
+    ]
+  }
+}
