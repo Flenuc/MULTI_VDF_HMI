@@ -47,11 +47,14 @@ cd desktop_app && python run_flasher.py
 Repo público de releases: **https://github.com/Flenuc/MULTI_VDF_HMI**  
 CI: tag `v*` → workflow `.github/workflows/release-firmware.yml` publica el zip.
 
-### Git / secretos
+### Git / secretos / protocolo
 
 - `desktop_app/config/connection_profiles.json` está en **`.gitignore`** (Wi‑Fi/MQTT reales).
 - Usá `connection_profiles.example.json` como plantilla.
 - Builds PlatformIO (`.pio/`), `dist/` y venvs no se suben.
+- Seguridad planta/lab: **`docs/SECURITY.md`** (MQTT auth, SoftAP, fail-safe).
+- Contrato CLI/MQTT: **`docs/PROTOCOL.md`**.
+- CI: `.github/workflows/secret-scan.yml` (gitleaks).
 
 ---
 

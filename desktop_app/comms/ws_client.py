@@ -1,4 +1,8 @@
-"""WebSocket transport to ESP32 Edge (ws://saj-pdm30.local/ws)."""
+"""LEGACY — WebSocket transport (abandoned; dump saturation / multiplatform friction).
+
+Do not use for new clients. Prefer MQTT (docs/PROTOCOL.md). Kept only for
+reference; may move to desktop_app/legacy/.
+"""
 
 from __future__ import annotations
 

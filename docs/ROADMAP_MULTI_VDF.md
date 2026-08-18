@@ -1,7 +1,7 @@
 # Roadmap multi-VDF — VarioField / MULTI_VDF_HMI
 
-**Fecha:** 2026-08-13  
-**Estado base:** VarioField **0.3.3** operativo (app desktop + Edge ESP32 + SAJ **PDM-30** en campo)  
+**Fecha:** 2026-08-13 (act. 2026-08-18)  
+**Estado base:** VarioField **0.3.3+** operativo; Edge FW **0.3.7** (PDH M1 cerrado: NVS profile + telemetría pset profile-aware)  
 **Objetivo:** escalar de un stack *dedicado PDM-30* a una plataforma **multi-variador** con la misma lógica de receta → comparar → modificar, y una herramienta para **extraer / catalogar parámetros** de cada modelo.
 
 ---
@@ -192,8 +192,8 @@ Manual / dump → extractores → borrador profile
 - [x] Añadir `drive_profile_id: "saj.pdm30"` a recetas (default si falta) + `models.ParameterList`
 - [x] Loader `drive_profiles/` + README
 - [x] Spike tool RS485: `tools/spike_pdh30_map.py` (raw CLI / schemes)
-- [ ] App: selector de modelo (solo PDM-30 visible en operario; más en técnico)
-- [ ] Edge: leer profile id por CLI `profile get` (hardcoded `saj.pdm30` al inicio)
+- [x] App: selector de modelo (Conectar + Recetas; catálogo PDM/PDH)
+- [x] Edge: CLI `profile get|set|list` (+ NVS persist ≥0.3.7)
 - [x] Tests: models + receta PDH por ID + dump CSV F-style (`desktop_app/tests/test_logic.py`)
 
 **Criterio de salida:** con profile explícito, un banco PDM-30 se comporta igual que hoy.
@@ -213,10 +213,11 @@ Manual / dump → extractores → borrador profile
    - [x] Confirmar scheme ganador (esperado: `f_style`) — mapa catálogo 148/150 OK
    - [x] Parser del manual `docs/PDH30_User_Manual.txt` (tablas F0.xx / registros)
    - [x] Escalas y unidades por parámetro (en profile + tabla FW)
-   - [ ] Telemetría y comandos marcha/paro validados en banco (ping OK; set-pressure profile-aware pendiente)
+   - [x] Telemetría y comandos marcha/paro en banco (`ping` Link OK Guition+DevKit MQTT/BT)
+   - [x] Set-pressure profile-aware en stream (`pset`: PDM `0x0000` / PDH `0xF000`, FW ≥0.3.7)
 
 2. **Firmware**
-   - [x] `profile set saj.pdh30` / `profile get|list` (autodetect opcional pendiente)
+   - [x] `profile set saj.pdh30` / `profile get|list` + NVS save (autodetect opcional pendiente)
    - [x] Driver reutilizando motor Modbus; catálogo `Pdh30ParamTable.h` + scale por ID
    - [x] CLI: `pget`/`pset`/`wraw` + `dump` profile-aware (PDM chunks / PDH catalog)
 
@@ -236,15 +237,30 @@ Manual / dump → extractores → borrador profile
      - compare: dump profile-aware; mismatch solo en params escribibles
      - sync: `pset <id>` con espera OK write + reintento CRC/busy
      - resultado: **61/62 writes OK**, readback F0.00/01/07 OK
-   - [ ] Documentar diferencias PDH vs PDM (presión, PID, límites)
+   - [x] Documentar diferencias PDH vs PDM → `docs/PDH_VS_PDM.md`
+   - [x] DevKit RS485 turnaround (FW 0.3.6+) + validación MQTT plant pget
 
-**Criterio de salida:** receta de planta en PDH-30 se compara y envía sin tocar código CTk legacy.
+**Criterio de salida:** receta de planta en PDH-30 se compara y envía sin tocar código CTk legacy. **M1 cerrado** para Guition + DevKit (WiFi/BT; USB CDC DevKit aparte).
 
 **Riesgo principal:** diferencias sutiles PDM↔PDH en direcciones o escalas pese a “misma familia”. Mitigación: discovery en vivo + fingerprint.
 
 ---
 
-### Fase M2 — Herramienta de extracción (Catalog Builder) (1–2 semanas, en paralelo a M1)
+### Sprint seguridad (auditorías) — **antes de M2**
+
+Fuentes: `Auritorias recibidas/*.md`. Gate: no abrir Catalog Builder hasta A–C.
+
+- [x] `docs/SECURITY.md` + `docs/PROTOCOL.md`
+- [x] Mosquitto setup con auth+ACL por defecto (`VARIOFIELD_MQTT_ANON=1` solo lab)
+- [x] CI gitleaks (`.github/workflows/secret-scan.yml`)
+- [ ] Purga historial git de secretos (`BombasROWA…` / `REDACTED_SSID`) + force push coordinado
+- [ ] Activar GitHub secret scanning / push protection en settings del repo
+- [ ] Re-aplicar Mosquitto en PCs de planta + `mqtt user` en Edges
+- [ ] (Deuda) SoftAP password por dispositivo; roles CLI en firmware; TLS 8883
+
+### Fase M2 — Herramienta de extracción (Catalog Builder) (1–2 semanas)
+
+**Bloqueado** hasta cerrar sprint seguridad (mínimo: secretos + MQTT no anónimo + PROTOCOL).
 
 **Objetivo:** industrializar la creación de perfiles para PD-20, 8200B y terceros.
 
@@ -334,8 +350,8 @@ Esfuerzo orientativo total: **~10–14 semanas** con 1 dev full-stack embebido+a
 
 ### Edge firmware
 - [ ] Registry de drivers (`IVfdDriver`: read/write param, telemetry, command)
-- [ ] `SajPdm30Driver` (actual) + `SajPdh30Driver` (mapa F)
-- [ ] Persistencia NVS del profile activo
+- [x] Profile-aware dump/pget/pset + telemetría pset (PDM/PDH) — sin registry formal aún
+- [x] Persistencia NVS del profile activo (FW ≥0.3.7)
 - [ ] MQTT topic root derivado del profile (o genérico `variofield/<edge_id>/…`)
 
 ### Tools

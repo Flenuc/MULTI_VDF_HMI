@@ -12,19 +12,19 @@
       "name": "Local Mosquitto",
       "host": "127.0.0.1",
       "port": 1883,
-      "username": "",
-      "password": "",
+      "username": "variofield",
+      "password": "TU_MQTT_PASSWORD",
       "topic_prefix": "saj/pdm30/saj-pdm30",
-      "notes": "App→broker en este PC. En el Edge: mqtt set <IP_LAN_PC> 1883"
+      "notes": "Auth por defecto (setup_mosquitto.sh). Edge: mqtt set <IP> 1883 + mqtt user …"
     },
     {
       "name": "LAN broker",
       "host": "192.168.1.10",
       "port": 1883,
-      "username": "",
-      "password": "",
+      "username": "variofield",
+      "password": "TU_MQTT_PASSWORD",
       "topic_prefix": "saj/pdm30/saj-pdm30",
-      "notes": "Ajustá la IP del PC/servidor con Mosquitto"
+      "notes": "Ajustá IP del broker. No dejes username/password vacíos en planta."
     }
   ],
   "last_mode": "MQTT",

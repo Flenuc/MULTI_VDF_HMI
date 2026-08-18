@@ -1,6 +1,11 @@
-# SAJ Edge Configurator
+# SAJ Edge Configurator / VarioField desktop
 
-Aplicación de escritorio para el VDF **SAJ PDM-30** vía ESP32 Edge.
+Aplicación de escritorio para VDF SAJ (PDM-30 / PDH-30) vía ESP32 Edge.
+
+**Cliente principal a futuro:** frontend React Native (Expo) + backend FastAPI en este árbol.  
+**CustomTkinter** (si está presente) queda en **modo mantenimiento / debug**, no es el foco de features nuevas.
+
+Contrato de protocolo: `docs/PROTOCOL.md`. Seguridad / MQTT: `docs/SECURITY.md`.
 
 ## Enlaces soportados
 
