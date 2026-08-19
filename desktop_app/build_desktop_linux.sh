@@ -50,6 +50,7 @@ pyinstaller --noconfirm --clean \
   --hidden-import backend.schemas \
   --hidden-import backend.param_api \
   --hidden-import backend.broker \
+  --hidden-import backend.mqtt_discover \
   --hidden-import comms \
   --hidden-import comms.serial_client \
   --hidden-import comms.mqtt_client \

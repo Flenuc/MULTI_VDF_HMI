@@ -1,7 +1,7 @@
 {
   "name": "variofield-desktop",
   "productName": "VarioField",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "VarioField — recetas y enlace a variadores en campo (Electron + Python)",
   "homepage": "https://github.com/Flenuc/MULTI_VDF_HMI",
   "repository": {
@@ -57,7 +57,7 @@
       {
         "from": "../scripts",
         "to": "scripts",
-        "filter": ["setup_mosquitto.sh", "setup_mosquitto.ps1", "mosquitto-variofield.conf"]
+        "filter": ["setup_mosquitto.sh", "setup_mosquitto.ps1", "mosquitto-variofield.conf", "mosquitto-variofield.acl.example"]
       }
     ],
     "linux": {

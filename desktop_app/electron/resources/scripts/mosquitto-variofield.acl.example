@@ -1,0 +1,15 @@
+# VarioField Mosquitto ACL (example installed as /etc/mosquitto/variofield.acl)
+#
+# Lab default: one shared user "variofield" for app + Edge.
+# Tighten later with separate users (app vs device) if needed.
+#
+# Topics: saj/pdm30/<edge_id>/{cmd,rsp,telemetry,status}
+
+user variofield
+topic readwrite saj/pdm30/#
+
+# Optional pattern if you add a read-only telemetry user later:
+# user telemetry
+# topic read saj/pdm30/+/telemetry
+# topic read saj/pdm30/+/status
+# topic read saj/pdm30/+/rsp
