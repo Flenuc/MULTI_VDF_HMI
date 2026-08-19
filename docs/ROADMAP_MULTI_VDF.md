@@ -256,7 +256,7 @@ Fuentes: `Auritorias recibidas/*.md`. Gate: no abrir Catalog Builder hasta A–C
 - [x] Purga historial git de secretos + force push (`main` reescrito 2026-08-18)
 - [x] Activar GitHub secret scanning / push protection (confirmado por equipo)
 - [x] Mosquitto auth+ACL en broker lab (este PC); `open-lan.conf` deshabilitado
-- [ ] `mqtt user` en Edges (NVS) — pendiente: módulos offline al aplicar; ver `docs/SECURITY.md`
+- [x] `mqtt user` en Edges (NVS): Guition + DevKit `user=variofield` / broker auth OK (2026-08-19)
 - [ ] (Deuda) SoftAP password por dispositivo; roles CLI en firmware; TLS 8883
 
 ### Fase M2 — Herramienta de extracción (Catalog Builder) (1–2 semanas)
