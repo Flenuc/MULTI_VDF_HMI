@@ -20,9 +20,21 @@ Versión alineada a Edge **≥ 0.3.7**. Seguridad de transporte: `docs/SECURITY.
 
 Todos los canales alimentan el mismo `CliEngine` (mismas líneas de comando/respuesta).
 
+## Identidad por placa (FW ≥ 0.3.8)
+
+Al primer boot se genera un serial estable desde el MAC del chip:
+
+| Campo | Ejemplo |
+|-------|---------|
+| `id` / mDNS / MQTT node | `vf-7cf194` |
+| BT SPP / BLE name | `VF-7CF194` |
+| CLI | `id` · `id set <slug>` · `id reset` |
+
+Así cada módulo se distingue en Wi‑Fi/MQTT/BT sin colisionar en el mismo topic.
+
 ## MQTT topics
 
-Root por defecto: `saj/pdm30/<edge_id>` con `edge_id` ≈ mDNS hostname (`saj-pdm30`).
+Root: `saj/pdm30/<edge_id>/…` donde `<edge_id>` es el serial (`vf-……`).
 
 | Topic | Quién publica | Payload |
 |-------|---------------|---------|
@@ -31,7 +43,8 @@ Root por defecto: `saj/pdm30/<edge_id>` con `edge_id` ≈ mDNS hostname (`saj-pd
 | `…/telemetry` | Edge | JSON ~1 Hz si `stream on` |
 | `…/status` | Edge | LWT / online (si habilitado) |
 
-Broker de lab: auth + ACL vía `desktop_app/scripts/setup_mosquitto.sh` (no anónimo por defecto).
+Descubrir el id: `wifi status` / `id` en CLI, o mDNS `vf-….local`.  
+Broker de lab: auth + ACL vía `desktop_app/scripts/setup_mosquitto.sh` (ACL `saj/pdm30/#` cubre todos los nodos).
 
 ## CLI — comandos
 

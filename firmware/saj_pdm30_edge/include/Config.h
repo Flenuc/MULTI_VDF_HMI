@@ -121,7 +121,12 @@ static const uint16_t CMD_FAULT_RST  = 0x0007;
 #define WIFI_AP_CHANNEL  1
 #endif
 
+// Legacy compile-time hostname — runtime uses DeviceIdentity (vf-XXXXXX).
+#ifndef MDNS_HOSTNAME
 #define MDNS_HOSTNAME "saj-pdm30"
+#endif
+#define EDGE_NVS_NAMESPACE "edge"
+#define EDGE_NVS_KEY_ID    "id"
 
 static const uint32_t WIFI_STA_CONNECT_TIMEOUT_MS = 35000;
 static const uint32_t WIFI_STA_RETRY_MS           = 15000;

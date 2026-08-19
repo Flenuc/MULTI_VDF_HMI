@@ -1,6 +1,7 @@
 #include "NetworkService.h"
 #include "CliEngine.h"
 #include "Config.h"
+#include "DeviceIdentity.h"
 #include "BtIo.h"
 
 #include <WiFi.h>
@@ -88,10 +89,9 @@ void NetworkService::loadMqttConfig() {
   if (_mqttHost[0] == '\0' && MQTT_HOST_DEFAULT[0] != '\0') {
     strncpy(_mqttHost, MQTT_HOST_DEFAULT, MQTT_HOST_MAX);
   }
-  // client id from chip
-  uint64_t mac = ESP.getEfuseMac();
-  snprintf(_mqttClientId, sizeof(_mqttClientId), "saj-%04X",
-           (unsigned)((mac >> 32) & 0xFFFF));
+  // Client id = per-board serial (DeviceIdentity)
+  strncpy(_mqttClientId, g_deviceId.mqttClientId(), sizeof(_mqttClientId) - 1);
+  _mqttClientId[sizeof(_mqttClientId) - 1] = '\0';
 }
 
 void NetworkService::saveMqttConfig() const {
@@ -106,11 +106,27 @@ void NetworkService::saveMqttConfig() const {
 }
 
 void NetworkService::buildTopics() {
-  // saj/pdm30/saj-pdm30/cmd|rsp|telemetry|status
-  snprintf(_topicCmd, sizeof(_topicCmd), "%s/%s/cmd", MQTT_TOPIC_ROOT, MDNS_HOSTNAME);
-  snprintf(_topicRsp, sizeof(_topicRsp), "%s/%s/rsp", MQTT_TOPIC_ROOT, MDNS_HOSTNAME);
-  snprintf(_topicTel, sizeof(_topicTel), "%s/%s/telemetry", MQTT_TOPIC_ROOT, MDNS_HOSTNAME);
-  snprintf(_topicStat, sizeof(_topicStat), "%s/%s/status", MQTT_TOPIC_ROOT, MDNS_HOSTNAME);
+  // saj/pdm30/<edge-id>/cmd|rsp|telemetry|status
+  const char *node = g_deviceId.id();
+  snprintf(_topicCmd, sizeof(_topicCmd), "%s/%s/cmd", MQTT_TOPIC_ROOT, node);
+  snprintf(_topicRsp, sizeof(_topicRsp), "%s/%s/rsp", MQTT_TOPIC_ROOT, node);
+  snprintf(_topicTel, sizeof(_topicTel), "%s/%s/telemetry", MQTT_TOPIC_ROOT, node);
+  snprintf(_topicStat, sizeof(_topicStat), "%s/%s/status", MQTT_TOPIC_ROOT, node);
+}
+
+void NetworkService::applyDeviceIdentity() {
+  strncpy(_mqttClientId, g_deviceId.mqttClientId(), sizeof(_mqttClientId) - 1);
+  _mqttClientId[sizeof(_mqttClientId) - 1] = '\0';
+  buildTopics();
+#if BOARD_HAS_WIFI
+  WiFi.setHostname(g_deviceId.id());
+#endif
+  refreshMdns();
+  if (_mqttConnected) {
+    g_mqtt.disconnect();
+    _mqttConnected = false;
+    _mqttNextTry = 0;  // reconnect ASAP with new id/topics
+  }
 }
 
 void NetworkService::applyActiveProfile() {
@@ -133,7 +149,7 @@ static void onEthEvent(arduino_event_id_t event, arduino_event_info_t info) {
   (void)info;
   switch (event) {
     case ARDUINO_EVENT_ETH_START:
-      ETH.setHostname(MDNS_HOSTNAME);
+      ETH.setHostname(g_deviceId.id());
       break;
     case ARDUINO_EVENT_ETH_CONNECTED:
       Serial.println(F("[eth] link up"));
@@ -173,7 +189,7 @@ void NetworkService::setupWifi() {
   return;
 #else
   WiFi.mode(WIFI_AP_STA);
-  WiFi.setHostname(MDNS_HOSTNAME);
+  WiFi.setHostname(g_deviceId.id());
   WiFi.setSleep(false);
   WiFi.persistent(false);
   // Modem sleep kills Classic BT coexistence (SPP drop / non-discoverable).
@@ -271,14 +287,14 @@ void NetworkService::setupMdns() { refreshMdns(); }
 void NetworkService::refreshMdns() {
   MDNS.end();
   _mdnsOk = false;
-  if (!MDNS.begin(MDNS_HOSTNAME)) {
+  if (!MDNS.begin(g_deviceId.id())) {
     Serial.println(F("[mdns] fail"));
     return;
   }
   MDNS.addService("mqtt", "tcp", _mqttPort > 0 ? _mqttPort : MQTT_DEFAULT_PORT);
   _mdnsOk = true;
   _lastMdnsRefresh = millis();
-  Serial.printf("[mdns] %s.local ok\n", MDNS_HOSTNAME);
+  Serial.printf("[mdns] %s.local ok\n", g_deviceId.id());
 }
 
 static bool networkIpReady() {
@@ -463,7 +479,9 @@ void NetworkService::wifiStatus(const Channel &ch) {
          g_ethUp ? "UP" : "DOWN",
          g_ethUp ? ETH.localIP().toString().c_str() : "-");
 #endif
-  replyf(ch, "mdns %s.local (%s)", MDNS_HOSTNAME, _mdnsOk ? "ok" : "down");
+  replyf(ch, "edge id=%s mac=%s bt=%s", g_deviceId.id(), g_deviceId.macStr(),
+         g_deviceId.btName());
+  replyf(ch, "mdns %s.local (%s)", g_deviceId.id(), _mdnsOk ? "ok" : "down");
   replyf(ch, "mqtt %s host=%s:%u %s",
          _mqttEnabled ? "enabled" : "disabled",
          _mqttHost[0] ? _mqttHost : "(none)",

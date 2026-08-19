@@ -1,0 +1,15 @@
+{
+  "mode": "devkit_only_guition_mqtt_disabled",
+  "devkit_seen": true,
+  "guition_seen": false,
+  "link_ok": true,
+  "pget": "2.6",
+  "log_excerpt": [
+    "saj/pdm30/saj-pdm30/rsp board=ESP32-DevKit",
+    "saj/pdm30/saj-pdm30/cmd rs485 status",
+    "saj/pdm30/saj-pdm30/rsp rs485 tx=14 rx=25 de=27 auto=0 de_active_high=1 baud=9600 guard_ms=1 settle_ms=0",
+    "saj/pdm30/saj-pdm30/rsp Link OK",
+    "saj/pdm30/saj-pdm30/cmd pget F0.00",
+    "saj/pdm30/saj-pdm30/rsp F0.00 @0xF000 = 2.6  (raw=26 scale=10)"
+  ]
+}

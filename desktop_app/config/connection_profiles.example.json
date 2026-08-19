@@ -14,8 +14,8 @@
       "port": 1883,
       "username": "variofield",
       "password": "TU_MQTT_PASSWORD",
-      "topic_prefix": "saj/pdm30/saj-pdm30",
-      "notes": "Auth por defecto (setup_mosquitto.sh). Edge: mqtt set <IP> 1883 + mqtt user …"
+      "topic_prefix": "saj/pdm30/vf-XXXXXX",
+      "notes": "Auth (setup_mosquitto). topic_prefix = saj/pdm30/<edge id> (ver CLI `id` / wifi status). FW≥0.3.8"
     },
     {
       "name": "LAN broker",
@@ -23,8 +23,8 @@
       "port": 1883,
       "username": "variofield",
       "password": "TU_MQTT_PASSWORD",
-      "topic_prefix": "saj/pdm30/saj-pdm30",
-      "notes": "Ajustá IP del broker. No dejes username/password vacíos en planta."
+      "topic_prefix": "saj/pdm30/vf-XXXXXX",
+      "notes": "Ajustá IP + edge id real. No dejes user/pass vacíos en planta."
     }
   ],
   "last_mode": "MQTT",

@@ -261,18 +261,20 @@ Fuentes: `Auritorias recibidas/*.md`. Gate: no abrir Catalog Builder hasta A–C
 
 ### Fase M2 — Herramienta de extracción (Catalog Builder) (1–2 semanas)
 
-**Bloqueado** hasta cerrar sprint seguridad (mínimo: secretos + MQTT no anónimo + PROTOCOL).
-
 **Objetivo:** industrializar la creación de perfiles para PD-20, 8200B y terceros.
 
-- [ ] CLI `tools/catalog_builder/`:
-  - `extract-manual --vendor saj --pdf/txt …`
-  - `extract-live --via mqtt|serial --profile draft`
-  - `merge` / `diff` / `validate`
-- [ ] Formato de entrada semi-estructurado (tablas markdown/CSV intermedias)
-- [ ] UI técnica (modo técnico VarioField o script notebook):
-  - importar borrador, editar escala/access, exportar `profile.json`
-- [ ] Suite de validación: % de params leídos OK, % escritura verificada (readback)
+- [x] CLI MVP `python3 -m tools.catalog_builder` (`list` / `validate` / `extract-manual` / `diff`)
+- [x] Extractores existentes cableados: `saj.pdh30`, `saj.pdm30`
+- [ ] `extract-live --via mqtt|serial --profile draft`
+- [ ] `merge` formal + formato semi-estructurado intermedio
+- [ ] UI técnica (modo técnico VarioField): importar borrador / editar escala / exportar
+- [ ] Suite de validación live: % params OK + readback escritura
+
+### Identidad por placa (paralelo a M2)
+
+- [x] Serial `vf-XXXXXX` desde MAC → MQTT topic node / mDNS / BT name (FW ≥ 0.3.8)
+- [x] CLI `id` / `id set` / `id reset`
+- [ ] App: discovery de `edge id` y topic_prefix automático al conectar
 
 **Criterio de salida:** un técnico genera un borrador PDH/PD-20 en &lt; 1 día de trabajo a partir de manual + 1 hora de banco.
 

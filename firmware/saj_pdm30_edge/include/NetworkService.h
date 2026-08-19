@@ -43,6 +43,12 @@ public:
   bool staConnected() const;
   bool mqttConnected() const;
 
+  /** After `id set`: refresh MQTT topics + mDNS hostname (reconnect MQTT). */
+  void applyDeviceIdentity();
+
+  const char *topicCmd() const { return _topicCmd; }
+  const char *mqttClientId() const { return _mqttClientId; }
+
 private:
   enum class StaPhase : uint8_t {
     Idle = 0,

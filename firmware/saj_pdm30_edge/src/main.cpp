@@ -11,6 +11,7 @@
 #include <WiFi.h>
 
 #include "Config.h"
+#include "DeviceIdentity.h"
 #include "DriveProfile.h"
 #include "HwRs485.h"
 #include "ModbusRtuMaster.h"
@@ -43,6 +44,7 @@ static BleUartCli        g_ble(g_cli);
 void setup() {
   g_bus.begin();
   g_mb.begin();
+  g_deviceId.begin();       // per-board serial → MQTT/mDNS/BT names
   g_driveProfile.begin();  // NVS: last profile set (default saj.pdm30)
   g_usb.begin();
 
@@ -63,6 +65,8 @@ void setup() {
   Serial.println();
   Serial.println(F("=== SAJ PDM-30 Edge (MQTT) ==="));
   Serial.printf("board=%s\n", BOARD_NAME);
+  Serial.printf("edge id=%s  mac=%s  bt=%s\n",
+                g_deviceId.id(), g_deviceId.macStr(), g_deviceId.btName());
   Serial.printf("drive_profile=%s\n", g_driveProfile.idStr());
   Serial.printf("RS485 TX=%d RX=%d DE=%d auto=%d | slave=%u @ %lu\n",
                 PIN_RS485_TX, PIN_RS485_RX, PIN_RS485_DE, (int)RS485_AUTO_DIRECTION,
@@ -85,9 +89,10 @@ void setup() {
 #if !BOARD_HAS_BT_CLASSIC && !BOARD_HAS_BT_BLE_NUS
   Serial.println(F("Bluetooth: not enabled on this board build"));
 #endif
-  Serial.printf("mDNS: %s.local\n", MDNS_HOSTNAME);
+  Serial.printf("mDNS: %s.local\n", g_deviceId.id());
   Serial.println(F("wifi profile list|save|use   mqtt set <broker> [port]"));
-  Serial.println(F("MQTT: saj/pdm30/saj-pdm30/{cmd,rsp,telemetry,status}"));
+  Serial.printf("MQTT: saj/pdm30/%s/{cmd,rsp,telemetry,status}\n", g_deviceId.id());
+  Serial.println(F("CLI: id | id set <slug> | id reset"));
   Serial.print(F("> "));
 }
 

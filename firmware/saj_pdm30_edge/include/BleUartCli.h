@@ -15,6 +15,7 @@
 #if BOARD_HAS_BT_BLE_NUS
 
 #include "CliEngine.h"
+#include "DeviceIdentity.h"
 #include "ResponseChannel.h"
 #include "BtIo.h"
 
@@ -48,7 +49,8 @@ public:
     g_btIo.print = &BleUartCli::s_print;
     s_self = this;
 
-    BLEDevice::init(BT_DEVICE_NAME);
+    const char *btName = g_deviceId.btName();
+    BLEDevice::init(btName);
     _server = BLEDevice::createServer();
     _server->setCallbacks(new ServerCbs(this));
 
@@ -75,7 +77,7 @@ public:
     BLEDevice::startAdvertising();
 
     _ok = true;
-    Serial.printf("[ble] NUS ready  name=%s  (Nordic UART Service)\n", BT_DEVICE_NAME);
+    Serial.printf("[ble] NUS ready  name=%s  (Nordic UART Service)\n", btName);
   }
 
   bool ready() const { return _ok; }

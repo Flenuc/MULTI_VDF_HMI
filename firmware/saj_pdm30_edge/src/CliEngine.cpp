@@ -4,6 +4,7 @@
 #include "NetworkService.h"
 #include "BtIo.h"
 #include "DriveProfile.h"
+#include "DeviceIdentity.h"
 #include "generated/Pdh30ParamTable.h"
 
 #include <stdarg.h>
@@ -30,6 +31,7 @@ void CliEngine::printHelp(const Channel &ch) {
   replyf(ch, "slave <id>   values ENGINEERING floats");
   replyf(ch, "rs485 status | rs485 de normal|invert | rs485 swaptrx");
   replyf(ch, "rs485 guard <0..20> | rs485 settle <0..10>");
+  replyf(ch, "id | id set <slug> | id reset   (per-board serial / MQTT node)");
   replyf(ch, "wifi status | wifi set <ssid> <pass> | wifi reconnect");
   replyf(ch, "wifi profile list|save <name> <ssid> <pass>|use <name>|delete <name>");
   replyf(ch, "mqtt status | mqtt set <host> [port] | mqtt user <u> <p>");
@@ -102,6 +104,7 @@ static bool isControlOnlyCmd(int argc, char **argv) {
   if (strcmp(cmd, "bt") == 0) return true;     // status/advertise/clearbonds
   if (strcmp(cmd, "profile") == 0) return true; // drive profile get/set (no Modbus)
   if (strcmp(cmd, "rs485") == 0) return true;  // DE polarity / pin swap (no Modbus)
+  if (strcmp(cmd, "id") == 0 || strcmp(cmd, "serial") == 0) return true;
   if (strcmp(cmd, "slave") == 0 && argc < 2) return true;  // query only
   return false;
 }
@@ -261,6 +264,36 @@ void CliEngine::dispatch(const Channel &ch, int argc, char **argv) {
       return;
     }
     replyf(ch, "usage: wifi status|set|reconnect|profile …");
+    return;
+  }
+
+  // ----- Per-board identity (MQTT node / mDNS / BT name) -----
+  if (strcmp(cmd, "id") == 0 || strcmp(cmd, "serial") == 0) {
+    if (argc < 2 || strcmp(argv[1], "get") == 0 || strcmp(argv[1], "status") == 0) {
+      replyf(ch, "id=%s mac=%s bt=%s", g_deviceId.id(), g_deviceId.macStr(),
+             g_deviceId.btName());
+      if (_net) {
+        replyf(ch, "mqtt_node topics use saj/pdm30/%s/…", g_deviceId.id());
+      }
+      return;
+    }
+    if (strcmp(argv[1], "set") == 0 && argc >= 3) {
+      if (!g_deviceId.setId(argv[2])) {
+        replyf(ch, "ERR: id must be 3+ chars [a-z0-9-] (e.g. vf-pump-01)");
+        return;
+      }
+      if (_net) _net->applyDeviceIdentity();
+      replyf(ch, "OK id=%s bt=%s (saved; BT name applies after reboot)",
+             g_deviceId.id(), g_deviceId.btName());
+      return;
+    }
+    if (strcmp(argv[1], "reset") == 0) {
+      g_deviceId.resetToMac();
+      if (_net) _net->applyDeviceIdentity();
+      replyf(ch, "OK id=%s (from MAC; BT name after reboot)", g_deviceId.id());
+      return;
+    }
+    replyf(ch, "usage: id | id set <slug> | id reset");
     return;
   }
 

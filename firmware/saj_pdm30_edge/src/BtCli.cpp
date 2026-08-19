@@ -3,6 +3,7 @@
 #if BOARD_HAS_BT_CLASSIC
 
 #include "BtCli.h"
+#include "DeviceIdentity.h"
 
 #include <esp_bt.h>
 #include <esp_bt_main.h>
@@ -129,7 +130,9 @@ void BtCli::begin() {
   });
 
   // Slave SPP, Classic-only (disableBLE=true frees BLE RAM, more stable SPP)
-  if (!_bt.begin(String(BT_DEVICE_NAME), /*isMaster=*/false, /*disableBLE=*/true)) {
+  // Name includes per-board serial (VF-XXXXXX) so field units are distinguishable.
+  const char *btName = g_deviceId.btName();
+  if (!_bt.begin(String(btName), /*isMaster=*/false, /*disableBLE=*/true)) {
     Serial.println(F("[bt] SerialBT begin FAILED"));
     _ok = false;
     return;
@@ -149,7 +152,7 @@ void BtCli::begin() {
 #endif
 
   Serial.printf("[bt] SPP ready  name=%s  mac=%s  pin=%s\n",
-                BT_DEVICE_NAME,
+                btName,
                 _bt.getBtAddressString().c_str(),
                 BT_PIN_CODE);
   Serial.println(F("[bt] pair: Just Works / PIN; then RFCOMM ch1 as serial"));
