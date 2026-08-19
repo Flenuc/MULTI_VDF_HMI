@@ -37,20 +37,15 @@ bool DeviceIdentity::sanitizeSlug(const char *in, char *out, size_t outSz) {
 }
 
 void DeviceIdentity::syncBtNameFromId() {
-  // VF-7CF194 from vf-7cf194
-  snprintf(_btName, sizeof(_btName), "VF");
-  size_t j = 2;
-  for (size_t i = 0; _id[i] && j + 1 < sizeof(_btName); i++) {
-    char c = _id[i];
-    if (c == '-') {
-      if (j + 1 < sizeof(_btName)) _btName[j++] = '-';
-      continue;
-    }
-    if (c >= 'a' && c <= 'z') c = (char)(c - 'a' + 'A');
-    _btName[j++] = c;
+  // vf-7cf194 → VF-7CF194 (avoid VFVF… if id already starts with vf-)
+  const char *src = _id;
+  if (strncmp(src, "vf-", 3) == 0) src += 3;
+  snprintf(_btName, sizeof(_btName), "VF-%s", src);
+  for (size_t i = 3; _btName[i]; i++) {
+    if (_btName[i] >= 'a' && _btName[i] <= 'z')
+      _btName[i] = (char)(_btName[i] - 'a' + 'A');
   }
-  _btName[j] = '\0';
-  if (j < 4) {
+  if (strlen(_btName) < 4) {
     strncpy(_btName, "VF-EDGE", sizeof(_btName) - 1);
     _btName[sizeof(_btName) - 1] = '\0';
   }
