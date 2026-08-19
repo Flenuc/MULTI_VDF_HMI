@@ -8,6 +8,7 @@ export type ConnectRequest = {
   mqtt_port?: number;
   username?: string;
   password?: string;
+  /** MQTT node prefix, e.g. saj/pdm30/vf-7cf194 (FW ≥ 0.3.8) */
   topic_prefix?: string;
   address?: string;
   channel?: number;

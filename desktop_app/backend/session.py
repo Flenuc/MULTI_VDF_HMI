@@ -185,7 +185,7 @@ class SessionManager:
                 port=int(kwargs.get("mqtt_port") or kwargs.get("port") or 1883),
                 username=kwargs.get("username") or "",
                 password=kwargs.get("password") or "",
-                topic_prefix=kwargs.get("topic_prefix") or "saj/pdm30/saj-pdm30",
+                topic_prefix=kwargs.get("topic_prefix") or "saj/pdm30/vf-XXXXXX",
             )
         elif transport == "bluetooth":
             c = BluetoothClient()

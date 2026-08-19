@@ -19,7 +19,7 @@ class ConnectRequest(BaseModel):
     mqtt_port: int = 1883
     username: str = ""
     password: str = ""
-    topic_prefix: str = "saj/pdm30/saj-pdm30"
+    topic_prefix: str = "saj/pdm30/vf-XXXXXX"
     # bluetooth classic / ble
     address: str = ""
     channel: int = 1

@@ -178,7 +178,7 @@ def upsert_mqtt_profile(data: Dict[str, Any]) -> Dict[str, Any]:
         port=int(data.get("port") or 1883),
         username=str(data.get("username") or ""),
         password=str(data.get("password") or ""),
-        topic_prefix=str(data.get("topic_prefix") or "saj/pdm30/saj-pdm30"),
+        topic_prefix=str(data.get("topic_prefix") or "saj/pdm30/vf-XXXXXX"),
         notes=str(data.get("notes") or ""),
     )
     if not prof.host:

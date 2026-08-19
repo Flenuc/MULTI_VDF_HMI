@@ -13,10 +13,10 @@ class MqttClient(CommsClient):
     """
     Subscribe rsp + telemetry; publish CLI lines to cmd topic.
 
-    Default topics (device hostname saj-pdm30):
-      saj/pdm30/saj-pdm30/cmd
-      saj/pdm30/saj-pdm30/rsp
-      saj/pdm30/saj-pdm30/telemetry
+    Default topics (per-board serial FW ≥ 0.3.8):
+      saj/pdm30/vf-XXXXXX/cmd
+      saj/pdm30/vf-XXXXXX/rsp
+      saj/pdm30/vf-XXXXXX/telemetry
     """
 
     def __init__(self) -> None:
@@ -26,7 +26,7 @@ class MqttClient(CommsClient):
         self._stop = threading.Event()
         self._host = "127.0.0.1"
         self._port = 1883
-        self._prefix = "saj/pdm30/saj-pdm30"
+        self._prefix = "saj/pdm30/vf-XXXXXX"
         self._user = ""
         self._password = ""
         self._connected_evt = threading.Event()
@@ -35,7 +35,7 @@ class MqttClient(CommsClient):
         self,
         host: str = "127.0.0.1",
         port: int = 1883,
-        topic_prefix: str = "saj/pdm30/saj-pdm30",
+        topic_prefix: str = "saj/pdm30/vf-XXXXXX",
         username: str = "",
         password: str = "",
         **_,

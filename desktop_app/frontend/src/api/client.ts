@@ -133,6 +133,27 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  mqttDiscover: (body: {
+    host: string;
+    mqtt_port?: number;
+    username?: string;
+    password?: string;
+    root?: string;
+    seconds?: number;
+  }) =>
+    json<{
+      ok: boolean;
+      count: number;
+      edges: {
+        edge_id: string;
+        topic_prefix: string;
+        status: string;
+        online: boolean;
+      }[];
+    }>("/mqtt/discover", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   disconnect: () =>
     json<{ ok: boolean }>("/disconnect", { method: "POST", body: "{}" }),
   command: (line: string) =>

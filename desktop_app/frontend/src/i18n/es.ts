@@ -60,6 +60,14 @@ export const t = {
   portLabel: "Cable / puerto",
   baudLabel: "Velocidad (solo si te lo indica el técnico)",
   mqttProfileLabel: "Perfil de red / broker",
+  mqttEdgeLabel: "Módulo Edge (id)",
+  mqttEdgeHint:
+    "Cada placa tiene un id (vf-XXXXXX). Buscá módulos en el broker o escribí el prefijo saj/pdm30/vf-…",
+  mqttScanEdges: "Buscar módulos",
+  mqttEdgeOnline: "en línea",
+  mqttEdgeOffline: "offline",
+  mqttNoEdges:
+    "No se encontró ningún módulo. Comprobá que el Edge esté en Wi‑Fi con MQTT y FW ≥ 0.3.8.",
   brokerSetup: "Preparar broker local (Mosquitto)",
   brokerChecking: "Comprobando broker…",
   brokerOk: "Broker local listo en este PC",

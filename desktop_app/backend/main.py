@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field
 
 from backend import param_api
 from backend import broker as broker_api
+from backend import mqtt_discover
 from backend.schemas import (
     BrokerStatusResponse,
     BtDevice,
@@ -195,6 +196,24 @@ async def list_bt_ble(
     return out
 
 
+@app.post("/mqtt/discover")
+async def mqtt_discover_edges(body: MqttDiscoverBody) -> Dict[str, Any]:
+    """List Edge nodes with retained/live status under saj/pdm30/<id>/status."""
+    try:
+        edges = await _run_sync(
+            mqtt_discover.discover_edges,
+            body.host,
+            body.mqtt_port,
+            body.username,
+            body.password,
+            body.root,
+            body.seconds,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    return {"ok": True, "edges": edges, "count": len(edges)}
+
+
 @app.post("/connect", response_model=OkResponse)
 async def connect(body: ConnectRequest) -> OkResponse:
     try:
@@ -267,8 +286,17 @@ class MqttProfileBody(BaseModel):
     port: int = 1883
     username: str = ""
     password: str = ""
-    topic_prefix: str = "saj/pdm30/saj-pdm30"
+    topic_prefix: str = "saj/pdm30/vf-XXXXXX"
     notes: str = ""
+
+
+class MqttDiscoverBody(BaseModel):
+    host: str = "127.0.0.1"
+    mqtt_port: int = 1883
+    username: str = ""
+    password: str = ""
+    root: str = "saj/pdm30"
+    seconds: float = 2.5
 
 
 class WifiProfileBody(BaseModel):

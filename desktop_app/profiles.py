@@ -30,7 +30,7 @@ class MqttProfile:
     port: int = 1883
     username: str = ""
     password: str = ""
-    topic_prefix: str = "saj/pdm30/saj-pdm30"
+    topic_prefix: str = "saj/pdm30/vf-XXXXXX"
     notes: str = ""
 
 
@@ -86,7 +86,7 @@ class ConnectionStore:
                     port=int(m.get("port", 1883)),
                     username=str(m.get("username", "")),
                     password=str(m.get("password", "")),
-                    topic_prefix=str(m.get("topic_prefix", "saj/pdm30/saj-pdm30")),
+                    topic_prefix=str(m.get("topic_prefix", "saj/pdm30/vf-XXXXXX")),
                     notes=str(m.get("notes", "")),
                 )
             )

@@ -228,10 +228,16 @@ export default function App() {
     name: "Local",
     host: "127.0.0.1",
     port: "1883",
-    topic_prefix: "saj/pdm30/saj-pdm30",
+    topic_prefix: "saj/pdm30/vf-XXXXXX",
     username: "",
     password: "",
   });
+  /** Override MQTT topic_prefix for connect (per-board vf-XXXXXX). */
+  const [mqttTopicPrefix, setMqttTopicPrefix] = useState("saj/pdm30/vf-XXXXXX");
+  const [mqttEdges, setMqttEdges] = useState<
+    { edge_id: string; topic_prefix: string; status: string; online: boolean }[]
+  >([]);
+  const [scanningEdges, setScanningEdges] = useState(false);
   const [wForm, setWForm] = useState({ name: "planta", ssid: "", password: "" });
 
   const dumpActive = useRef(false);
@@ -483,6 +489,10 @@ export default function App() {
         if (!cancelled) {
           setProfiles(pr);
           if (pr.last_mqtt) setMqttName(pr.last_mqtt);
+          const mp0 =
+            pr.mqtt_profiles.find((p) => p.name === pr.last_mqtt) ||
+            pr.mqtt_profiles[0];
+          if (mp0?.topic_prefix) setMqttTopicPrefix(mp0.topic_prefix);
           if (pr.last_wifi) setWifiName(pr.last_wifi);
           if (pr.last_serial_port) setPort(pr.last_serial_port);
           if (pr.last_bt_address) setBtAddress(pr.last_bt_address);
@@ -748,13 +758,26 @@ export default function App() {
         if (!mp?.host) {
           throw new Error("Falta perfil de red");
         }
+        const prefix = (
+          mqttTopicPrefix ||
+          mp.topic_prefix ||
+          ""
+        )
+          .trim()
+          .replace(/\/$/, "");
+        if (!prefix || prefix.includes("XXXXXX") || prefix.endsWith("/saj-pdm30")) {
+          throw new Error(
+            "Elegí un módulo Edge (vf-XXXXXX) o escribí el prefijo saj/pdm30/vf-…\n" +
+              "Usá «Buscar módulos» tras flashear FW ≥ 0.3.8."
+          );
+        }
         body = {
           transport: "mqtt",
           host: mp.host,
           mqtt_port: mp.port,
           username: mp.username,
           password: mp.password,
-          topic_prefix: mp.topic_prefix,
+          topic_prefix: prefix,
         };
         await api.patchLasts({ last_mode: "MQTT", last_mqtt: mp.name });
       } else if (mode === "bluetooth" || mode === "ble") {
@@ -1349,10 +1372,11 @@ export default function App() {
         port: parseInt(mForm.port, 10) || 1883,
         username: mForm.username,
         password: mForm.password,
-        topic_prefix: mForm.topic_prefix || "saj/pdm30/saj-pdm30",
+        topic_prefix: mForm.topic_prefix || mqttTopicPrefix || "saj/pdm30/vf-XXXXXX",
       });
       setProfiles(pr);
       setMqttName(mForm.name.trim() || "mqtt");
+      if (mForm.topic_prefix?.trim()) setMqttTopicPrefix(mForm.topic_prefix.trim());
       Alert.alert("Perfil guardado", "Ya puedes usarlo al conectar o enviarlo al módulo.");
     } catch (e) {
       Alert.alert("No se pudo guardar", String(e));
@@ -1790,10 +1814,99 @@ export default function App() {
                       label={p.name}
                       active={mqttName === p.name}
                       disabled={connected}
-                      onPress={() => setMqttName(p.name)}
+                      onPress={() => {
+                        setMqttName(p.name);
+                        if (p.topic_prefix) setMqttTopicPrefix(p.topic_prefix);
+                      }}
                     />
                   ))}
                 </View>
+
+                <Text style={[styles.label, { marginTop: 14 }]}>{t.mqttEdgeLabel}</Text>
+                <Text style={styles.hint}>{t.mqttEdgeHint}</Text>
+                <TextInput
+                  style={styles.input}
+                  value={mqttTopicPrefix}
+                  onChangeText={setMqttTopicPrefix}
+                  placeholder="saj/pdm30/vf-7cf194"
+                  placeholderTextColor="#6b7280"
+                  editable={!connected}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <Pressable
+                  style={[styles.btnSec, { marginTop: 8 }, (busy || scanningEdges) && styles.dis]}
+                  disabled={busy || connected || scanningEdges}
+                  onPress={async () => {
+                    const pr = profiles || (await api.profiles());
+                    const mp =
+                      pr.mqtt_profiles.find((p) => p.name === mqttName) ||
+                      pr.mqtt_profiles[0];
+                    if (!mp?.host) {
+                      reportError(new Error("Falta perfil de red"), {
+                        context: "mqtt",
+                      });
+                      return;
+                    }
+                    setScanningEdges(true);
+                    setOpName(t.mqttScanEdges);
+                    try {
+                      pushLog("Buscando módulos Edge en el broker…");
+                      const res = await api.mqttDiscover({
+                        host: mp.host,
+                        mqtt_port: mp.port,
+                        username: mp.username,
+                        password: mp.password,
+                        seconds: 2.8,
+                      });
+                      setMqttEdges(res.edges || []);
+                      const online = (res.edges || []).filter((e) => e.online);
+                      if (online.length === 1) {
+                        setMqttTopicPrefix(online[0].topic_prefix);
+                        pushLog(`Módulo detectado: ${online[0].edge_id}`);
+                      } else if (online.length > 1) {
+                        pushLog(
+                          `Encontrados ${online.length} módulos: ${online
+                            .map((e) => e.edge_id)
+                            .join(", ")}`
+                        );
+                      } else {
+                        pushLog(t.mqttNoEdges);
+                      }
+                    } catch (e) {
+                      reportError(e, "mqtt");
+                    } finally {
+                      setScanningEdges(false);
+                      setOpName("");
+                    }
+                  }}
+                >
+                  {scanningEdges ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.btnText}>{t.mqttScanEdges}</Text>
+                  )}
+                </Pressable>
+                {mqttEdges.map((e) => (
+                  <Pressable
+                    key={e.edge_id}
+                    onPress={() => {
+                      if (!connected) setMqttTopicPrefix(e.topic_prefix);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.hint,
+                        e.topic_prefix === mqttTopicPrefix && styles.hintOn,
+                      ]}
+                    >
+                      {e.edge_id} · {e.online ? t.mqttEdgeOnline : t.mqttEdgeOffline}
+                      {" · "}
+                      {e.topic_prefix}
+                    </Text>
+                  </Pressable>
+                ))}
+
                 <Pressable
                   style={[styles.btnSec, { marginTop: 10 }, busy && styles.dis]}
                   disabled={busy || connected}
@@ -2637,12 +2750,11 @@ export default function App() {
                 ["name", "Nombre del perfil (ej. Planta-1)"],
                 ["host", "IP o nombre del broker"],
                 ["port", "Puerto (1883)"],
-                ["topic_prefix", "Prefijo de temas (técnico)"],
-                ["username", "Usuario (opcional)"],
-                ["password", "Contraseña (opcional)"],
+                ["topic_prefix", "Prefijo MQTT (saj/pdm30/vf-XXXXXX)"],
+                ["username", "Usuario MQTT"],
+                ["password", "Contraseña MQTT"],
               ] as const
             )
-              .filter(([k]) => dev || k !== "topic_prefix")
               .map(([k, lab]) => (
               <View key={k}>
                 <Text style={styles.label}>{lab}</Text>
