@@ -18,7 +18,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import Body, FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -196,18 +196,31 @@ async def list_bt_ble(
     return out
 
 
+class MqttDiscoverBody(BaseModel):
+    """Must be defined before the /mqtt/discover route (FastAPI resolves annotations)."""
+
+    host: str = "127.0.0.1"
+    mqtt_port: int = 1883
+    username: str = ""
+    password: str = ""
+    root: str = "saj/pdm30"
+    seconds: float = 2.5
+
+
 @app.post("/mqtt/discover")
-async def mqtt_discover_edges(body: MqttDiscoverBody) -> Dict[str, Any]:
+async def mqtt_discover_edges(
+    payload: MqttDiscoverBody = Body(default_factory=MqttDiscoverBody),
+) -> Dict[str, Any]:
     """List Edge nodes with retained/live status under saj/pdm30/<id>/status."""
     try:
         edges = await _run_sync(
             mqtt_discover.discover_edges,
-            body.host,
-            body.mqtt_port,
-            body.username,
-            body.password,
-            body.root,
-            body.seconds,
+            payload.host,
+            payload.mqtt_port,
+            payload.username,
+            payload.password,
+            payload.root,
+            payload.seconds,
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
@@ -288,15 +301,6 @@ class MqttProfileBody(BaseModel):
     password: str = ""
     topic_prefix: str = "saj/pdm30/vf-XXXXXX"
     notes: str = ""
-
-
-class MqttDiscoverBody(BaseModel):
-    host: str = "127.0.0.1"
-    mqtt_port: int = 1883
-    username: str = ""
-    password: str = ""
-    root: str = "saj/pdm30"
-    seconds: float = 2.5
 
 
 class WifiProfileBody(BaseModel):

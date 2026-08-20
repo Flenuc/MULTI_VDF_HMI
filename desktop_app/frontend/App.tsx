@@ -758,14 +758,18 @@ export default function App() {
         if (!mp?.host) {
           throw new Error("Falta perfil de red");
         }
-        const prefix = (
-          mqttTopicPrefix ||
-          mp.topic_prefix ||
-          ""
-        )
-          .trim()
-          .replace(/\/$/, "");
-        if (!prefix || prefix.includes("XXXXXX") || prefix.endsWith("/saj-pdm30")) {
+        let prefix = (mqttTopicPrefix || mp.topic_prefix || "").trim().replace(/\/$/, "");
+        // Allow typing just "vf-7cf194"
+        if (/^vf-[a-z0-9-]+$/i.test(prefix)) {
+          prefix = `saj/pdm30/${prefix.toLowerCase()}`;
+          setMqttTopicPrefix(prefix);
+        }
+        if (
+          !prefix ||
+          prefix.includes("XXXXXX") ||
+          prefix === "saj/pdm30/saj-pdm30" ||
+          prefix.endsWith("/saj-pdm30")
+        ) {
           throw new Error(
             "Elegí un módulo Edge (vf-XXXXXX) o escribí el prefijo saj/pdm30/vf-…\n" +
               "Usá «Buscar módulos» tras flashear FW ≥ 0.3.8."

@@ -57,27 +57,47 @@ def discover_edges(
             }
 
     cid = f"vf-discover-{int(time.time()) % 100000}"
-    client = mqtt.Client(client_id=cid, protocol=mqtt.MQTTv311, clean_session=True)
+    # Support paho-mqtt v1 and v2 APIs
+    try:
+        client = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION1,
+            client_id=cid,
+            protocol=mqtt.MQTTv311,
+            clean_session=True,
+        )
+    except (AttributeError, TypeError, ValueError):
+        client = mqtt.Client(client_id=cid, protocol=mqtt.MQTTv311, clean_session=True)
     if username:
         client.username_pw_set(username, password or "")
     client.on_connect = on_connect
     client.on_message = on_message
 
     try:
-        client.connect(host, int(port), keepalive=20)
+        client.connect(str(host), int(port), keepalive=20)
     except Exception as e:
         raise RuntimeError(f"MQTT discover connect failed: {e}") from e
 
-    t = threading.Thread(target=client.loop_forever, daemon=True)
-    t.start()
-    time.sleep(max(0.8, float(seconds)))
+    client.loop_start()
     try:
-        client.disconnect()
-    except Exception:
-        pass
-    done.set()
+        time.sleep(max(1.2, float(seconds)))
+    finally:
+        try:
+            client.loop_stop()
+            client.disconnect()
+        except Exception:
+            pass
+        done.set()
 
     with lock:
         rows = list(found.values())
-    rows.sort(key=lambda r: (0 if r.get("online") else 1, str(r.get("edge_id") or "")))
+    # Prefer online vf-* modules; keep legacy saj-pdm30 last
+    def _key(r: Dict[str, Any]):
+        eid = str(r.get("edge_id") or "")
+        return (
+            0 if r.get("online") else 1,
+            0 if eid.startswith("vf-") else 1,
+            eid,
+        )
+
+    rows.sort(key=_key)
     return rows

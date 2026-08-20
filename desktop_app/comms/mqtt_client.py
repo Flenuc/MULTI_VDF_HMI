@@ -58,7 +58,17 @@ class MqttClient(CommsClient):
             raise
 
         cid = f"saj-desktop-{int(time.time()) % 100000}"
-        self._client = mqtt.Client(client_id=cid, protocol=mqtt.MQTTv311, clean_session=True)
+        try:
+            self._client = mqtt.Client(
+                mqtt.CallbackAPIVersion.VERSION1,
+                client_id=cid,
+                protocol=mqtt.MQTTv311,
+                clean_session=True,
+            )
+        except (AttributeError, TypeError, ValueError):
+            self._client = mqtt.Client(
+                client_id=cid, protocol=mqtt.MQTTv311, clean_session=True
+            )
         if self._user:
             self._client.username_pw_set(self._user, self._password)
 
