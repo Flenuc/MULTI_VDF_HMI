@@ -1,18 +1,74 @@
 """
 Persistent Wi-Fi + MQTT connection profiles for the desktop app.
 
-Stored in desktop_app/config/connection_profiles.json
+Dev: desktop_app/config/connection_profiles.json
+Packaged Electron: $MULTI_VDF_CONFIG_DIR/connection_profiles.json
+  (typically ~/.config/VarioField/config/ on Linux).
 """
 
 from __future__ import annotations
 
 import json
+import os
+import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
 
-CONFIG_DIR = Path(__file__).resolve().parent / "config"
-PROFILES_PATH = CONFIG_DIR / "connection_profiles.json"
+
+def _default_dev_config_dir() -> Path:
+    return Path(__file__).resolve().parent / "config"
+
+
+def resolve_config_dir() -> Path:
+    """
+    Writable config directory for connection profiles.
+
+    Priority:
+      1) MULTI_VDF_CONFIG_DIR (Electron userData/config)
+      2) next to frozen executable ../config or ./config
+      3) desktop_app/config (dev source tree)
+    """
+    env = (os.environ.get("MULTI_VDF_CONFIG_DIR") or "").strip()
+    if env:
+        return Path(env)
+
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        # resources/backend → resources/config, or userData already set via env
+        for c in (
+            exe_dir / "config",
+            exe_dir.parent / "config",
+            Path.home() / ".config" / "VarioField" / "config",
+        ):
+            try:
+                c.mkdir(parents=True, exist_ok=True)
+                # Prefer an existing profiles file if present
+                if (c / "connection_profiles.json").exists():
+                    return c
+            except OSError:
+                continue
+        # Fall back to first writable candidate
+        for c in (
+            Path.home() / ".config" / "VarioField" / "config",
+            exe_dir / "config",
+        ):
+            try:
+                c.mkdir(parents=True, exist_ok=True)
+                return c
+            except OSError:
+                continue
+
+    return _default_dev_config_dir()
+
+
+def resolve_profiles_path() -> Path:
+    return resolve_config_dir() / "connection_profiles.json"
+
+
+# Resolved at import; Electron sets MULTI_VDF_CONFIG_DIR before spawning backend.
+CONFIG_DIR = resolve_config_dir()
+PROFILES_PATH = resolve_profiles_path()
 
 
 @dataclass
@@ -93,18 +149,51 @@ class ConnectionStore:
         return st
 
 
-def load_store(path: Path = PROFILES_PATH) -> ConnectionStore:
+def _example_candidates() -> List[Path]:
+    """Bundled example may live in resources, next to exe, or in source tree."""
+    out: List[Path] = []
+    env = (os.environ.get("MULTI_VDF_RESOURCES") or "").strip()
+    if env:
+        out.append(Path(env) / "config" / "connection_profiles.example.json")
+    out.append(CONFIG_DIR / "connection_profiles.example.json")
+    out.append(_default_dev_config_dir() / "connection_profiles.example.json")
+    if getattr(sys, "frozen", False):
+        meipass = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+        exe_dir = Path(sys.executable).resolve().parent
+        out.extend(
+            [
+                exe_dir / "config" / "connection_profiles.example.json",
+                exe_dir.parent / "config" / "connection_profiles.example.json",
+                meipass / "config" / "connection_profiles.example.json",
+            ]
+        )
+    return out
+
+
+def load_store(path: Optional[Path] = None) -> ConnectionStore:
+    path = path or resolve_profiles_path()
     if not path.exists():
-        example = CONFIG_DIR / "connection_profiles.example.json"
-        if example.exists():
-            # First run: clone example (no secrets) then user edits locally
-            with example.open("r", encoding="utf-8") as f:
-                st = ConnectionStore.from_dict(json.load(f))
-            save_store(st, path)
-            return st
+        for example in _example_candidates():
+            if example.exists():
+                with example.open("r", encoding="utf-8") as f:
+                    st = ConnectionStore.from_dict(json.load(f))
+                # Example may contain placeholders — still better than empty auth
+                save_store(st, path)
+                return st
         st = ConnectionStore()
         st.mqtt_profiles.append(
-            MqttProfile(name="Local Mosquitto", host="127.0.0.1", port=1883)
+            MqttProfile(
+                name="Local Mosquitto",
+                host="127.0.0.1",
+                port=1883,
+                username="variofield",
+                password="",
+                topic_prefix="saj/pdm30/vf-XXXXXX",
+                notes=(
+                    "Completá la contraseña MQTT (setup Mosquitto) y el "
+                    "prefijo saj/pdm30/vf-… (wifi status / Buscar módulos)."
+                ),
+            )
         )
         st.last_mqtt = "Local Mosquitto"
         save_store(st, path)
@@ -113,7 +202,8 @@ def load_store(path: Path = PROFILES_PATH) -> ConnectionStore:
         return ConnectionStore.from_dict(json.load(f))
 
 
-def save_store(store: ConnectionStore, path: Path = PROFILES_PATH) -> None:
+def save_store(store: ConnectionStore, path: Optional[Path] = None) -> None:
+    path = path or resolve_profiles_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
         json.dump(store.to_dict(), f, indent=2, ensure_ascii=False)

@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "GitHub release tag to attach installers (e.g. v0.3.2). Leave empty to only upload artifacts."
+        description: "GitHub release tag to attach installers (e.g. v0.3.6). Leave empty to only upload artifacts."
         required: false
-        default: "v0.3.2"
+        default: ""
   push:
     tags:
       - "v*"
@@ -19,7 +19,9 @@ permissions:
 
 env:
   EXPO_PUBLIC_ENV: production
+  # electron-builder must not auto-publish; we attach with gh in a later step
   CSC_IDENTITY_AUTO_DISCOVERY: "false"
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   windows:
@@ -49,11 +51,26 @@ jobs:
           python -m pip install -U pip wheel
           pip install -r requirements.txt -r backend/requirements.txt pyinstaller
 
+      - name: Stage Electron resources (drive_profiles + config)
+        run: |
+          set -euo pipefail
+          mkdir -p electron/resources/backend electron/resources/ui \
+                   electron/resources/drive_profiles electron/resources/config
+          if [[ -d ../drive_profiles ]]; then
+            cp -a ../drive_profiles/. electron/resources/drive_profiles/
+            echo "drive_profiles: $(find electron/resources/drive_profiles -name profile.json | wc -l) catalogs"
+          else
+            echo "WARN: repo drive_profiles/ missing"
+            # placeholder so electron-builder extraResources does not warn/fail
+            echo "# empty" > electron/resources/drive_profiles/README.md
+          fi
+          cp -f config/connection_profiles.example.json \
+            electron/resources/config/connection_profiles.example.json
+
       - name: Build multi_vdf_backend.exe
         env:
           PYTHONPATH: ${{ github.workspace }}/desktop_app
         run: |
-          mkdir -p electron/resources/backend electron/resources/ui
           pyinstaller --noconfirm --clean \
             --onefile \
             --name multi_vdf_backend \
@@ -71,6 +88,8 @@ jobs:
             --hidden-import backend.session \
             --hidden-import backend.schemas \
             --hidden-import backend.param_api \
+            --hidden-import backend.broker \
+            --hidden-import backend.mqtt_discover \
             --hidden-import comms \
             --hidden-import comms.serial_client \
             --hidden-import comms.mqtt_client \
@@ -101,9 +120,11 @@ jobs:
         working-directory: desktop_app/electron
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm ci || npm install
-          npx electron-builder --win nsis --x64
+          # --publish never: tag pushes make electron-builder try GH publish and fail without token config
+          npx electron-builder --win nsis --x64 --publish never
           ls -lh dist/ || true
           ls -lh dist/*.exe || true
 
@@ -127,13 +148,13 @@ jobs:
           cd desktop_app/electron/dist
           EXE=$(ls VarioField-Setup-*.exe 2>/dev/null | head -1 || ls *.exe | head -1)
           echo "Uploading $EXE → release $TAG"
-          # If release missing, create draft from notes if present
+          VER="${TAG#v}"
+          NOTES="${GITHUB_WORKSPACE}/desktop_app/RELEASE_NOTES_${VER}.md"
           if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            NOTES="${GITHUB_WORKSPACE}/desktop_app/RELEASE_NOTES_0.3.2.md"
             if [[ -f "$NOTES" ]]; then
-              gh release create "$TAG" --title "VarioField ${TAG#v}" --notes-file "$NOTES" --repo "$GITHUB_REPOSITORY"
+              gh release create "$TAG" --title "VarioField ${VER}" --notes-file "$NOTES" --repo "$GITHUB_REPOSITORY"
             else
-              gh release create "$TAG" --title "VarioField ${TAG#v}" --generate-notes --repo "$GITHUB_REPOSITORY"
+              gh release create "$TAG" --title "VarioField ${VER}" --generate-notes --repo "$GITHUB_REPOSITORY"
             fi
           fi
           gh release upload "$TAG" "$EXE" --clobber --repo "$GITHUB_REPOSITORY"
@@ -170,11 +191,25 @@ jobs:
           python -m pip install -U pip wheel
           pip install -r requirements.txt -r backend/requirements.txt pyinstaller
 
+      - name: Stage Electron resources (drive_profiles + config)
+        run: |
+          set -euo pipefail
+          mkdir -p electron/resources/backend electron/resources/ui \
+                   electron/resources/drive_profiles electron/resources/config
+          if [[ -d ../drive_profiles ]]; then
+            cp -a ../drive_profiles/. electron/resources/drive_profiles/
+            echo "drive_profiles: $(find electron/resources/drive_profiles -name profile.json | wc -l) catalogs"
+          else
+            echo "WARN: repo drive_profiles/ missing"
+            echo "# empty" > electron/resources/drive_profiles/README.md
+          fi
+          cp -f config/connection_profiles.example.json \
+            electron/resources/config/connection_profiles.example.json
+
       - name: Build multi_vdf_backend
         env:
           PYTHONPATH: ${{ github.workspace }}/desktop_app
         run: |
-          mkdir -p electron/resources/backend electron/resources/ui
           pyinstaller --noconfirm --clean \
             --onefile \
             --name multi_vdf_backend \
@@ -192,6 +227,8 @@ jobs:
             --hidden-import backend.session \
             --hidden-import backend.schemas \
             --hidden-import backend.param_api \
+            --hidden-import backend.broker \
+            --hidden-import backend.mqtt_discover \
             --hidden-import comms \
             --hidden-import comms.serial_client \
             --hidden-import comms.mqtt_client \
@@ -219,9 +256,11 @@ jobs:
 
       - name: Electron Builder (AppImage x64)
         working-directory: desktop_app/electron
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm ci || npm install
-          npx electron-builder --linux AppImage --x64
+          npx electron-builder --linux AppImage --x64 --publish never
           ls -lh dist/
 
       - name: Upload Linux artifact
@@ -241,12 +280,13 @@ jobs:
           cd desktop_app/electron/dist
           APP=$(ls VarioField-*.AppImage | head -1)
           echo "Uploading $APP → release $TAG"
+          VER="${TAG#v}"
+          NOTES="${GITHUB_WORKSPACE}/desktop_app/RELEASE_NOTES_${VER}.md"
           if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            NOTES="${GITHUB_WORKSPACE}/desktop_app/RELEASE_NOTES_0.3.2.md"
             if [[ -f "$NOTES" ]]; then
-              gh release create "$TAG" --title "VarioField ${TAG#v}" --notes-file "$NOTES" --repo "$GITHUB_REPOSITORY"
+              gh release create "$TAG" --title "VarioField ${VER}" --notes-file "$NOTES" --repo "$GITHUB_REPOSITORY"
             else
-              gh release create "$TAG" --title "VarioField ${TAG#v}" --generate-notes --repo "$GITHUB_REPOSITORY"
+              gh release create "$TAG" --title "VarioField ${VER}" --generate-notes --repo "$GITHUB_REPOSITORY"
             fi
           fi
           gh release upload "$TAG" "$APP" --clobber --repo "$GITHUB_REPOSITORY"

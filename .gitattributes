@@ -10,6 +10,10 @@
 *.csv text eol=lf
 *.rhai text eol=lf
 
+# Windows cmd scripts must keep CRLF or Actions/cmd misparses lines
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
 # Treat manuals / binaries as binary
 *.pdf binary
 *.bin binary

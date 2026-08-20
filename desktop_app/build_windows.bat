@@ -77,20 +77,29 @@ if exist "%~dp0dist\windows\MULTI_VDF_HMI_Flasher.exe" (
 )
 
 (
-echo MULTI_VDF_HMI — ejecutables Windows
+echo MULTI_VDF_HMI - ejecutables Windows
 echo ===================================
 echo.
-echo SAJ_PDM30_Gestor.exe     — app de campo
-echo MULTI_VDF_HMI_Flasher.exe — flasheo de firmwares desde GitHub
+echo SAJ_PDM30_Gestor.exe     - app de campo
+echo MULTI_VDF_HMI_Flasher.exe - flasheo de firmwares desde GitHub
 echo.
-echo Si Windows SmartScreen avisa: "Mas informacion" -^> "Ejecutar de todas formas"
-echo ^(binario no firmado^).
+echo Si Windows SmartScreen avisa: Mas informacion -^> Ejecutar de todas formas
+echo (binario no firmado).
 echo.
 echo Generado con: desktop_app\build_windows.bat
 ) > "%~dp0dist\windows\LEEME.txt"
 
 echo.
+if not exist "%~dp0dist\windows\SAJ_PDM30_Gestor.exe" (
+  echo ERROR: falta SAJ_PDM30_Gestor.exe
+  exit /b 1
+)
+if not exist "%~dp0dist\windows\MULTI_VDF_HMI_Flasher.exe" (
+  echo ERROR: falta MULTI_VDF_HMI_Flasher.exe
+  exit /b 1
+)
 echo === Build Windows listo ===
 dir "%~dp0dist\windows\*.exe"
 echo.
 endlocal
+exit /b 0

@@ -104,6 +104,23 @@ const MODE_DEFS: {
   { id: "dummy", label: t.modeDummy, transport: "dummy", prod: false },
 ];
 
+/** Extract saj/pdm30/vf-… from CLI lines (wifi/mqtt status, id, topics). */
+function learnMqttPrefixFromLine(line: string): string | null {
+  const s = line.trim();
+  // mqtt topics cmd=saj/pdm30/vf-7cf194/cmd rsp=...
+  const topics = s.match(
+    /mqtt topics\s+cmd=(saj\/pdm30\/[a-z0-9._-]+)\/cmd\b/i
+  );
+  if (topics?.[1]) return topics[1].toLowerCase();
+  // edge id=vf-7cf194 mac=...  OR  id=vf-7cf194
+  const edgeId = s.match(/\b(?:edge\s+)?id=(vf-[a-z0-9-]+)\b/i);
+  if (edgeId?.[1]) return `saj/pdm30/${edgeId[1].toLowerCase()}`;
+  // bare id reply: id vf-7cf194
+  const bare = s.match(/^id\s+(vf-[a-z0-9-]+)\s*$/i);
+  if (bare?.[1]) return `saj/pdm30/${bare[1].toLowerCase()}`;
+  return null;
+}
+
 function userLogLine(raw: string): string | null {
   const s = raw.trim();
   if (!s) return null;
@@ -562,6 +579,21 @@ export default function App() {
           if (line.startsWith(">")) line = line.slice(1).trim();
           notifyLineWaiters(line);
           pushLog(line);
+          // Auto-fill MQTT topic_prefix from CLI (BT/USB/wifi status / id)
+          const learned = learnMqttPrefixFromLine(line);
+          if (learned) {
+            setMqttTopicPrefix((prev) => {
+              if (
+                !prev ||
+                prev.includes("XXXXXX") ||
+                prev.endsWith("/saj-pdm30") ||
+                prev === "saj/pdm30/saj-pdm30"
+              ) {
+                return learned;
+              }
+              return prev;
+            });
+          }
           const lineErr = classifyFromLine(line);
           if (lineErr && lineErr.code === "DRIVE_NO_LINK") {
             setAppError(lineErr);
@@ -1847,9 +1879,24 @@ export default function App() {
                       pr.mqtt_profiles.find((p) => p.name === mqttName) ||
                       pr.mqtt_profiles[0];
                     if (!mp?.host) {
-                      reportError(new Error("Falta perfil de red"), {
-                        context: "mqtt",
-                      });
+                      reportError(new Error("Falta perfil de red"), "mqtt");
+                      return;
+                    }
+                    const user = (mp.username || "").trim();
+                    const pass = (mp.password || "").trim();
+                    if (
+                      !user ||
+                      !pass ||
+                      pass === "TU_MQTT_PASSWORD" ||
+                      pass.startsWith("TU_")
+                    ) {
+                      reportError(
+                        new Error(
+                          "MQTT auth: falta usuario/contraseña en el perfil. " +
+                            "Completalos en Más → Red del equipo (variofield + pass del setup)."
+                        ),
+                        "mqtt"
+                      );
                       return;
                     }
                     setScanningEdges(true);

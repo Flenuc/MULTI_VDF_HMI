@@ -44,8 +44,14 @@ jobs:
       - name: Build Windows x64
         working-directory: desktop_app
         shell: cmd
+        run: build_windows.bat
+      - name: Verify Windows binaries
+        working-directory: desktop_app
+        shell: pwsh
         run: |
-          call build_windows.bat
+          if (-not (Test-Path dist/windows/SAJ_PDM30_Gestor.exe)) { throw "missing SAJ_PDM30_Gestor.exe" }
+          if (-not (Test-Path dist/windows/MULTI_VDF_HMI_Flasher.exe)) { throw "missing MULTI_VDF_HMI_Flasher.exe" }
+          Get-ChildItem dist/windows/*.exe | Format-Table Name, Length
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -54,6 +60,7 @@ jobs:
             desktop_app/dist/windows/SAJ_PDM30_Gestor.exe
             desktop_app/dist/windows/MULTI_VDF_HMI_Flasher.exe
             desktop_app/dist/windows/LEEME.txt
+          if-no-files-found: error
 
   release:
     needs: [linux, windows]

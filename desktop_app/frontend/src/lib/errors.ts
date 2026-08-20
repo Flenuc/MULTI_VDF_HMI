@@ -9,6 +9,7 @@ export type ErrorCode =
   | "USB_OPEN"
   | "NO_MQTT_PROFILE"
   | "MQTT_CONNECT"
+  | "MQTT_AUTH"
   | "MQTT_HOST_LOCAL"
   | "NO_BT_DEVICE"
   | "BT_SCAN"
@@ -106,6 +107,16 @@ const CATALOG: Record<
       "y que el perfil usa la IP correcta (no “localhost” si el módulo es el que se conecta).",
     retry: "reconnect",
     retryLabel: "Reintentar",
+  },
+  MQTT_AUTH: {
+    title: "Falta usuario/contraseña MQTT",
+    message:
+      "El broker exige autenticación (usuario y contraseña).\n" +
+      "Ve a Más → Red del equipo, editá el perfil «Local Mosquitto» (u otro) y completá " +
+      "usuario (p. ej. variofield) y la contraseña que generó el setup de Mosquitto.\n" +
+      "Sin eso, «Buscar módulos» y la conexión MQTT fallan aunque Bluetooth funcione.",
+    retry: "open_profiles",
+    retryLabel: "Editar perfil",
   },
   MQTT_HOST_LOCAL: {
     title: "Revisa la dirección del broker",
@@ -311,6 +322,19 @@ export function classifyError(
   }
 
   if (ctx === "mqtt" || s.includes("mqtt") || s.includes("broker")) {
+    if (
+      s.includes("auth") ||
+      s.includes("usuario") ||
+      s.includes("contraseña") ||
+      s.includes("password") ||
+      s.includes("rc=5") ||
+      s.includes("not authorised") ||
+      s.includes("not authorized") ||
+      s.includes("conexión rechazada") ||
+      s.includes("conexion rechazada")
+    ) {
+      return makeError("MQTT_AUTH", raw);
+    }
     if (s.includes("perfil") || s.includes("profile") || s.includes("host")) {
       if (s.includes("falta") || s.includes("crea") || s.includes("valid")) {
         return makeError("NO_MQTT_PROFILE", raw);

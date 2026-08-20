@@ -257,13 +257,14 @@ def ensure_local_mqtt_profile() -> Dict[str, Any]:
                     "name": "Local Mosquitto",
                     "host": "127.0.0.1",
                     "port": DEFAULT_PORT,
-                    "username": "",
+                    "username": "variofield",
                     "password": "",
-                    "topic_prefix": "saj/pdm30/saj-pdm30",
+                    "topic_prefix": "saj/pdm30/vf-XXXXXX",
                     "notes": (
-                        "Broker en este PC (Mosquitto). "
-                        "En el Edge: mqtt set <IP_LAN_PC> "
-                        f"{DEFAULT_PORT}"
+                        "Broker en este PC (Mosquitto + auth). "
+                        "Completá la contraseña del setup y usá «Buscar módulos» "
+                        "o el prefijo visto por BT (saj/pdm30/vf-…). "
+                        f"En el Edge: mqtt set <IP_LAN_PC> {DEFAULT_PORT}"
                     ),
                 }
             )

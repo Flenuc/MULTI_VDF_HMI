@@ -1,0 +1,37 @@
+{
+  "wifi_profiles": [
+    {
+      "name": "PLANTA_EJEMPLO",
+      "ssid": "TU_SSID",
+      "password": "TU_PASSWORD",
+      "notes": "Copiá a connection_profiles.json y completá credenciales reales"
+    }
+  ],
+  "mqtt_profiles": [
+    {
+      "name": "Local Mosquitto",
+      "host": "127.0.0.1",
+      "port": 1883,
+      "username": "variofield",
+      "password": "TU_MQTT_PASSWORD",
+      "topic_prefix": "saj/pdm30/vf-XXXXXX",
+      "notes": "Auth (setup_mosquitto). topic_prefix = saj/pdm30/<edge id> (ver CLI `id` / wifi status). FW≥0.3.8"
+    },
+    {
+      "name": "LAN broker",
+      "host": "192.168.1.10",
+      "port": 1883,
+      "username": "variofield",
+      "password": "TU_MQTT_PASSWORD",
+      "topic_prefix": "saj/pdm30/vf-XXXXXX",
+      "notes": "Ajustá IP + edge id real. No dejes user/pass vacíos en planta."
+    }
+  ],
+  "last_mode": "MQTT",
+  "last_wifi": "",
+  "last_mqtt": "Local Mosquitto",
+  "last_serial_port": "",
+  "last_serial_baud": 115200,
+  "last_bt_address": "",
+  "last_bt_name": ""
+}

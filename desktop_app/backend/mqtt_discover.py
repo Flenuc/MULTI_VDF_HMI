@@ -25,12 +25,24 @@ def discover_edges(
         raise RuntimeError("pip install paho-mqtt") from e
 
     root = root.strip().rstrip("/") or "saj/pdm30"
+    if not (username or "").strip():
+        raise RuntimeError(
+            "MQTT auth: falta usuario/contraseña en el perfil. "
+            "Configurá usuario y contraseña del broker en Más → Red del equipo."
+        )
     found: Dict[str, Dict[str, Any]] = {}
     lock = threading.Lock()
     done = threading.Event()
+    connect_error: list[str] = []
 
     def on_connect(client, userdata, flags, rc):
-        if rc != 0:
+        # paho v1: rc is int; reason codes vary
+        code = int(rc) if not hasattr(rc, "value") else int(getattr(rc, "value", rc))
+        if code != 0:
+            connect_error.append(
+                f"MQTT auth/conexión rechazada (rc={code}). "
+                "Configurá usuario y contraseña del broker en el perfil MQTT."
+            )
             done.set()
             return
         client.subscribe(f"{root}/+/status", qos=0)
@@ -79,7 +91,16 @@ def discover_edges(
 
     client.loop_start()
     try:
-        time.sleep(max(1.2, float(seconds)))
+        # Wait until connected (or failed) then collect retained status
+        deadline = time.time() + max(1.5, float(seconds))
+        while time.time() < deadline and not connect_error:
+            if found:
+                # still wait a bit for more retained msgs
+                time.sleep(0.3)
+                break
+            time.sleep(0.1)
+        if not connect_error:
+            time.sleep(max(0.5, float(seconds) * 0.4))
     finally:
         try:
             client.loop_stop()
@@ -87,6 +108,9 @@ def discover_edges(
         except Exception:
             pass
         done.set()
+
+    if connect_error:
+        raise RuntimeError(connect_error[0])
 
     with lock:
         rows = list(found.values())

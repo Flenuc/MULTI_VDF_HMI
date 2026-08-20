@@ -222,12 +222,35 @@ function startBackend() {
     logLine(`WARN: packaged UI missing at ${ui}`);
   }
 
+  // Writable profiles (MQTT user/pass) — never use PyInstaller _MEIPASS
+  const configDir = path.join(app.getPath("userData"), "config");
+  try {
+    fs.mkdirSync(configDir, { recursive: true });
+    const dest = path.join(configDir, "connection_profiles.json");
+    if (!fs.existsSync(dest)) {
+      const exampleCandidates = [
+        path.join(res, "config", "connection_profiles.example.json"),
+        path.join(res, "backend", "config", "connection_profiles.example.json"),
+      ];
+      for (const ex of exampleCandidates) {
+        if (fs.existsSync(ex)) {
+          fs.copyFileSync(ex, dest);
+          logLine(`seeded connection_profiles from ${ex}`);
+          break;
+        }
+      }
+    }
+  } catch (e) {
+    logLine(`configDir setup failed: ${e}`);
+  }
+
   const env = {
     ...process.env,
     MULTI_VDF_HOST: HOST,
     MULTI_VDF_PORT: String(PORT),
     MULTI_VDF_UI_DIR: ui,
     MULTI_VDF_RESOURCES: res,
+    MULTI_VDF_CONFIG_DIR: configDir,
     MULTI_VDF_SCRIPTS_DIR: fs.existsSync(scriptsDir) ? scriptsDir : "",
     MULTI_VDF_DRIVE_PROFILES: fs.existsSync(driveProfilesDir)
       ? driveProfilesDir
@@ -235,6 +258,7 @@ function startBackend() {
     PYTHONUNBUFFERED: "1",
     VARIOFIELD_EMBED: "1",
   };
+  logLine(`MULTI_VDF_CONFIG_DIR=${configDir}`);
 
   const spawnOptsBase = {
     stdio: ["ignore", "pipe", "pipe"],

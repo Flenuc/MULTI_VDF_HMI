@@ -67,6 +67,11 @@ pyinstaller --noconfirm --clean \
 chmod +x electron/resources/backend/multi_vdf_backend
 ls -lh electron/resources/backend/multi_vdf_backend
 
+# Example MQTT profiles (seeded into Electron userData/config on first run)
+mkdir -p electron/resources/config
+cp -f config/connection_profiles.example.json \
+  electron/resources/config/connection_profiles.example.json
+
 echo "=== 2) Expo web static UI (production) ==="
 cd frontend
 if [[ ! -d node_modules ]]; then npm install; fi
@@ -94,6 +99,7 @@ VarioField backend ${VERSION}
 API + UI en http://127.0.0.1:8765
 Electron define MULTI_VDF_UI_DIR hacia resources/ui
 Electron define MULTI_VDF_DRIVE_PROFILES hacia resources/drive_profiles
+Electron define MULTI_VDF_CONFIG_DIR hacia userData/config (perfiles MQTT)
 EOF
 
 npx electron-builder --linux AppImage
