@@ -20,6 +20,7 @@ import {
   type DriveProfileVariantInfo,
 } from "../api/client";
 import { exportJsonFile, importJsonObject } from "../lib/jsonFile";
+import { useConfirmDialog } from "./ConfirmDialog";
 import { colors, font, radius, space, touchMin } from "../theme";
 
 type Variant = "active" | "live_draft" | "merged";
@@ -50,6 +51,8 @@ export default function CatalogEditor({
   const [busy, setBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { confirm, dialog: confirmDialog } = useConfirmDialog();
+
 
   const load = useCallback(async () => {
     if (!profileId) return;
@@ -185,33 +188,28 @@ export default function CatalogEditor({
   };
 
   const applyVariant = async (source: "merged" | "live_draft") => {
-    Alert.alert(
-      "Aplicar variante",
-      `¿Copiar ${source} → active (overlay usuario)?`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Aplicar",
-          onPress: async () => {
-            setBusy(true);
-            try {
-              const saved = await api.applyDriveProfileVariant(profileId, source);
-              setVariant("active");
-              setDoc(saved);
-              setRows([...(saved.parameters || [])]);
-              setDirty(false);
-              onLog?.(`Aplicado ${source} → active (${profileId})`);
-              onProfilesChanged?.();
-              Alert.alert("OK", `${source} aplicado como active.`);
-            } catch (e) {
-              Alert.alert("Error", String(e));
-            } finally {
-              setBusy(false);
-            }
-          },
-        },
-      ]
-    );
+    const choice = await confirm({
+      title: "Aplicar variante",
+      body: `¿Copiar ${source} → active (overlay usuario)?`,
+      primaryLabel: "Aplicar",
+      cancelLabel: "Cancelar",
+    });
+    if (choice !== "primary") return;
+    setBusy(true);
+    try {
+      const saved = await api.applyDriveProfileVariant(profileId, source);
+      setVariant("active");
+      setDoc(saved);
+      setRows([...(saved.parameters || [])]);
+      setDirty(false);
+      onLog?.(`Aplicado ${source} → active (${profileId})`);
+      onProfilesChanged?.();
+      Alert.alert("OK", `${source} aplicado como active.`);
+    } catch (e) {
+      Alert.alert("Error", String(e));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -228,21 +226,21 @@ export default function CatalogEditor({
         {profiles.map((p) => (
           <Pressable
             key={p.id}
-            style={({ focused }) => [
-              styles.chip,
-              profileId === p.id && styles.chipOn,
-              focused && styles.focusRing,
-            ]}
-            onPress={() => {
+            style={(state) => [
+                styles.chip,
+                profileId === p.id && styles.chipOn,
+                (state as any).focused && styles.focusRing,
+              ]}
+            onPress={async () => {
               if (dirty) {
-                Alert.alert("Cambios sin guardar", "¿Descartar y cambiar de perfil?", [
-                  { text: "Cancelar", style: "cancel" },
-                  {
-                    text: "Descartar",
-                    style: "destructive",
-                    onPress: () => setProfileId(p.id),
-                  },
-                ]);
+                const choice = await confirm({
+                  title: "Cambios sin guardar",
+                  body: "¿Descartar y cambiar de perfil?",
+                  primaryLabel: "Descartar",
+                  cancelLabel: "Cancelar",
+                  primaryDanger: true,
+                });
+                if (choice === "primary") setProfileId(p.id);
               } else setProfileId(p.id);
             }}
           >
@@ -259,12 +257,12 @@ export default function CatalogEditor({
           return (
             <Pressable
               key={v}
-              style={({ focused }) => [
-                styles.chip,
-                variant === v && styles.chipOn,
-                missing && styles.chipDisabled,
-                focused && styles.focusRing,
-              ]}
+              style={(state) => [
+                  styles.chip,
+                  variant === v && styles.chipOn,
+                  missing && styles.chipDisabled,
+                  (state as any).focused && styles.focusRing,
+                ]}
               disabled={!!missing}
               onPress={() => setVariant(v)}
             >
@@ -385,11 +383,11 @@ export default function CatalogEditor({
                 {MAP_STATUSES.map((st) => (
                   <Pressable
                     key={st}
-                    style={({ focused }) => [
-                      styles.mapChip,
-                      r.map_status === st && styles.mapChipOn,
-                      focused && styles.focusRing,
-                    ]}
+                    style={(state) => [
+                        styles.mapChip,
+                        r.map_status === st && styles.mapChipOn,
+                        (state as any).focused && styles.focusRing,
+                      ]}
                     onPress={() => updateRow(r.id, { map_status: st })}
                     hitSlop={4}
                     accessibilityRole="button"
@@ -415,6 +413,7 @@ export default function CatalogEditor({
           )}
         </View>
       </ScrollView>
+      {confirmDialog}
     </View>
   );
 }

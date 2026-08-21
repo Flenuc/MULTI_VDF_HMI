@@ -41,6 +41,8 @@ import {
 } from "./src/lib/roles";
 import { exportJsonFile, importJsonObject } from "./src/lib/jsonFile";
 import CatalogEditor from "./src/components/CatalogEditor";
+import { useConfirmDialog } from "./src/components/ConfirmDialog";
+import { Badge, Chip, StepCard } from "./src/components/primitives";
 import { t } from "./src/i18n/es";
 import {
   classifyError,
@@ -231,6 +233,8 @@ export default function App() {
   >("all");
   /** Confirm send recipe — Alert.alert multi-button is broken on web/Electron. */
   const [showSyncConfirm, setShowSyncConfirm] = useState(false);
+  const { confirm, dialog: confirmDialog } = useConfirmDialog();
+
   const [syncConfirmMeta, setSyncConfirmMeta] = useState({
     n: 0,
     skipped: 0,
@@ -1504,15 +1508,15 @@ export default function App() {
     { label: t.actMqttInfo, cmd: "mqtt status" },
   ];
 
-  const confirmDriveStart = () => {
-    Alert.alert(t.driveStartConfirmTitle, t.driveStartConfirmBody, [
-      { text: t.driveStartConfirmCancel, style: "cancel" },
-      {
-        text: t.driveStartConfirmOk,
-        style: "destructive",
-        onPress: () => sendCmd("start"),
-      },
-    ]);
+  const confirmDriveStart = async () => {
+    const choice = await confirm({
+      title: t.driveStartConfirmTitle,
+      body: t.driveStartConfirmBody,
+      primaryLabel: t.driveStartConfirmOk,
+      cancelLabel: t.driveStartConfirmCancel,
+      primaryDanger: true,
+    });
+    if (choice === "primary") sendCmd("start");
   };
 
   // force re-read showDevTools after unlock
@@ -1533,9 +1537,9 @@ export default function App() {
             <Text style={styles.tagline}>{BRAND.tagline}</Text>
           </View>
           <Pressable
-            style={({ focused }) => [
+            style={(state) => [
               styles.helpBtn,
-              focused && styles.focusRing,
+              (state as any).focused && styles.focusRing,
             ]}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             onPress={() => {
@@ -1563,6 +1567,11 @@ export default function App() {
         <Text style={styles.roleBadge}>
           {showDevTools() ? t.roleBadgeTech : t.roleBadgeOp}
         </Text>
+        {!showDevTools() ? (
+          <Text style={styles.devHint} accessibilityRole="text">
+            Ayuda («?») o Más → «Modo técnico (PIN)» para herramientas avanzadas.
+          </Text>
+        ) : null}
 
         <View style={styles.row}>
           <Badge
@@ -2260,7 +2269,7 @@ export default function App() {
               <Pressable
                 onPress={() => setShowAdvancedCmd(true)}
                 hitSlop={12}
-                style={({ focused }) => [focused && styles.focusRing, { borderRadius: 8, padding: 4 }]}
+                style={(state) => [(state as any).focused && styles.focusRing, { borderRadius: 8, padding: 4 }]}
                 accessibilityRole="button"
                 accessibilityLabel="Mostrar comando técnico avanzado"
               >
@@ -2464,10 +2473,7 @@ export default function App() {
                   setRecipeFilter("all");
                 }}
                 hitSlop={12}
-                style={({ focused }) => [
-                  focused && styles.focusRing,
-                  { borderRadius: 8, padding: 4 },
-                ]}
+                style={(state) => [(state as any).focused && styles.focusRing, { borderRadius: 8, padding: 4 }]}
                 accessibilityRole="button"
                 accessibilityLabel="Limpiar búsqueda y filtros"
               >
@@ -3146,6 +3152,8 @@ export default function App() {
         </View>
       </Modal>
 
+      {confirmDialog}
+
       {/* About */}
       <Modal visible={showAbout} animationType="fade" transparent>
         <View style={styles.modalBg}>
@@ -3162,7 +3170,7 @@ export default function App() {
               {"\n\n"}
               {dev
                 ? `Interno: ${BRAND.codename} · ${apiBase()}\nPIN técnico (fábrica): ${DEFAULT_TECH_PIN}`
-                : "Mantén pulsado «?» para acceso técnico (PIN)."}
+                : "Acceso técnico: Más → «Modo técnico (PIN)». Atajo: mantener pulsado «?»."}
             </Text>
             <Pressable style={styles.btnPri} onPress={() => setShowAbout(false)}>
               <Text style={styles.btnText}>{t.close}</Text>
@@ -3178,114 +3186,6 @@ function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-function Badge({
-  ok,
-  warn,
-  label,
-}: {
-  ok: boolean;
-  warn?: boolean;
-  label: string;
-}) {
-  const bg = warn ? colors.warningSoft : ok ? colors.successBg : colors.dangerBg;
-  return (
-    <View style={[styles.badge, { backgroundColor: bg }]}>
-      <Text style={styles.badgeText}>{label}</Text>
-    </View>
-  );
-}
-
-function Chip({
-  label,
-  onPress,
-  active,
-  disabled,
-}: {
-  label: string;
-  onPress: () => void;
-  active?: boolean;
-  disabled?: boolean;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      style={({ focused }) => [
-        styles.chip,
-        active && styles.chipOn,
-        disabled && styles.dis,
-        focused && styles.focusRing,
-      ]}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ selected: !!active, disabled: !!disabled }}
-    >
-      <Text style={styles.chipText}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function StepCard({
-  title,
-  body,
-  status,
-  done,
-  locked,
-  primaryLabel,
-  onPrimary,
-  secondaryLabel,
-  onSecondary,
-}: {
-  title: string;
-  body: string;
-  status: string;
-  done?: boolean;
-  locked?: boolean;
-  primaryLabel: string;
-  onPrimary: () => void;
-  secondaryLabel?: string;
-  onSecondary?: () => void;
-}) {
-  return (
-    <View
-      style={[
-        styles.stepCard,
-        done && styles.stepCardDone,
-        locked && styles.stepCardLocked,
-      ]}
-      accessibilityRole="summary"
-    >
-      <View style={styles.stepHeader}>
-        <View
-          style={[styles.stepBadge, done ? styles.stepBadgeDone : styles.stepBadgeTodo]}
-        >
-          <Text style={styles.stepBadgeText}>{done ? "✓" : "·"}</Text>
-        </View>
-        <Text style={styles.stepTitle}>{title}</Text>
-      </View>
-      <Text style={styles.stepBody}>{body}</Text>
-      <Text style={styles.stepStatus}>{status}</Text>
-      <View style={styles.row}>
-        <Pressable
-          style={[styles.btnPri, styles.btnLarge]}
-          onPress={onPrimary}
-          accessibilityRole="button"
-        >
-          <Text style={styles.btnTextLarge}>{primaryLabel}</Text>
-        </Pressable>
-        {secondaryLabel && onSecondary ? (
-          <Pressable
-            style={[styles.btnSec, locked && styles.dis]}
-            onPress={onSecondary}
-            accessibilityRole="button"
-          >
-            <Text style={styles.btnText}>{secondaryLabel}</Text>
-          </Pressable>
-        ) : null}
-      </View>
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },

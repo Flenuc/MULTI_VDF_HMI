@@ -188,12 +188,22 @@ export function applyCompare(
 
 export function validateParam(p: Parameter): void {
   const id = paramId(p);
-  if (!normalizeParamId(id)) throw new Error(`id inválido: ${id}`);
-  if (id.startsWith("P") && id.includes("-")) {
-    if (p.group !== 0 && p.group !== 1) throw new Error("group must be 0 or 1");
-    if (p.index < 0 || p.index > 47) throw new Error("index must be 0..47");
+  if (!normalizeParamId(id)) {
+    throw new Error(
+      `ID no válido: «${id}». Usá formato F0.00 (PDH) o P0-00 (PDM).`
+    );
   }
-  if (Number.isNaN(p.value)) throw new Error("value invalid");
+  if (id.startsWith("P") && id.includes("-")) {
+    if (p.group !== 0 && p.group !== 1) {
+      throw new Error("El grupo PDM debe ser 0 o 1 (P0-xx / P1-xx).");
+    }
+    if (p.index < 0 || p.index > 47) {
+      throw new Error("El índice PDM debe estar entre 0 y 47.");
+    }
+  }
+  if (Number.isNaN(p.value)) {
+    throw new Error("El valor no es un número válido.");
+  }
 }
 
 export function isPdhProfile(driveProfileId?: string): boolean {

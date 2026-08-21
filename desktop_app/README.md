@@ -2,10 +2,19 @@
 
 Aplicación de escritorio para VDF SAJ (PDM-30 / PDH-30) vía ESP32 Edge.
 
-**Cliente principal a futuro:** frontend React Native (Expo) + backend FastAPI en este árbol.  
+**Cliente principal:** frontend React Native (Expo) + backend FastAPI, empaquetado con **Electron** (AppImage / NSIS).  
 **CustomTkinter** (si está presente) queda en **modo mantenimiento / debug**, no es el foco de features nuevas.
 
-Contrato de protocolo: `docs/PROTOCOL.md`. Seguridad / MQTT: `docs/SECURITY.md`.
+### Plataformas soportadas (oficial)
+
+| Plataforma | Estado |
+|------------|--------|
+| **Electron** (Linux AppImage arm64/x64, Windows Setup) | **Oficial** — canal de release |
+| **Expo Web** (dev / UI embebida en Electron) | **Oficial** |
+| iOS / Android nativo (`app.json`) | **Experimental / no listo** — prefs y abrir/guardar JSON usan APIs web (`localStorage` / `document`); no usar en campo hasta Sprint D+ (AsyncStorage / document picker) |
+
+Contrato de protocolo: `docs/PROTOCOL.md`. Seguridad / MQTT: `docs/SECURITY.md`.  
+Auditorías UX/a11y: `docs/AUDITORIAS_FRONTEND_2026-08-21.md`.
 
 ## Enlaces soportados
 

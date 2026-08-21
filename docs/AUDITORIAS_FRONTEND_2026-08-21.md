@@ -147,4 +147,9 @@
   - CatalogEditor migrado a tokens + `touchMin` 48 (filas/chips map)
   - Foco teclado (`focusRing` / `borderFocus`) en Chip, ayuda y links
   - `hitSlop` en `?` y links secundarios; `web.lang: "es"` en `app.json`
-- [ ] Decisión P3-01 documentada en README / app.json
+- [x] Sprint D (parcial, 2026-08-21)
+  - Plataforma: **Web+Electron oficial**; iOS/Android en `app.json` marcados experimental/roto (`desktop_app/README.md`)
+  - `ConfirmDialog` + migración Marcha / CatalogEditor (descartar / aplicar variante)
+  - Errores `validateParam` en español operativo
+  - Pista visible de acceso técnico; `Chip`/`Badge`/`StepCard` extraídos a `components/primitives.tsx`
+- [x] Decisión P3-01 documentada en README (experimental nativo)
