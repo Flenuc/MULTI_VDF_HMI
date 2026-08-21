@@ -23,6 +23,14 @@ python3 -m tools.catalog_builder extract-live saj.pdh30 \
 # Live dump over USB serial
 python3 -m tools.catalog_builder extract-live saj.pdh30 \
   --via serial --port /dev/ttyACM0 --write-draft
+
+# Merge manual + live → profile.merged.json (does not touch profile.json)
+python3 -m tools.catalog_builder merge saj.pdh30
+python3 -m tools.catalog_builder merge saj.pdh30 \
+  --live results/live_extract_saj_pdh30_latest.json
+
+# Promote merged → profile.json (creates profile.json.bak)
+python3 -m tools.catalog_builder merge saj.pdh30 --apply
 ```
 
 ## Status
@@ -33,16 +41,32 @@ python3 -m tools.catalog_builder extract-live saj.pdh30 \
 | `extract-manual saj.pdh30` | wraps `extract_pdh30_from_manual.py` |
 | `extract-manual saj.pdm30` | wraps `generate_saj_pdm30_profile.py` |
 | `extract-live --via mqtt\|serial` | OK — writes `results/live_extract_*` + optional `profile.live_draft.json` |
-| `merge` formal | planned |
+| `merge` | OK — writes `profile.merged.json` + `results/merge_report_*` |
 | UI técnica | planned |
 
-## Outputs (`extract-live`)
+### Merge rules
+
+| Campo | Fuente |
+|-------|--------|
+| name, unit, scale, default, access, notes | Manual / `profile.json` |
+| register | Manual (salvo `--prefer-live-register`) |
+| `live_raw`, `live_eng`, `map_status` | Live draft / extract |
+
+## Outputs
+
+**extract-live**
 
 - `results/live_extract_<profile>_<ts>.json` — summary + rows
 - `results/live_extract_<profile>_latest.json`
 - With `--write-draft`: `drive_profiles/<vendor>/<model>/profile.live_draft.json`  
   (does **not** overwrite `profile.json`)
 
-Password: prefer `--mqtt-profile` (local gitignored store) or env `VARIOFIELD_MQTT_PASS`.
+**merge**
+
+- `drive_profiles/<vendor>/<model>/profile.merged.json`
+- `results/merge_report_<profile>_<ts>.json` (+ `_latest`)
+- With `--apply`: overwrites `profile.json` after `profile.json.bak`
+
+Password (MQTT): prefer `--mqtt-profile` (local gitignored store) or env `VARIOFIELD_MQTT_PASS`.
 
 Roadmap: `docs/ROADMAP_MULTI_VDF.md` § M2.

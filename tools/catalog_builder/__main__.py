@@ -10,6 +10,8 @@ Usage (from repo root):
   python3 -m tools.catalog_builder diff saj.pdm30 saj.pdh30
   python3 -m tools.catalog_builder extract-live saj.pdh30 --via mqtt --mqtt-profile "Local Mosquitto"
   python3 -m tools.catalog_builder extract-live saj.pdh30 --via serial --port /dev/ttyACM0
+  python3 -m tools.catalog_builder merge saj.pdh30
+  python3 -m tools.catalog_builder merge saj.pdh30 --live results/live_extract_saj_pdh30_latest.json
 """
 from __future__ import annotations
 
@@ -309,6 +311,75 @@ def cmd_extract_live(args: argparse.Namespace) -> int:
   return 0
 
 
+def cmd_merge(args: argparse.Namespace) -> int:
+  from tools.catalog_builder.merge_profiles import merge_profiles, write_merged
+
+  profile_id = args.profile_id
+  base_path = profile_path(profile_id)
+  base = load_profile(profile_id)
+
+  if args.live:
+    live_path = Path(args.live)
+    if not live_path.is_file():
+      # allow relative to repo root
+      alt = ROOT / args.live
+      live_path = alt if alt.is_file() else live_path
+  else:
+    live_path = base_path.with_name("profile.live_draft.json")
+
+  if not live_path.is_file():
+    print(
+      f"FAIL: live source missing: {live_path}\n"
+      "  Run extract-live --write-draft first, or pass --live PATH",
+      file=sys.stderr,
+    )
+    return 1
+
+  live = json.loads(live_path.read_text(encoding="utf-8"))
+  merged, report = merge_profiles(
+    base,
+    live,
+    prefer_live_register=bool(args.prefer_live_register),
+  )
+  paths = write_merged(merged, report, base_path, OUT_DIR)
+
+  print(
+    json.dumps(
+      {
+        "profile_id": profile_id,
+        "live": str(live_path),
+        "ok_pct": report.get("ok_pct"),
+        "counts": report.get("counts"),
+        "register_conflicts": len(report.get("register_conflicts") or []),
+        "only_base": len(report.get("only_base") or []),
+        "only_live": len(report.get("only_live") or []),
+      },
+      indent=2,
+    )
+  )
+  print(f"wrote {paths['merged'].relative_to(ROOT)}")
+  if "report" in paths:
+    print(f"wrote {paths['report'].relative_to(ROOT)}")
+
+  conflicts = report.get("register_conflicts") or []
+  if conflicts:
+    print(f"register conflicts ({len(conflicts)}):")
+    for c in conflicts[:15]:
+      print(f"  {c['id']}: base={c['base']} live={c['live']}")
+    if len(conflicts) > 15:
+      print(f"  … +{len(conflicts) - 15}")
+
+  if args.apply:
+    bak = base_path.with_suffix(base_path.suffix + ".bak")
+    bak.write_text(base_path.read_text(encoding="utf-8"), encoding="utf-8")
+    base_path.write_text(
+      json.dumps(merged, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(f"applied → {base_path.relative_to(ROOT)} (backup {bak.name})")
+
+  return 0
+
+
 def main() -> int:
   ap = argparse.ArgumentParser(
     prog="catalog_builder", description="M2 Catalog Builder (manual + live)"
@@ -360,6 +431,29 @@ def main() -> int:
     help="Path to connection_profiles.json (default: desktop_app/config/...)",
   )
   p.set_defaults(func=cmd_extract_live)
+
+  p = sub.add_parser(
+    "merge",
+    help="Merge manual profile.json + live draft/results → profile.merged.json",
+  )
+  p.add_argument("profile_id", help="e.g. saj.pdh30")
+  p.add_argument(
+    "--live",
+    default=None,
+    help="Live source: profile.live_draft.json or results/live_extract_*.json "
+    "(default: drive_profiles/.../profile.live_draft.json)",
+  )
+  p.add_argument(
+    "--prefer-live-register",
+    action="store_true",
+    help="On register conflict, keep live address (default: keep manual)",
+  )
+  p.add_argument(
+    "--apply",
+    action="store_true",
+    help="Also overwrite profile.json (writes .bak first). Default: only merged file.",
+  )
+  p.set_defaults(func=cmd_merge)
 
   args = ap.parse_args()
   return int(args.func(args))

@@ -268,8 +268,8 @@ Fuentes: `Auritorias recibidas/*.md`. Cerrado 2026-08-18…19; M2 desbloqueado.
 - [x] CLI MVP `python3 -m tools.catalog_builder` (`list` / `validate` / `extract-manual` / `diff`)
 - [x] Extractores existentes cableados: `saj.pdh30`, `saj.pdm30`
 - [x] **`extract-live --via mqtt|serial`** → `results/live_extract_*` + `profile.live_draft.json`
-  - Verificado MQTT DevKit `vf-7cf194` / PDH: **148/150 ok (98.7%)** (fails conocidos F4.15, FD.00)
-- [ ] `merge` formal + formato semi-estructurado intermedio
+  - Verificado MQTT DevKit `vf-7cf194` + Guition `vf-e23fc4` / PDH: **148/150 ok (98.7%)** (F4.15, FD.00)
+- [x] **`merge`** formal → `profile.merged.json` + `results/merge_report_*` (manual gana metadata; live gana `live_*`/`map_status`; `--apply` opcional)
 - [ ] UI técnica (modo técnico VarioField): importar borrador / editar escala / exportar
 - [ ] Suite de validación live: % params OK + readback escritura
 
