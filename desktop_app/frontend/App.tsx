@@ -1533,7 +1533,11 @@ export default function App() {
             <Text style={styles.tagline}>{BRAND.tagline}</Text>
           </View>
           <Pressable
-            style={styles.helpBtn}
+            style={({ focused }) => [
+              styles.helpBtn,
+              focused && styles.focusRing,
+            ]}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             onPress={() => {
               setMoreSection("help");
               setTab("more");
@@ -1549,7 +1553,9 @@ export default function App() {
               }
             }}
             delayLongPress={700}
+            accessibilityRole="button"
             accessibilityLabel="Ayuda"
+            accessibilityHint="Abre la ayuda. Mantener pulsado: acceso técnico (PIN)"
           >
             <Text style={styles.helpBtnText}>?</Text>
           </Pressable>
@@ -1825,7 +1831,7 @@ export default function App() {
                     value={port}
                     onChangeText={setPort}
                     placeholder="Se detecta solo si hay un cable"
-                    placeholderTextColor="#6b7280"
+                    placeholderTextColor={colors.textPlaceholder}
                     editable={!connected}
                     accessibilityLabel={t.portLabel}
                     accessibilityHint="Puerto serie USB del módulo Edge"
@@ -1901,7 +1907,7 @@ export default function App() {
                   value={mqttTopicPrefix}
                   onChangeText={setMqttTopicPrefix}
                   placeholder="saj/pdm30/vf-7cf194"
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor={colors.textPlaceholder}
                   editable={!connected}
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -2079,7 +2085,7 @@ export default function App() {
                     value={btAddress}
                     onChangeText={setBtAddress}
                     placeholder="Dirección del equipo"
-                    placeholderTextColor="#6b7280"
+                    placeholderTextColor={colors.textPlaceholder}
                     editable={!connected}
                     autoCapitalize="characters"
                     accessibilityLabel={t.btDeviceLabel}
@@ -2234,7 +2240,7 @@ export default function App() {
                   value={cmd}
                   onChangeText={setCmd}
                   placeholder={t.cmdPlaceholder}
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor={colors.textPlaceholder}
                   onSubmitEditing={() => sendCmd()}
                   editable={connected}
                   accessibilityLabel="Comando técnico"
@@ -2253,6 +2259,8 @@ export default function App() {
             ) : (
               <Pressable
                 onPress={() => setShowAdvancedCmd(true)}
+                hitSlop={12}
+                style={({ focused }) => [focused && styles.focusRing, { borderRadius: 8, padding: 4 }]}
                 accessibilityRole="button"
                 accessibilityLabel="Mostrar comando técnico avanzado"
               >
@@ -2455,6 +2463,13 @@ export default function App() {
                   setRecipeSearch("");
                   setRecipeFilter("all");
                 }}
+                hitSlop={12}
+                style={({ focused }) => [
+                  focused && styles.focusRing,
+                  { borderRadius: 8, padding: 4 },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Limpiar búsqueda y filtros"
               >
                 <Text style={styles.linkMuted}>Limpiar búsqueda y filtros</Text>
               </Pressable>
@@ -2545,7 +2560,7 @@ export default function App() {
                 isPdhProfile(driveProfileId) ? "ej. F0.00" : "ej. P0-00"
               }
               autoCapitalize="characters"
-              placeholderTextColor="#6b7280"
+              placeholderTextColor={colors.textPlaceholder}
               accessibilityLabel="ID parámetro"
               accessibilityHint="Identificador del parámetro, por ejemplo F0.00 o P0-00"
             />
@@ -2591,7 +2606,7 @@ export default function App() {
                     setEdId("");
                   }}
                   keyboardType="numeric"
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor={colors.textPlaceholder}
                   accessibilityLabel={t.indexLabel}
                 />
               </>
@@ -2602,7 +2617,7 @@ export default function App() {
               value={edVal}
               onChangeText={setEdVal}
               keyboardType="decimal-pad"
-              placeholderTextColor="#6b7280"
+              placeholderTextColor={colors.textPlaceholder}
               accessibilityLabel={t.valueLabel}
             />
             <Text style={styles.label}>{t.notesLabel}</Text>
@@ -2611,7 +2626,7 @@ export default function App() {
               value={edNotes}
               onChangeText={setEdNotes}
               multiline
-              placeholderTextColor="#6b7280"
+              placeholderTextColor={colors.textPlaceholder}
               accessibilityLabel={t.notesLabel}
             />
             <View style={styles.row}>
@@ -2868,7 +2883,7 @@ export default function App() {
                   value={pinNew}
                   onChangeText={setPinNew}
                   placeholder={`Nuevo PIN (actual por defecto ${DEFAULT_TECH_PIN})`}
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor={colors.textPlaceholder}
                   secureTextEntry
                   keyboardType="number-pad"
                   accessibilityLabel={t.pinChange}
@@ -2989,7 +3004,7 @@ export default function App() {
                   value={mForm[k]}
                   onChangeText={(v) => setMForm((f) => ({ ...f, [k]: v }))}
                   secureTextEntry={k === "password"}
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor={colors.textPlaceholder}
                   accessibilityLabel={lab}
                 />
               </View>
@@ -3016,7 +3031,7 @@ export default function App() {
                   value={wForm[k]}
                   onChangeText={(v) => setWForm((f) => ({ ...f, [k]: v }))}
                   secureTextEntry={k === "password"}
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor={colors.textPlaceholder}
                   accessibilityLabel={lab}
                 />
               </View>
@@ -3045,7 +3060,7 @@ export default function App() {
               value={pinInput}
               onChangeText={setPinInput}
               placeholder={t.pinPlaceholder}
-              placeholderTextColor="#6b7280"
+              placeholderTextColor={colors.textPlaceholder}
               secureTextEntry
               keyboardType="number-pad"
               autoFocus
@@ -3195,7 +3210,12 @@ function Chip({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      style={[styles.chip, active && styles.chipOn, disabled && styles.dis]}
+      style={({ focused }) => [
+        styles.chip,
+        active && styles.chipOn,
+        disabled && styles.dis,
+        focused && styles.focusRing,
+      ]}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: !!active, disabled: !!disabled }}
@@ -3341,6 +3361,11 @@ const styles = StyleSheet.create({
   },
   chipOn: { backgroundColor: colors.primaryHover, borderColor: colors.borderFocus },
   chipText: { color: colors.text, fontSize: font.md, fontWeight: font.weightSemi },
+  /** Keyboard / desktop focus ring (Sprint C) */
+  focusRing: {
+    borderColor: colors.borderFocus,
+    borderWidth: 2,
+  },
   tabs: { flexDirection: "row", gap: 6, marginTop: space.md },
   tab: {
     flex: 1,
@@ -3651,7 +3676,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.sm,
     minWidth: 72,
   },
-  liveChipLab: { color: colors.textDim, fontSize: font.xs, fontWeight: font.weightSemi },
+  liveChipLab: { color: colors.textDim, fontSize: font.sm, fontWeight: font.weightSemi },
   liveChipVal: {
     color: colors.text,
     fontSize: font.lg,

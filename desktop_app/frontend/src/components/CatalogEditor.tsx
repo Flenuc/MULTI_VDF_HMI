@@ -20,7 +20,7 @@ import {
   type DriveProfileVariantInfo,
 } from "../api/client";
 import { exportJsonFile, importJsonObject } from "../lib/jsonFile";
-import { colors } from "../theme";
+import { colors, font, radius, space, touchMin } from "../theme";
 
 type Variant = "active" | "live_draft" | "merged";
 
@@ -228,7 +228,11 @@ export default function CatalogEditor({
         {profiles.map((p) => (
           <Pressable
             key={p.id}
-            style={[styles.chip, profileId === p.id && styles.chipOn]}
+            style={({ focused }) => [
+              styles.chip,
+              profileId === p.id && styles.chipOn,
+              focused && styles.focusRing,
+            ]}
             onPress={() => {
               if (dirty) {
                 Alert.alert("Cambios sin guardar", "¿Descartar y cambiar de perfil?", [
@@ -255,10 +259,11 @@ export default function CatalogEditor({
           return (
             <Pressable
               key={v}
-              style={[
+              style={({ focused }) => [
                 styles.chip,
                 variant === v && styles.chipOn,
                 missing && styles.chipDisabled,
+                focused && styles.focusRing,
               ]}
               disabled={!!missing}
               onPress={() => setVariant(v)}
@@ -338,7 +343,7 @@ export default function CatalogEditor({
         value={filter}
         onChangeText={setFilter}
         placeholder="Filtrar id / nombre / map_status…"
-        placeholderTextColor="#6b7280"
+        placeholderTextColor={colors.textPlaceholder}
         autoCapitalize="none"
         autoCorrect={false}
       />
@@ -362,7 +367,7 @@ export default function CatalogEditor({
                 style={[styles.tdInput, styles.colName]}
                 value={String(r.name ?? "")}
                 onChangeText={(t) => updateRow(r.id, { name: t })}
-                placeholderTextColor="#6b7280"
+                placeholderTextColor={colors.textPlaceholder}
               />
               <TextInput
                 style={[styles.tdInput, styles.colScale]}
@@ -374,19 +379,24 @@ export default function CatalogEditor({
                     scale: n != null && !Number.isNaN(n) ? n : null,
                   });
                 }}
-                placeholderTextColor="#6b7280"
+                placeholderTextColor={colors.textPlaceholder}
               />
               <View style={[styles.colMap, styles.mapChips]}>
-                {MAP_STATUSES.map((s) => (
+                {MAP_STATUSES.map((st) => (
                   <Pressable
-                    key={s}
-                    style={[
+                    key={st}
+                    style={({ focused }) => [
                       styles.mapChip,
-                      r.map_status === s && styles.mapChipOn,
+                      r.map_status === st && styles.mapChipOn,
+                      focused && styles.focusRing,
                     ]}
-                    onPress={() => updateRow(r.id, { map_status: s })}
+                    onPress={() => updateRow(r.id, { map_status: st })}
+                    hitSlop={4}
+                    accessibilityRole="button"
+                    accessibilityLabel={`map_status ${st}`}
+                    accessibilityState={{ selected: r.map_status === st }}
                   >
-                    <Text style={styles.mapChipText}>{s[0]}</Text>
+                    <Text style={styles.mapChipText}>{st === "missing" ? "miss" : st}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -411,95 +421,134 @@ export default function CatalogEditor({
 
 const styles = StyleSheet.create({
   section: {
-    color: "#e5e7eb",
-    fontSize: 18,
-    fontWeight: "700",
-    marginTop: 8,
-    marginBottom: 6,
+    color: colors.text,
+    fontSize: font.xl,
+    fontWeight: font.weightBold,
+    marginTop: space.sm,
+    marginBottom: space.sm,
   },
-  label: { color: "#9ca3af", marginTop: 10, marginBottom: 4, fontSize: 13 },
-  hint: { color: "#9ca3af", fontSize: 13, marginBottom: 8, lineHeight: 18 },
-  meta: { color: "#a5b4fc", fontSize: 12, marginVertical: 6 },
-  err: { color: "#fca5a5", marginVertical: 6 },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  label: {
+    color: colors.textMuted,
+    marginTop: space.md,
+    marginBottom: space.xs,
+    fontSize: font.md,
+  },
+  hint: {
+    color: colors.textDim,
+    fontSize: font.md,
+    marginBottom: space.sm,
+    lineHeight: 18,
+  },
+  meta: { color: colors.accentSoft, fontSize: font.sm, marginVertical: space.sm },
+  err: { color: colors.danger, marginVertical: space.sm },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
   chip: {
-    backgroundColor: "#1f2937",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    backgroundColor: colors.surface,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    borderRadius: radius.sm,
     borderWidth: 1,
-    borderColor: "#374151",
+    borderColor: colors.border,
+    minHeight: touchMin,
+    justifyContent: "center",
   },
-  chipOn: { borderColor: colors.primary, backgroundColor: "#1e3a5f" },
+  chipOn: {
+    borderColor: colors.borderFocus,
+    backgroundColor: colors.primarySoft,
+  },
   chipDisabled: { opacity: 0.35 },
-  chipText: { color: "#e5e7eb", fontSize: 12 },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  chipText: { color: colors.text, fontSize: font.sm, fontWeight: font.weightSemi },
+  focusRing: { borderColor: colors.borderFocus, borderWidth: 2 },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: space.sm, marginTop: space.md },
   btn: {
-    backgroundColor: "#374151",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: colors.surfaceHover,
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
+    borderRadius: radius.sm,
+    minHeight: touchMin,
+    justifyContent: "center",
   },
   btnPri: {
     backgroundColor: colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
+    borderRadius: radius.sm,
+    minHeight: touchMin,
+    justifyContent: "center",
   },
   btnSec: {
-    backgroundColor: "#1f2937",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: colors.surface,
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
+    borderRadius: radius.sm,
     borderWidth: 1,
-    borderColor: "#4b5563",
+    borderColor: colors.border,
+    minHeight: touchMin,
+    justifyContent: "center",
   },
-  btnText: { color: "#fff", fontWeight: "600", fontSize: 13 },
+  btnText: {
+    color: colors.text,
+    fontWeight: font.weightSemi,
+    fontSize: font.md,
+    textAlign: "center",
+  },
   dis: { opacity: 0.4 },
   input: {
-    backgroundColor: "#111827",
-    borderColor: "#374151",
+    backgroundColor: colors.bgElevated,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 8,
-    color: "#e5e7eb",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginTop: 8,
+    borderRadius: radius.sm,
+    color: colors.text,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    marginTop: space.sm,
+    minHeight: touchMin,
   },
-  tableWrap: { marginTop: 10, maxHeight: 420 },
+  tableWrap: { marginTop: space.md, maxHeight: 420 },
   tr: {
     flexDirection: "row",
     alignItems: "center",
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#374151",
-    minHeight: 36,
+    borderBottomColor: colors.border,
+    minHeight: touchMin,
   },
-  th: { backgroundColor: "#1f2937" },
-  td: { color: "#d1d5db", fontSize: 12, paddingHorizontal: 4 },
+  th: { backgroundColor: colors.surface },
+  td: {
+    color: colors.textSecondary,
+    fontSize: font.sm,
+    paddingHorizontal: space.xs,
+  },
   tdInput: {
-    color: "#e5e7eb",
-    fontSize: 12,
-    paddingHorizontal: 4,
-    paddingVertical: 4,
-    backgroundColor: "#0f172a",
-    borderRadius: 4,
+    color: colors.text,
+    fontSize: font.sm,
+    paddingHorizontal: space.xs,
+    paddingVertical: space.xs,
+    backgroundColor: colors.bgElevated,
+    borderRadius: radius.sm,
     marginVertical: 2,
+    minHeight: 40,
   },
   colId: { width: 72 },
   colName: { width: 160 },
-  colScale: { width: 56 },
-  colMap: { width: 90 },
+  colScale: { width: 64 },
+  colMap: { width: 168 },
   colLive: { width: 64 },
   colReg: { width: 72 },
-  mapChips: { flexDirection: "row", gap: 2 },
+  mapChips: { flexDirection: "row", gap: space.xs, flexWrap: "wrap" },
   mapChip: {
-    width: 22,
-    height: 22,
-    borderRadius: 4,
-    backgroundColor: "#374151",
+    minWidth: touchMin,
+    minHeight: touchMin,
+    paddingHorizontal: space.sm,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surfaceHover,
     alignItems: "center",
     justifyContent: "center",
   },
   mapChipOn: { backgroundColor: colors.primary },
-  mapChipText: { color: "#fff", fontSize: 10, fontWeight: "700" },
+  mapChipText: {
+    color: colors.text,
+    fontSize: font.xs,
+    fontWeight: font.weightBold,
+  },
 });
+

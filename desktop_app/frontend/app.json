@@ -2,7 +2,7 @@
   "expo": {
     "name": "VarioField",
     "slug": "variofield",
-    "version": "0.3.3",
+    "version": "0.3.10",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -25,7 +25,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "backgroundColor": "#0b1220"
+      "backgroundColor": "#0b1220",
+      "lang": "es",
+      "name": "VarioField",
+      "description": "Recetas y enlace a variadores en campo"
     }
   }
 }

@@ -13,7 +13,10 @@ export const colors = {
   text: "#f8fafc",
   textSecondary: "#cbd5e1",
   textMuted: "#94a3b8",
-  textDim: "#64748b",
+  /** Secondary labels (telemetry, notes). ≥4.5:1 on bg/surface (WCAG AA). */
+  textDim: "#8592a8",
+  /** Form placeholders — prefer over raw #6b7280 */
+  textPlaceholder: "#8592a8",
 
   primary: "#2563eb",
   primaryHover: "#1d4ed8",

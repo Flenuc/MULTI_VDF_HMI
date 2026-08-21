@@ -142,5 +142,9 @@
   - `accessibilityLabel` (+ hints) en TextInput / Switch / Chip
   - Listas USB / BT / Edges MQTT con role + selected
   - `accessibilityLiveRegion` en statusLine, progreso y ErrorBanner (assertive)
-- [ ] Sprint C implementado
+- [x] Sprint C implementado (2026-08-21)
+  - `textDim` → `#8592a8` (≥4.5:1 AA); placeholders vía `textPlaceholder`
+  - CatalogEditor migrado a tokens + `touchMin` 48 (filas/chips map)
+  - Foco teclado (`focusRing` / `borderFocus`) en Chip, ayuda y links
+  - `hitSlop` en `?` y links secundarios; `web.lang: "es"` en `app.json`
 - [ ] Decisión P3-01 documentada en README / app.json
