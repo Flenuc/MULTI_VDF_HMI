@@ -35,10 +35,11 @@
       "description": "Recetas y enlace a variadores en campo"
     },
     "extra": {
+      "platformsNote": "Official: Electron + Web. Android APK is experimental smoke UI (no embedded Python backend).",
       "eas": {
-        "projectId": "variofield-smoke"
-      },
-      "platformsNote": "Official: Electron + Web. Android APK is experimental smoke UI (no embedded Python backend)."
-    }
+        "projectId": "c74b37a4-cea4-42ab-b932-30bf4ba4d813"
+      }
+    },
+    "owner": "flenuc"
   }
 }
