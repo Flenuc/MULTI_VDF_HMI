@@ -95,6 +95,46 @@ def get_drive_profiles_dir() -> Path:
     return DRIVE_PROFILES_DIR
 
 
+def resolve_drive_profiles_user_dir() -> Path:
+    """
+    Writable overlay for technician edits / imports.
+
+    Priority:
+      1) MULTI_VDF_DRIVE_PROFILES_USER
+      2) MULTI_VDF_CONFIG_DIR/../drive_profiles
+      3) ~/.config/VarioField/drive_profiles
+      4) desktop_app/drive_profiles_user (dev)
+    """
+    env = os.environ.get("MULTI_VDF_DRIVE_PROFILES_USER", "").strip()
+    if env:
+        return Path(env)
+    cfg = os.environ.get("MULTI_VDF_CONFIG_DIR", "").strip()
+    if cfg:
+        return (Path(cfg).resolve().parent / "drive_profiles")
+    home = Path.home() / ".config" / "VarioField" / "drive_profiles"
+    return home if getattr(sys, "frozen", False) else (_APP / "drive_profiles_user")
+
+
+def get_drive_profiles_user_dir() -> Path:
+    d = resolve_drive_profiles_user_dir()
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _profile_rel_dir(profile_id: str) -> Path:
+    parts = profile_id.strip().split(".")
+    if len(parts) < 2:
+        raise ValueError("invalid drive profile id")
+    return Path(parts[0]) / parts[1]
+
+
+VARIANT_FILES = {
+    "active": "profile.json",
+    "live_draft": "profile.live_draft.json",
+    "merged": "profile.merged.json",
+}
+
+
 def lists_dir() -> Path:
     LISTS_DIR.mkdir(parents=True, exist_ok=True)
     return LISTS_DIR
@@ -263,19 +303,25 @@ def get_wifi_by_name(name: str) -> Optional[Dict[str, Any]]:
     }
 
 
+def _read_profile_file(path: Path) -> Dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def list_drive_profiles() -> List[Dict[str, Any]]:
-    """Index of drive_profiles/**/profile.json (dev or packaged)."""
-    root = get_drive_profiles_dir()
-    out: List[Dict[str, Any]] = []
-    if not root.is_dir():
-        return out
-    for p in sorted(root.glob("**/profile.json")):
-        try:
-            data = json.loads(p.read_text(encoding="utf-8"))
-            pid = str(data.get("id") or p.parent.name)
-            params = data.get("parameters") or []
-            out.append(
-                {
+    """Index of drive profiles (user overlay wins over packaged/repo)."""
+    packaged = get_drive_profiles_dir()
+    user = resolve_drive_profiles_user_dir()
+    by_id: Dict[str, Dict[str, Any]] = {}
+
+    def _ingest(root: Path, source: str) -> None:
+        if not root.is_dir():
+            return
+        for p in sorted(root.glob("**/profile.json")):
+            try:
+                data = _read_profile_file(p)
+                pid = str(data.get("id") or p.parent.name)
+                params = data.get("parameters") or []
+                by_id[pid] = {
                     "id": pid,
                     "vendor": data.get("vendor"),
                     "family": data.get("family"),
@@ -283,34 +329,144 @@ def list_drive_profiles() -> List[Dict[str, Any]]:
                     "version": data.get("version"),
                     "status": data.get("status"),
                     "param_count": len(params) if isinstance(params, list) else 0,
-                    "path": str(p.relative_to(root)),
+                    "path": str(p),
+                    "source": source,
+                    "writable": source == "user",
                 }
-            )
-        except Exception:
-            continue
-    return out
+            except Exception:
+                continue
+
+    _ingest(packaged, "packaged")
+    _ingest(user, "user")
+    return [by_id[k] for k in sorted(by_id.keys())]
 
 
-def load_drive_profile(profile_id: str) -> Dict[str, Any]:
-    """Load full catalog JSON for a drive profile id (e.g. saj.pdh30)."""
+def _candidate_paths(profile_id: str, filename: str) -> List[Path]:
+    rel = _profile_rel_dir(profile_id)
+    return [
+        get_drive_profiles_user_dir() / rel / filename,
+        get_drive_profiles_dir() / rel / filename,
+    ]
+
+
+def load_drive_profile(
+    profile_id: str, variant: str = "active"
+) -> Dict[str, Any]:
+    """Load catalog JSON. variant: active | live_draft | merged."""
     pid = (profile_id or "").strip()
     if not pid or not SAFE_PROFILE_ID.match(pid):
         raise ValueError("invalid drive profile id")
-    root = get_drive_profiles_dir()
-    # id "saj.pdh30" → drive_profiles/saj/pdh30/profile.json
-    parts = pid.split(".")
-    if len(parts) >= 2:
-        vendor, model = parts[0], parts[1]
-        candidate = root / vendor / model / "profile.json"
+    fname = VARIANT_FILES.get(variant or "active")
+    if not fname:
+        raise ValueError(f"unknown variant {variant!r}")
+
+    for candidate in _candidate_paths(pid, fname):
         if candidate.is_file():
-            return json.loads(candidate.read_text(encoding="utf-8"))
-    # fallback: scan
+            data = _read_profile_file(candidate)
+            data["_meta"] = {
+                "profile_id": pid,
+                "variant": variant,
+                "path": str(candidate),
+                "source": "user"
+                if str(get_drive_profiles_user_dir()) in str(candidate)
+                else "packaged",
+            }
+            return data
+
+    if variant != "active":
+        raise FileNotFoundError(f"{pid}/{fname}")
+
+    # fallback scan packaged for active only
+    root = get_drive_profiles_dir()
     if root.is_dir():
         for p in root.glob("**/profile.json"):
             try:
-                data = json.loads(p.read_text(encoding="utf-8"))
+                data = _read_profile_file(p)
                 if str(data.get("id")) == pid:
+                    data["_meta"] = {
+                        "profile_id": pid,
+                        "variant": "active",
+                        "path": str(p),
+                        "source": "packaged",
+                    }
                     return data
             except Exception:
                 continue
     raise FileNotFoundError(pid)
+
+
+def list_drive_profile_variants(profile_id: str) -> List[Dict[str, Any]]:
+    pid = (profile_id or "").strip()
+    if not pid or not SAFE_PROFILE_ID.match(pid):
+        raise ValueError("invalid drive profile id")
+    out: List[Dict[str, Any]] = []
+    for key, fname in VARIANT_FILES.items():
+        found = None
+        source = None
+        for candidate in _candidate_paths(pid, fname):
+            if candidate.is_file():
+                found = candidate
+                source = (
+                    "user"
+                    if str(get_drive_profiles_user_dir()) in str(candidate)
+                    else "packaged"
+                )
+                break
+        out.append(
+            {
+                "variant": key,
+                "filename": fname,
+                "exists": found is not None,
+                "path": str(found) if found else None,
+                "source": source,
+            }
+        )
+    return out
+
+
+def save_drive_profile(
+    profile_id: str,
+    data: Dict[str, Any],
+    variant: str = "active",
+) -> Dict[str, Any]:
+    """Write profile JSON into the user overlay (never into AppImage resources)."""
+    pid = (profile_id or "").strip()
+    if not pid or not SAFE_PROFILE_ID.match(pid):
+        raise ValueError("invalid drive profile id")
+    fname = VARIANT_FILES.get(variant or "active")
+    if not fname:
+        raise ValueError(f"unknown variant {variant!r}")
+    if not isinstance(data, dict):
+        raise ValueError("body must be a JSON object")
+    # Strip UI meta; force id
+    body = {k: v for k, v in data.items() if not str(k).startswith("_")}
+    body["id"] = pid
+    params = body.get("parameters")
+    if not isinstance(params, list) or not params:
+        raise ValueError("parameters must be a non-empty list")
+
+    dest = get_drive_profiles_user_dir() / _profile_rel_dir(pid) / fname
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(
+        json.dumps(body, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    return load_drive_profile(pid, variant)
+
+
+def apply_drive_profile_variant(
+    profile_id: str, source_variant: str = "merged"
+) -> Dict[str, Any]:
+    """Copy live_draft/merged → active (user overlay), with .bak of previous active."""
+    if source_variant not in ("merged", "live_draft"):
+        raise ValueError("source_variant must be merged or live_draft")
+    src = load_drive_profile(profile_id, source_variant)
+    # backup current active if present in user overlay
+    active_user = (
+        get_drive_profiles_user_dir()
+        / _profile_rel_dir(profile_id)
+        / "profile.json"
+    )
+    if active_user.is_file():
+        bak = active_user.with_suffix(".json.bak")
+        bak.write_text(active_user.read_text(encoding="utf-8"), encoding="utf-8")
+    return save_drive_profile(profile_id, src, "active")

@@ -201,8 +201,31 @@ export const api = {
 
   driveProfiles: () =>
     json<{ profiles: DriveProfileInfo[] }>("/drive-profiles"),
-  driveProfile: (id: string) =>
-    json<Record<string, unknown>>(`/drive-profiles/${encodeURIComponent(id)}`),
+  driveProfile: (id: string, variant: string = "active") =>
+    json<DriveProfileDoc>(
+      `/drive-profiles/${encodeURIComponent(id)}?variant=${encodeURIComponent(variant)}`
+    ),
+  driveProfileVariants: (id: string) =>
+    json<{ variants: DriveProfileVariantInfo[] }>(
+      `/drive-profiles/${encodeURIComponent(id)}/variants`
+    ),
+  saveDriveProfile: (
+    id: string,
+    body: DriveProfileDoc,
+    variant: string = "active"
+  ) =>
+    json<DriveProfileDoc>(
+      `/drive-profiles/${encodeURIComponent(id)}?variant=${encodeURIComponent(variant)}`,
+      { method: "PUT", body: JSON.stringify(body) }
+    ),
+  applyDriveProfileVariant: (
+    id: string,
+    source: "merged" | "live_draft" = "merged"
+  ) =>
+    json<DriveProfileDoc>(
+      `/drive-profiles/${encodeURIComponent(id)}/apply?source=${encodeURIComponent(source)}`,
+      { method: "POST", body: "{}" }
+    ),
 };
 
 export type DriveProfileInfo = {
@@ -214,6 +237,41 @@ export type DriveProfileInfo = {
   param_count?: number;
   version?: string;
   path?: string;
+  source?: string;
+  writable?: boolean;
+};
+
+export type DriveProfileVariantInfo = {
+  variant: string;
+  filename: string;
+  exists: boolean;
+  path?: string | null;
+  source?: string | null;
+};
+
+export type DriveProfileParam = {
+  id: string;
+  name?: string;
+  unit?: string;
+  scale?: number | null;
+  register?: string;
+  access?: string;
+  map_status?: string;
+  live_raw?: number | null;
+  live_eng?: number | null;
+  notes?: string;
+  [key: string]: unknown;
+};
+
+export type DriveProfileDoc = {
+  id?: string;
+  vendor?: string;
+  model?: string;
+  status?: string;
+  version?: string;
+  parameters?: DriveProfileParam[];
+  _meta?: Record<string, unknown>;
+  [key: string]: unknown;
 };
 
 export type EventHandler = (ev: BackendEvent) => void;

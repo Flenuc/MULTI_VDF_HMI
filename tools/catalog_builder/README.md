@@ -42,7 +42,7 @@ python3 -m tools.catalog_builder merge saj.pdh30 --apply
 | `extract-manual saj.pdm30` | wraps `generate_saj_pdm30_profile.py` |
 | `extract-live --via mqtt\|serial` | OK — writes `results/live_extract_*` + optional `profile.live_draft.json` |
 | `merge` | OK — writes `profile.merged.json` + `results/merge_report_*` |
-| UI técnica | planned |
+| UI técnica | OK — VarioField Más → **Catálogo VDF** (modo técnico / PIN) |
 
 ### Merge rules
 

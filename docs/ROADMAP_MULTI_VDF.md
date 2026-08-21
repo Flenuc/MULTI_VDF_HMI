@@ -4,7 +4,7 @@
 **Estado base:** VarioField **0.3.6** (MQTT discover auth + CI Win/Linux x64 verdes); Edge FW **≥0.3.8/0.3.9** (id `vf-XXXXXX`, PDH M1 cerrado)  
 **Objetivo:** escalar de un stack *dedicado PDM-30* a una plataforma **multi-variador** con la misma lógica de receta → comparar → modificar, y una herramienta para **extraer / catalogar parámetros** de cada modelo.
 
-**Siguiente foco:** M2 UI técnica **o** M3 PD-20 (scaffold + extract).
+**Siguiente foco:** M3 PD-20 (scaffold + extract) **o** suite validación live M2.
 
 ---
 
@@ -270,7 +270,7 @@ Fuentes: `Auritorias recibidas/*.md`. Cerrado 2026-08-18…19; M2 desbloqueado.
 - [x] **`extract-live --via mqtt|serial`** → `results/live_extract_*` + `profile.live_draft.json`
   - Verificado MQTT DevKit `vf-7cf194` + Guition `vf-e23fc4` / PDH: **148/150 ok (98.7%)** (F4.15, FD.00)
 - [x] **`merge`** formal → `profile.merged.json` + `results/merge_report_*` (manual gana metadata; live gana `live_*`/`map_status`; `--apply` opcional)
-- [ ] UI técnica (modo técnico VarioField): importar borrador / editar escala / exportar
+- [x] **UI técnica** (Más → Catálogo VDF, modo técnico): tabla name/scale/map_status + import/export + aplicar merged/live_draft (overlay `MULTI_VDF_DRIVE_PROFILES_USER`)
 - [ ] Suite de validación live: % params OK + readback escritura
 
 ### Identidad por placa (paralelo a M2)
@@ -338,7 +338,7 @@ Por cada modelo:
 | **S2** | M1 banco PDH-30 | R/W + dump + 1 receta PDH | Hecho |
 | **S3** | M2 Catalog Builder MVP + seguridad | extract-manual + validate; Mosquitto auth; `vf-` ids; app 0.3.6 | Hecho |
 | **S3b** | M2 `extract-live` + `merge` | dump MQTT/serial → draft → merged | **Hecho** (2026-08-21) |
-| **S4** | M3 PD-20 start + M2 UI técnica | Manual + extract + profile draft PD-20 | **Siguiente** |
+| **S4** | M3 PD-20 start | Manual + extract + profile draft PD-20 | **Siguiente** |
 | **S5–S6** | M3 PD-20 / 8200B | 1–2 legacy en campo | Pendiente |
 | **S7–S8** | M4 Danfoss (+ Bedford si procede) | Primer no-SAJ | Pendiente |
 | **S9** | M5 polish 0.4.0 | Selector de modelo + docs | Pendiente |
@@ -355,7 +355,7 @@ Esfuerzo orientativo total: **~10–14 semanas** con 1 dev full-stack embebido+a
 - [x] Receta: campo `drive_profile_id` + validación
 - [x] Compare/sync parametrizado (no asumir P0/P1 only a medio plazo)
 - [x] UI: selector de modelo; nombres de manual en lista de params
-- [ ] Modo técnico: Catalog Builder / import profile
+- [x] Modo técnico: Catálogo VDF (import/export/editar/aplicar merged)
 
 ### Edge firmware
 - [ ] Registry de drivers (`IVfdDriver`: read/write param, telemetry, command)

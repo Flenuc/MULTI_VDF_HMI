@@ -255,10 +255,13 @@ function startBackend() {
     MULTI_VDF_DRIVE_PROFILES: fs.existsSync(driveProfilesDir)
       ? driveProfilesDir
       : "",
+    // Writable overlay for technician catalog edits (import/save/apply)
+    MULTI_VDF_DRIVE_PROFILES_USER: path.join(app.getPath("userData"), "drive_profiles"),
     PYTHONUNBUFFERED: "1",
     VARIOFIELD_EMBED: "1",
   };
   logLine(`MULTI_VDF_CONFIG_DIR=${configDir}`);
+  logLine(`MULTI_VDF_DRIVE_PROFILES_USER=${env.MULTI_VDF_DRIVE_PROFILES_USER}`);
 
   const spawnOptsBase = {
     stdio: ["ignore", "pipe", "pipe"],

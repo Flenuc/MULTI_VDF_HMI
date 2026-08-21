@@ -40,6 +40,7 @@ import {
   DEFAULT_TECH_PIN,
 } from "./src/lib/roles";
 import { exportJsonFile, importJsonObject } from "./src/lib/jsonFile";
+import CatalogEditor from "./src/components/CatalogEditor";
 import { t } from "./src/i18n/es";
 import {
   classifyError,
@@ -239,7 +240,9 @@ export default function App() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [showAbout, setShowAbout] = useState(false);
-  const [moreSection, setMoreSection] = useState<"network" | "help">("help");
+  const [moreSection, setMoreSection] = useState<"network" | "help" | "catalog">(
+    "help"
+  );
   const [appError, setAppError] = useState<AppError | null>(null);
   const [mForm, setMForm] = useState({
     name: "Local",
@@ -2519,6 +2522,13 @@ export default function App() {
                 active={moreSection === "help"}
                 onPress={() => setMoreSection("help")}
               />
+              {showDevTools() ? (
+                <Chip
+                  label="Catálogo VDF"
+                  active={moreSection === "catalog"}
+                  onPress={() => setMoreSection("catalog")}
+                />
+              ) : null}
             </View>
 
             {moreSection === "network" && (
@@ -2594,6 +2604,22 @@ export default function App() {
               <Text style={styles.btnText}>{t.reloadProfiles}</Text>
             </Pressable>
           </>
+            )}
+
+            {moreSection === "catalog" && showDevTools() && (
+              <CatalogEditor
+                profiles={driveProfiles}
+                initialId={driveProfileId}
+                onLog={pushLog}
+                onProfilesChanged={async () => {
+                  try {
+                    const dp = await api.driveProfiles();
+                    setDriveProfiles(dp.profiles || []);
+                  } catch {
+                    /* ignore */
+                  }
+                }}
+              />
             )}
 
             {moreSection === "help" && (

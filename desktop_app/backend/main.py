@@ -367,11 +367,48 @@ def api_list_drive_profiles():
 
 
 @app.get("/drive-profiles/{profile_id}")
-def api_get_drive_profile(profile_id: str):
+def api_get_drive_profile(
+    profile_id: str,
+    variant: str = Query("active", description="active|live_draft|merged"),
+):
     try:
-        return param_api.load_drive_profile(profile_id)
+        return param_api.load_drive_profile(profile_id, variant)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="drive profile not found") from None
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@app.get("/drive-profiles/{profile_id}/variants")
+def api_list_drive_profile_variants(profile_id: str):
+    try:
+        return {"variants": param_api.list_drive_profile_variants(profile_id)}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@app.put("/drive-profiles/{profile_id}")
+async def api_put_drive_profile(
+    profile_id: str,
+    body: Dict[str, Any],
+    variant: str = Query("active", description="active|live_draft|merged"),
+):
+    try:
+        return param_api.save_drive_profile(profile_id, body, variant)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@app.post("/drive-profiles/{profile_id}/apply")
+def api_apply_drive_profile_variant(
+    profile_id: str,
+    source: str = Query("merged", description="merged|live_draft"),
+):
+    """Promote merged/live_draft → active in the user overlay."""
+    try:
+        return param_api.apply_drive_profile_variant(profile_id, source)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="source variant not found") from None
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
