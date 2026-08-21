@@ -4,7 +4,7 @@
 **Estado base:** VarioField **0.3.6** (MQTT discover auth + CI Win/Linux x64 verdes); Edge FW **≥0.3.8/0.3.9** (id `vf-XXXXXX`, PDH M1 cerrado)  
 **Objetivo:** escalar de un stack *dedicado PDM-30* a una plataforma **multi-variador** con la misma lógica de receta → comparar → modificar, y una herramienta para **extraer / catalogar parámetros** de cada modelo.
 
-**Siguiente foco:** M2 `merge`/UI técnica **o** M3 PD-20 (scaffold + extract).
+**Siguiente foco:** M2 UI técnica **o** M3 PD-20 (scaffold + extract).
 
 ---
 
@@ -337,8 +337,8 @@ Por cada modelo:
 | **S1** | M0 + kickoff M1 | `saj.pdm30` como profile; scaffold `saj.pdh30` | Hecho |
 | **S2** | M1 banco PDH-30 | R/W + dump + 1 receta PDH | Hecho |
 | **S3** | M2 Catalog Builder MVP + seguridad | extract-manual + validate; Mosquitto auth; `vf-` ids; app 0.3.6 | Hecho |
-| **S3b** | M2 `extract-live` | dump MQTT/serial → draft profile | **Hecho** (2026-08-21) |
-| **S4** | M3 PD-20 start + M2 merge/UI | Manual + extract + profile draft PD-20 | **Siguiente** |
+| **S3b** | M2 `extract-live` + `merge` | dump MQTT/serial → draft → merged | **Hecho** (2026-08-21) |
+| **S4** | M3 PD-20 start + M2 UI técnica | Manual + extract + profile draft PD-20 | **Siguiente** |
 | **S5–S6** | M3 PD-20 / 8200B | 1–2 legacy en campo | Pendiente |
 | **S7–S8** | M4 Danfoss (+ Bedford si procede) | Primer no-SAJ | Pendiente |
 | **S9** | M5 polish 0.4.0 | Selector de modelo + docs | Pendiente |
@@ -366,6 +366,7 @@ Esfuerzo orientativo total: **~10–14 semanas** con 1 dev full-stack embebido+a
 ### Tools
 - [x] `tools/catalog_builder/` MVP (`list`/`validate`/`extract-manual`/`diff`)
 - [x] `extract-live` (MQTT + serial) → draft (`edge_cli.py` / `live_extract.py`)
+- [x] `merge` (`merge_profiles.py`) → `profile.merged.json`
 - [ ] Tests de golden files por profile
 - [x] Script de banco smoke / dump (`tools/bank_dump_pdh30.py`, `e2e_pdh30_recipe.py`)
 
