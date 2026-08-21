@@ -103,3 +103,4 @@ desktop_app/drive_profiles_user/
 drive_profiles/**/profile.live_draft.json
 drive_profiles/**/profile.merged.json
 drive_profiles/**/profile.json.bak
+desktop_app/frontend/dist-android/
