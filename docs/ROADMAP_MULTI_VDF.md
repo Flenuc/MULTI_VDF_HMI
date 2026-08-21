@@ -1,8 +1,10 @@
 # Roadmap multi-VDF — VarioField / MULTI_VDF_HMI
 
-**Fecha:** 2026-08-13 (act. 2026-08-18)  
-**Estado base:** VarioField **0.3.3+** operativo; Edge FW **0.3.7** (PDH M1 cerrado: NVS profile + telemetría pset profile-aware)  
+**Fecha:** 2026-08-13 (act. **2026-08-20**)  
+**Estado base:** VarioField **0.3.6** (MQTT discover auth + CI Win/Linux x64 verdes); Edge FW **≥0.3.8/0.3.9** (id `vf-XXXXXX`, PDH M1 cerrado)  
 **Objetivo:** escalar de un stack *dedicado PDM-30* a una plataforma **multi-variador** con la misma lógica de receta → comparar → modificar, y una herramienta para **extraer / catalogar parámetros** de cada modelo.
+
+**Siguiente foco:** M2 `merge`/UI técnica **o** M3 PD-20 (scaffold + extract).
 
 ---
 
@@ -246,9 +248,9 @@ Manual / dump → extractores → borrador profile
 
 ---
 
-### Sprint seguridad (auditorías) — **antes de M2**
+### Sprint seguridad (auditorías) — **cerrado** (gate M2 cumplido)
 
-Fuentes: `Auritorias recibidas/*.md`. Gate: no abrir Catalog Builder hasta A–C.
+Fuentes: `Auritorias recibidas/*.md`. Cerrado 2026-08-18…19; M2 desbloqueado.
 
 - [x] `docs/SECURITY.md` + `docs/PROTOCOL.md`
 - [x] Mosquitto setup con auth+ACL por defecto (`VARIOFIELD_MQTT_ANON=1` solo lab)
@@ -265,7 +267,8 @@ Fuentes: `Auritorias recibidas/*.md`. Gate: no abrir Catalog Builder hasta A–C
 
 - [x] CLI MVP `python3 -m tools.catalog_builder` (`list` / `validate` / `extract-manual` / `diff`)
 - [x] Extractores existentes cableados: `saj.pdh30`, `saj.pdm30`
-- [ ] `extract-live --via mqtt|serial --profile draft`
+- [x] **`extract-live --via mqtt|serial`** → `results/live_extract_*` + `profile.live_draft.json`
+  - Verificado MQTT DevKit `vf-7cf194` / PDH: **148/150 ok (98.7%)** (fails conocidos F4.15, FD.00)
 - [ ] `merge` formal + formato semi-estructurado intermedio
 - [ ] UI técnica (modo técnico VarioField): importar borrador / editar escala / exportar
 - [ ] Suite de validación live: % params OK + readback escritura
@@ -274,7 +277,9 @@ Fuentes: `Auritorias recibidas/*.md`. Gate: no abrir Catalog Builder hasta A–C
 
 - [x] Serial `vf-XXXXXX` desde MAC → MQTT topic node / mDNS / BT name (FW ≥ 0.3.8)
 - [x] CLI `id` / `id set` / `id reset`
-- [ ] App: discovery de `edge id` y topic_prefix automático al conectar
+- [x] App 0.3.6: «Buscar módulos» + auto-prefijo desde BT/CLI (`edge id=` / `mqtt topics cmd=`)
+- [x] Perfiles MQTT en Electron `userData/config` (`MULTI_VDF_CONFIG_DIR`); auth clara si falta user/pass
+- [ ] Pulido: discovery automático al conectar sin pulsar Buscar; seed pass post-setup Mosquitto
 
 **Criterio de salida:** un técnico genera un borrador PDH/PD-20 en &lt; 1 día de trabajo a partir de manual + 1 hora de banco.
 
@@ -327,15 +332,16 @@ Por cada modelo:
 
 ## 6. Orden de sprints recomendado
 
-| Sprint | Enfoque | Entregable |
-|--------|---------|------------|
-| **S1** | M0 + kickoff M1 | `saj.pdm30` como profile; scaffold `saj.pdh30` |
-| **S2** | M1 banco PDH-30 | R/W + dump + 1 receta PDH |
-| **S3** | M2 Catalog Builder MVP | extract-manual + validate |
-| **S4** | M1 cierre + M3 PD-20 start | PDH en release; draft PD-20 |
-| **S5–S6** | M3 PD-20 / 8200B | 1–2 legacy en campo |
-| **S7–S8** | M4 Danfoss (+ Bedford si procede) | Primer no-SAJ |
-| **S9** | M5 polish 0.4.0 | Selector de modelo + docs |
+| Sprint | Enfoque | Entregable | Estado |
+|--------|---------|------------|--------|
+| **S1** | M0 + kickoff M1 | `saj.pdm30` como profile; scaffold `saj.pdh30` | Hecho |
+| **S2** | M1 banco PDH-30 | R/W + dump + 1 receta PDH | Hecho |
+| **S3** | M2 Catalog Builder MVP + seguridad | extract-manual + validate; Mosquitto auth; `vf-` ids; app 0.3.6 | Hecho |
+| **S3b** | M2 `extract-live` | dump MQTT/serial → draft profile | **Hecho** (2026-08-21) |
+| **S4** | M3 PD-20 start + M2 merge/UI | Manual + extract + profile draft PD-20 | **Siguiente** |
+| **S5–S6** | M3 PD-20 / 8200B | 1–2 legacy en campo | Pendiente |
+| **S7–S8** | M4 Danfoss (+ Bedford si procede) | Primer no-SAJ | Pendiente |
+| **S9** | M5 polish 0.4.0 | Selector de modelo + docs | Pendiente |
 
 Esfuerzo orientativo total: **~10–14 semanas** con 1 dev full-stack embebido+app (depende de acceso a hardware y calidad de manuales).
 
@@ -358,9 +364,10 @@ Esfuerzo orientativo total: **~10–14 semanas** con 1 dev full-stack embebido+a
 - [ ] MQTT topic root derivado del profile (o genérico `variofield/<edge_id>/…`)
 
 ### Tools
-- [ ] `tools/catalog_builder/`
+- [x] `tools/catalog_builder/` MVP (`list`/`validate`/`extract-manual`/`diff`)
+- [x] `extract-live` (MQTT + serial) → draft (`edge_cli.py` / `live_extract.py`)
 - [ ] Tests de golden files por profile
-- [ ] Script de banco “smoke R/W”
+- [x] Script de banco smoke / dump (`tools/bank_dump_pdh30.py`, `e2e_pdh30_recipe.py`)
 
 ---
 

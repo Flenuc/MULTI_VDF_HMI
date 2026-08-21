@@ -98,3 +98,4 @@ desktop_app/packaging/windows_electron/stage/
 
 # Staged by build_desktop_linux.sh / CI from repo drive_profiles/
 desktop_app/electron/resources/drive_profiles/
+drive_profiles/**/profile.live_draft.json

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MULTI_VDF Catalog Builder — MVP CLI (M2)
+MULTI_VDF Catalog Builder — M2 CLI
 
 Usage (from repo root):
   python3 -m tools.catalog_builder list
@@ -8,11 +8,14 @@ Usage (from repo root):
   python3 -m tools.catalog_builder extract-manual saj.pdh30
   python3 -m tools.catalog_builder extract-manual saj.pdm30
   python3 -m tools.catalog_builder diff saj.pdm30 saj.pdh30
+  python3 -m tools.catalog_builder extract-live saj.pdh30 --via mqtt --mqtt-profile "Local Mosquitto"
+  python3 -m tools.catalog_builder extract-live saj.pdh30 --via serial --port /dev/ttyACM0
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -21,6 +24,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 PROFILES = ROOT / "drive_profiles"
 HERE = Path(__file__).resolve().parent
+OUT_DIR = ROOT / "results"
+DEFAULT_MQTT_STORE = ROOT / "desktop_app" / "config" / "connection_profiles.json"
 
 REQUIRED_TOP = ("id", "vendor", "model", "protocol", "addressing", "parameters")
 REQUIRED_PROTO = ("link", "baud", "slave_default", "fc_read", "fc_write")
@@ -92,7 +97,6 @@ def cmd_validate(args: argparse.Namespace) -> int:
       ids.add(pid)
       reg = str(p.get("register") or "")
       if reg and not (reg.startswith("0x") or reg.startswith("0X")):
-        # allow int-like
         try:
           int(str(reg), 0)
         except Exception:
@@ -155,8 +159,160 @@ def cmd_diff(args: argparse.Namespace) -> int:
   return 0
 
 
+def cmd_extract_live(args: argparse.Namespace) -> int:
+  from tools.catalog_builder.edge_cli import MqttTransport, SerialTransport, run_dump
+  from tools.catalog_builder.live_extract import (
+    build_summary,
+    load_mqtt_profile_file,
+    merge_draft,
+    write_draft,
+    write_results,
+  )
+
+  profile_id = args.profile_id
+  base = load_profile(profile_id)
+  params = base.get("parameters") or []
+  if not params:
+    print(f"FAIL {profile_id}: empty parameters — run extract-manual first", file=sys.stderr)
+    return 1
+  catalog_ids = [str(p.get("id")) for p in params if isinstance(p, dict) and p.get("id")]
+
+  via = args.via
+  tr = None
+  transport_meta: dict[str, Any] = {"via": via}
+
+  try:
+    if via == "serial":
+      port = args.port or "/dev/ttyACM0"
+      transport_meta.update({"port": port, "baud": args.baud})
+      print(f"extract-live {profile_id} via=serial port={port}")
+      tr = SerialTransport(port, args.baud)
+    elif via == "mqtt":
+      host = args.host
+      port = args.mqtt_port
+      prefix = args.prefix
+      user = args.username
+      password = args.password or os.environ.get("VARIOFIELD_MQTT_PASS", "")
+
+      if args.mqtt_profile or (not prefix and DEFAULT_MQTT_STORE.is_file()):
+        store = Path(args.mqtt_store) if args.mqtt_store else DEFAULT_MQTT_STORE
+        if not store.is_file():
+          print(f"FAIL: mqtt profile store missing: {store}", file=sys.stderr)
+          return 1
+        mp = load_mqtt_profile_file(store, args.mqtt_profile)
+        host = host or mp.get("host") or "127.0.0.1"
+        port = port or int(mp.get("port") or 1883)
+        user = user if user is not None and user != "" else (mp.get("username") or "")
+        if not password:
+          password = mp.get("password") or ""
+        if not prefix:
+          prefix = mp.get("topic_prefix") or ""
+
+      host = host or "127.0.0.1"
+      port = int(port or 1883)
+      prefix = (prefix or "").strip().rstrip("/")
+      if not prefix or "XXXXXX" in prefix:
+        print(
+          "FAIL: MQTT topic_prefix required (e.g. saj/pdm30/vf-e23fc4).\n"
+          "  Use --prefix or --mqtt-profile with a real vf-… prefix.",
+          file=sys.stderr,
+        )
+        return 1
+      if not (user or "").strip():
+        print(
+          "FAIL: MQTT username required (broker auth). "
+          "Pass --username or --mqtt-profile / VARIOFIELD_MQTT_PASS.",
+          file=sys.stderr,
+        )
+        return 1
+
+      transport_meta.update(
+        {
+          "host": host,
+          "port": port,
+          "prefix": prefix,
+          "username": user,
+        }
+      )
+      print(f"extract-live {profile_id} via=mqtt {host}:{port} prefix={prefix}")
+      tr = MqttTransport(
+        host=host,
+        port=port,
+        prefix=prefix,
+        username=user,
+        password=password,
+      )
+    else:
+      print(f"FAIL: unknown --via {via!r}", file=sys.stderr)
+      return 2
+
+    def on_progress(n: int, elapsed: float) -> None:
+      print(f"  … {n}/{len(catalog_ids)} ({elapsed:.1f}s)")
+
+    dump = run_dump(
+      tr,
+      profile_id=profile_id,
+      timeout=float(args.timeout),
+      on_progress=on_progress,
+    )
+  except Exception as e:
+    print(f"FAIL extract-live: {e}", file=sys.stderr)
+    return 1
+  finally:
+    if tr is not None:
+      try:
+        tr.close()
+      except Exception:
+        pass
+
+  # Enrich rows with catalog register when missing
+  cat_reg = {}
+  for p in params:
+    if isinstance(p, dict) and p.get("id"):
+      try:
+        cat_reg[p["id"]] = int(str(p.get("register")), 0)
+      except Exception:
+        pass
+  for r in dump.get("rows") or []:
+    if r.get("reg") is None and r.get("id") in cat_reg:
+      r["reg"] = cat_reg[r["id"]]
+      r["addr"] = r.get("addr") or f"0x{cat_reg[r['id']]:04X}"
+
+  summary = build_summary(
+    profile_id=profile_id,
+    via=via,
+    dump=dump,
+    catalog_ids=catalog_ids,
+    transport_meta=transport_meta,
+  )
+  paths = write_results(summary, OUT_DIR, stem=args.out_stem)
+  print(
+    json.dumps(
+      {
+        k: summary[k]
+        for k in summary
+        if k not in ("rows",)
+      },
+      indent=2,
+    )
+  )
+  print(f"wrote {paths['json'].relative_to(ROOT)}")
+  print(f"wrote {paths['latest'].relative_to(ROOT)}")
+
+  if args.write_draft:
+    draft = merge_draft(base, summary)
+    dest = write_draft(draft, profile_path(profile_id))
+    print(f"wrote draft {dest.relative_to(ROOT)}")
+
+  if not summary.get("dump_done") and summary.get("lines_received", 0) == 0:
+    return 2
+  return 0
+
+
 def main() -> int:
-  ap = argparse.ArgumentParser(prog="catalog_builder", description="M2 Catalog Builder MVP")
+  ap = argparse.ArgumentParser(
+    prog="catalog_builder", description="M2 Catalog Builder (manual + live)"
+  )
   sub = ap.add_subparsers(dest="cmd", required=True)
 
   p = sub.add_parser("list", help="List drive_profiles/*/profile.json")
@@ -174,6 +330,36 @@ def main() -> int:
   p.add_argument("profile_a")
   p.add_argument("profile_b")
   p.set_defaults(func=cmd_diff)
+
+  p = sub.add_parser(
+    "extract-live",
+    help="Dump live params via Edge CLI (MQTT or serial) → results/ + optional draft",
+  )
+  p.add_argument("profile_id", help="e.g. saj.pdh30")
+  p.add_argument("--via", choices=("mqtt", "serial"), required=True)
+  p.add_argument("--timeout", type=float, default=240.0)
+  p.add_argument("--write-draft", action="store_true", help="Write profile.live_draft.json")
+  p.add_argument("--out-stem", default=None, help="Optional results filename stem")
+  # serial
+  p.add_argument("--port", default="/dev/ttyACM0")
+  p.add_argument("--baud", type=int, default=115200)
+  # mqtt
+  p.add_argument("--host", default=None)
+  p.add_argument("--mqtt-port", type=int, default=None)
+  p.add_argument("--prefix", default=None, help="saj/pdm30/vf-XXXXXX")
+  p.add_argument("--username", default=None)
+  p.add_argument("--password", default=None)
+  p.add_argument(
+    "--mqtt-profile",
+    default=None,
+    help="Name in desktop_app/config/connection_profiles.json",
+  )
+  p.add_argument(
+    "--mqtt-store",
+    default=None,
+    help="Path to connection_profiles.json (default: desktop_app/config/...)",
+  )
+  p.set_defaults(func=cmd_extract_live)
 
   args = ap.parse_args()
   return int(args.func(args))

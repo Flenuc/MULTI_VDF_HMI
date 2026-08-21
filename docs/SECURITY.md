@@ -80,4 +80,4 @@ Parada remota requiere comando explícito (`stop` / `estop`) mientras el canal e
 
 - `docs/PROTOCOL.md` — contrato CLI/MQTT  
 - `docs/PDH_VS_PDM.md` — perfiles de drive  
-- `docs/ROADMAP_MULTI_VDF.md` — M2 bloqueado hasta cerrar este sprint  
+- `docs/ROADMAP_MULTI_VDF.md` — sprint seguridad **cerrado**; M2 `extract-live` hecho (MQTT verificado 2026-08-21) 
