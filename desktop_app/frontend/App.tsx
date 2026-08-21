@@ -1570,9 +1570,18 @@ export default function App() {
                   : "● Sin conexión al equipo"
             }
           />
-          {busy ? <Badge ok={false} warn label={`⏳ ${opName || "…"}`} /> : null}
+          {busy ? (
+            <View accessibilityLiveRegion="polite">
+              <Badge ok={false} warn label={`⏳ ${opName || "…"}`} />
+            </View>
+          ) : null}
         </View>
-        <Text style={styles.statusLine} numberOfLines={2}>
+        <Text
+          style={styles.statusLine}
+          numberOfLines={2}
+          accessibilityLiveRegion="polite"
+          accessibilityRole="text"
+        >
           {statusMsg || linkLabel}
         </Text>
         {dev ? (
@@ -1630,7 +1639,7 @@ export default function App() {
       >
         {tab === "home" && (
           <>
-            <Text style={styles.section}>{t.homeTitle}</Text>
+            <Text style={styles.section} accessibilityRole="header">{t.homeTitle}</Text>
             <Text style={styles.hint}>{t.homeSubtitle}</Text>
             <Text style={styles.muted}>
               {t.driveModelApplied(
@@ -1745,7 +1754,7 @@ export default function App() {
               }}
             />
 
-            <Text style={[styles.section, { marginTop: 8 }]}>Más opciones</Text>
+            <Text style={[styles.section, { marginTop: 8 }]} accessibilityRole="header">Más opciones</Text>
             <Pressable
               style={styles.btnSec}
               onPress={() => {
@@ -1771,7 +1780,7 @@ export default function App() {
 
         {tab === "connect" && (
           <>
-            <Text style={styles.section}>{t.driveModelTitle}</Text>
+            <Text style={styles.section} accessibilityRole="header">{t.driveModelTitle}</Text>
             <Text style={styles.hint}>{t.driveModelHint}</Text>
             <View style={styles.chips}>
               {driveProfiles.map((p) => {
@@ -1792,7 +1801,7 @@ export default function App() {
               {driveProfileHint(activeDriveMeta, driveProfileId)}
             </Text>
 
-            <Text style={[styles.section, { marginTop: 16 }]}>
+            <Text style={[styles.section, { marginTop: 16 }]} accessibilityRole="header">
               ¿Cómo te conectas al módulo?
             </Text>
             <View style={styles.chips}>
@@ -1818,17 +1827,26 @@ export default function App() {
                     placeholder="Se detecta solo si hay un cable"
                     placeholderTextColor="#6b7280"
                     editable={!connected}
+                    accessibilityLabel={t.portLabel}
+                    accessibilityHint="Puerto serie USB del módulo Edge"
                   />
                   <Pressable
                     style={styles.btnSec}
                     onPress={refreshPorts}
+                    accessibilityRole="button"
                     accessibilityLabel={t.refreshPorts}
                   >
                     <Text style={styles.btnText}>{t.refreshPorts}</Text>
                   </Pressable>
                 </View>
                 {ports.map((p) => (
-                  <Pressable key={p.device} onPress={() => setPort(p.device)}>
+                  <Pressable
+                    key={p.device}
+                    onPress={() => setPort(p.device)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Puerto ${p.device}${p.description ? " — " + p.description : ""}`}
+                    accessibilityState={{ selected: port === p.device }}
+                  >
                     <Text style={styles.hint}>
                       {p.device}
                       {p.description ? ` — ${p.description}` : ""}
@@ -1887,10 +1905,15 @@ export default function App() {
                   editable={!connected}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  accessibilityLabel={t.mqttEdgeLabel}
+                  accessibilityHint={t.mqttEdgeHint}
                 />
                 <Pressable
                   style={[styles.btnSec, { marginTop: 8 }, (busy || scanningEdges) && styles.dis]}
                   disabled={busy || connected || scanningEdges}
+                  accessibilityRole="button"
+                  accessibilityLabel={t.mqttScanEdges}
+                  accessibilityState={{ disabled: busy || connected || scanningEdges }}
                   onPress={async () => {
                     const pr = profiles || (await api.profiles());
                     const mp =
@@ -1962,6 +1985,12 @@ export default function App() {
                     onPress={() => {
                       if (!connected) setMqttTopicPrefix(e.topic_prefix);
                     }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Módulo ${e.edge_id}, ${e.online ? t.mqttEdgeOnline : t.mqttEdgeOffline}, ${e.topic_prefix}`}
+                    accessibilityState={{
+                      selected: e.topic_prefix === mqttTopicPrefix,
+                      disabled: connected,
+                    }}
                   >
                     <Text
                       style={[
@@ -1979,6 +2008,8 @@ export default function App() {
                 <Pressable
                   style={[styles.btnSec, { marginTop: 10 }, busy && styles.dis]}
                   disabled={busy || connected}
+                  accessibilityRole="button"
+                  accessibilityLabel={t.brokerSetup}
                   onPress={async () => {
                     setBusy(true);
                     setOpName(t.brokerSetup);
@@ -2031,6 +2062,9 @@ export default function App() {
                     style={styles.btnSec}
                     onPress={scanBt}
                     disabled={scanning || connected}
+                    accessibilityRole="button"
+                    accessibilityLabel={t.scanBt}
+                    accessibilityState={{ disabled: scanning || connected }}
                   >
                     {scanning ? (
                       <ActivityIndicator color="#fff" />
@@ -2048,6 +2082,8 @@ export default function App() {
                     placeholderTextColor="#6b7280"
                     editable={!connected}
                     autoCapitalize="characters"
+                    accessibilityLabel={t.btDeviceLabel}
+                    accessibilityHint="Dirección Bluetooth del módulo"
                   />
                 ) : btAddress ? (
                   <Text style={styles.hint}>Seleccionado: {btAddress}</Text>
@@ -2060,7 +2096,13 @@ export default function App() {
                       ? d.name
                       : "Sin nombre";
                   return (
-                    <Pressable key={d.address} onPress={() => setBtAddress(d.address)}>
+                    <Pressable
+                      key={d.address}
+                      onPress={() => setBtAddress(d.address)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Bluetooth ${labelName}, ${d.address}`}
+                      accessibilityState={{ selected: d.address === btAddress }}
+                    >
                       <Text
                         style={[styles.hint, d.address === btAddress && styles.hintOn]}
                       >
@@ -2094,7 +2136,7 @@ export default function App() {
               )}
             </View>
 
-            <Text style={styles.section}>{t.telTitle}</Text>
+            <Text style={styles.section} accessibilityRole="header">{t.telTitle}</Text>
             <View style={styles.telGrid}>
               {telCards.map((c) => (
                 <View key={c.k} style={styles.telCard}>
@@ -2165,7 +2207,7 @@ export default function App() {
               </Pressable>
             </View>
 
-            <Text style={styles.section}>{t.activity}</Text>
+            <Text style={styles.section} accessibilityRole="header">{t.activity}</Text>
             <View style={styles.logBox}>
               <ScrollView
                 ref={logRef}
@@ -2195,17 +2237,25 @@ export default function App() {
                   placeholderTextColor="#6b7280"
                   onSubmitEditing={() => sendCmd()}
                   editable={connected}
+                  accessibilityLabel="Comando técnico"
+                  accessibilityHint={t.cmdPlaceholder}
                 />
                 <Pressable
                   style={[styles.btnPri, !connected && styles.dis]}
                   onPress={() => sendCmd()}
                   disabled={!connected}
+                  accessibilityRole="button"
+                  accessibilityLabel={t.send}
                 >
                   <Text style={styles.btnText}>{t.send}</Text>
                 </Pressable>
               </View>
             ) : (
-              <Pressable onPress={() => setShowAdvancedCmd(true)}>
+              <Pressable
+                onPress={() => setShowAdvancedCmd(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Mostrar comando técnico avanzado"
+              >
                 <Text style={styles.linkMuted}>Mostrar comando técnico (avanzado)</Text>
               </Pressable>
             )}
@@ -2214,7 +2264,7 @@ export default function App() {
 
         {tab === "params" && (
           <>
-            <Text style={styles.section}>
+            <Text style={styles.section} accessibilityRole="header">
               {t.recipesTitle}: {plist.name}{" "}
               <Text style={styles.sectionCount}>
                 ({filteredParams.length}
@@ -2276,6 +2326,9 @@ export default function App() {
               <Switch
                 value={filterRecipesByModel}
                 onValueChange={setFilterRecipesByModel}
+                accessibilityLabel={t.driveModelFilter}
+                accessibilityRole="switch"
+                accessibilityState={{ checked: filterRecipesByModel }}
               />
               <Text style={[styles.hint, { flex: 1, marginLeft: 8 }]}>
                 {t.driveModelFilter}
@@ -2376,6 +2429,7 @@ export default function App() {
               placeholder="ID, nombre del manual, valor… (ej. F0.00, pressure, 2.6)"
               placeholderTextColor={colors.textDim}
               accessibilityLabel="Buscar parámetros en la receta"
+              accessibilityHint="Filtra por identificador, nombre de manual o valor"
               clearButtonMode="while-editing"
             />
             <View style={styles.chips}>
@@ -2475,7 +2529,7 @@ export default function App() {
               })
             )}
 
-            <Text style={styles.section}>{t.editor}</Text>
+            <Text style={styles.section} accessibilityRole="header">{t.editor}</Text>
             <Text style={styles.muted}>
               Modelo: {driveProfileShortLabel(driveProfileId)}
               {isPdhProfile(driveProfileId)
@@ -2492,6 +2546,8 @@ export default function App() {
               }
               autoCapitalize="characters"
               placeholderTextColor="#6b7280"
+              accessibilityLabel="ID parámetro"
+              accessibilityHint="Identificador del parámetro, por ejemplo F0.00 o P0-00"
             />
             {(() => {
               const look =
@@ -2536,6 +2592,7 @@ export default function App() {
                   }}
                   keyboardType="numeric"
                   placeholderTextColor="#6b7280"
+                  accessibilityLabel={t.indexLabel}
                 />
               </>
             ) : null}
@@ -2546,6 +2603,7 @@ export default function App() {
               onChangeText={setEdVal}
               keyboardType="decimal-pad"
               placeholderTextColor="#6b7280"
+              accessibilityLabel={t.valueLabel}
             />
             <Text style={styles.label}>{t.notesLabel}</Text>
             <TextInput
@@ -2554,16 +2612,33 @@ export default function App() {
               onChangeText={setEdNotes}
               multiline
               placeholderTextColor="#6b7280"
+              accessibilityLabel={t.notesLabel}
             />
             <View style={styles.row}>
-              <Switch value={edManual} onValueChange={setEdManual} />
+              <Switch
+                value={edManual}
+                onValueChange={setEdManual}
+                accessibilityLabel={t.manualFlag}
+                accessibilityRole="switch"
+                accessibilityState={{ checked: edManual }}
+              />
               <Text style={styles.hint}>{t.manualFlag}</Text>
             </View>
             <View style={styles.row}>
-              <Pressable style={styles.btnPri} onPress={addParam}>
+              <Pressable
+                style={styles.btnPri}
+                onPress={addParam}
+                accessibilityRole="button"
+                accessibilityLabel={t.addUpdate}
+              >
                 <Text style={styles.btnText}>{t.addUpdate}</Text>
               </Pressable>
-              <Pressable style={styles.btnDanger} onPress={delParam}>
+              <Pressable
+                style={styles.btnDanger}
+                onPress={delParam}
+                accessibilityRole="button"
+                accessibilityLabel={t.remove}
+              >
                 <Text style={styles.btnText}>{t.remove}</Text>
               </Pressable>
             </View>
@@ -2594,7 +2669,7 @@ export default function App() {
 
             {moreSection === "network" && (
           <>
-            <Text style={styles.section}>{t.edgeTitle}</Text>
+            <Text style={styles.section} accessibilityRole="header">{t.edgeTitle}</Text>
             <View style={styles.cardInfo}>
               <Text style={styles.cardInfoText}>{t.edgeWifiHint}</Text>
             </View>
@@ -2685,7 +2760,7 @@ export default function App() {
 
             {moreSection === "help" && (
           <>
-            <Text style={styles.section}>Ayuda</Text>
+            <Text style={styles.section} accessibilityRole="header">Ayuda</Text>
             <View style={styles.cardInfo}>
               <Text style={styles.cardInfoText}>
                 Rol actual: <Text style={{ fontWeight: "700" }}>{roleLabel(getRole())}</Text>
@@ -2712,7 +2787,7 @@ export default function App() {
               <Text style={styles.btnText}>{t.about}</Text>
             </Pressable>
 
-            <Text style={[styles.section, { marginTop: 16 }]}>{t.profilesTemplateHint}</Text>
+            <Text style={[styles.section, { marginTop: 16 }]} accessibilityRole="header">{t.profilesTemplateHint}</Text>
             <Pressable
               style={styles.btnSec}
               onPress={async () => {
@@ -2796,6 +2871,8 @@ export default function App() {
                   placeholderTextColor="#6b7280"
                   secureTextEntry
                   keyboardType="number-pad"
+                  accessibilityLabel={t.pinChange}
+                  accessibilityHint="Nuevo PIN de acceso técnico"
                 />
                 <Pressable
                   style={styles.btnSec}
@@ -2893,7 +2970,7 @@ export default function App() {
             <View style={styles.cardInfo}>
               <Text style={styles.cardInfoText}>{t.profilesMqttHelp}</Text>
             </View>
-            <Text style={styles.section}>Perfil de red (MQTT)</Text>
+            <Text style={styles.section} accessibilityRole="header">Perfil de red (MQTT)</Text>
             {(
               [
                 ["name", "Nombre del perfil (ej. Planta-1)"],
@@ -2913,6 +2990,7 @@ export default function App() {
                   onChangeText={(v) => setMForm((f) => ({ ...f, [k]: v }))}
                   secureTextEntry={k === "password"}
                   placeholderTextColor="#6b7280"
+                  accessibilityLabel={lab}
                 />
               </View>
             ))}
@@ -2923,7 +3001,7 @@ export default function App() {
             <View style={[styles.cardInfo, { marginTop: 16 }]}>
               <Text style={styles.cardInfoText}>{t.profilesWifiHelp}</Text>
             </View>
-            <Text style={styles.section}>Perfil Wi‑Fi</Text>
+            <Text style={styles.section} accessibilityRole="header">Perfil Wi‑Fi</Text>
             {(
               [
                 ["name", "Nombre del perfil"],
@@ -2939,6 +3017,7 @@ export default function App() {
                   onChangeText={(v) => setWForm((f) => ({ ...f, [k]: v }))}
                   secureTextEntry={k === "password"}
                   placeholderTextColor="#6b7280"
+                  accessibilityLabel={lab}
                 />
               </View>
             ))}
@@ -2970,6 +3049,8 @@ export default function App() {
               secureTextEntry
               keyboardType="number-pad"
               autoFocus
+              accessibilityLabel={t.pinTitle}
+              accessibilityHint={t.pinPlaceholder}
             />
             <View style={styles.row}>
               <Pressable
@@ -3116,6 +3197,7 @@ function Chip({
       disabled={disabled}
       style={[styles.chip, active && styles.chipOn, disabled && styles.dis]}
       accessibilityRole="button"
+      accessibilityLabel={label}
       accessibilityState={{ selected: !!active, disabled: !!disabled }}
     >
       <Text style={styles.chipText}>{label}</Text>

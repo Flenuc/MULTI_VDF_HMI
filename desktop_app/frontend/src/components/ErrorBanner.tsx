@@ -24,7 +24,7 @@ export function ErrorBanner({ error, onDismiss, onRetry }: Props) {
     <View
       style={styles.wrap}
       accessibilityRole="alert"
-      accessibilityLiveRegion="polite"
+      accessibilityLiveRegion="assertive"
     >
       <View style={styles.head}>
         <Text style={styles.title}>{error.title}</Text>

@@ -91,7 +91,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="MULTI_VDF_HMI Backend",
-    version="0.3.8",
+    version="0.3.9",
     description="Python transport layer for USB / MQTT / BT / BLE — UI-agnostic.",
     lifespan=lifespan,
 )

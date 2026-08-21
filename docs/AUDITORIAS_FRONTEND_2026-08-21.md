@@ -137,6 +137,10 @@
   - Sync: primario = Comparar primero; secundario = Enviar sin comparar
   - Overlay sync: contenido detrás con `importantForAccessibility` / `aria-hidden`
   - Filas mismatch: badge textual `≠ Diferente`
-- [ ] Sprint B implementado
+- [x] Sprint B implementado (2026-08-21)
+  - `accessibilityRole="header"` en secciones
+  - `accessibilityLabel` (+ hints) en TextInput / Switch / Chip
+  - Listas USB / BT / Edges MQTT con role + selected
+  - `accessibilityLiveRegion` en statusLine, progreso y ErrorBanner (assertive)
 - [ ] Sprint C implementado
 - [ ] Decisión P3-01 documentada en README / app.json
