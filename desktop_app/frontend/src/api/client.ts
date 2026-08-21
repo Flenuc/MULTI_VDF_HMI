@@ -12,6 +12,8 @@ import type {
 import type { ParameterList } from "../lib/params";
 
 const DEFAULT_BASE = "http://127.0.0.1:8765";
+/** Android emulator → host loopback. Physical device: set EXPO_PUBLIC_API_URL. */
+const ANDROID_EMU_BASE = "http://10.0.2.2:8765";
 
 export function apiBase(): string {
   const env =
@@ -19,6 +21,15 @@ export function apiBase(): string {
       ? String(process.env.EXPO_PUBLIC_API_URL)
       : "";
   if (env) return env.replace(/\/$/, "");
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { Platform } = require("react-native") as { Platform: { OS: string } };
+    if (Platform?.OS === "android") return ANDROID_EMU_BASE;
+    if (Platform?.OS === "ios") return DEFAULT_BASE;
+  } catch {
+    /* web / no RN Platform */
+  }
 
   if (typeof window !== "undefined" && window.location?.protocol?.startsWith("http")) {
     const { protocol, hostname, port } = window.location;

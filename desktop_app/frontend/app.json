@@ -2,7 +2,7 @@
   "expo": {
     "name": "VarioField",
     "slug": "variofield",
-    "version": "0.3.10",
+    "version": "0.3.11",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -13,17 +13,19 @@
     },
     "ios": {
       "supportsTablet": true,
-      "_comment": "EXPERIMENTAL — prefs/files use web APIs; see desktop_app/README.md Platforms"
+      "bundleIdentifier": "com.variofield.app"
     },
     "android": {
-      "_comment": "EXPERIMENTAL — prefs/files use web APIs; see desktop_app/README.md Platforms",
+      "package": "com.variofield.app",
+      "versionCode": 311,
       "adaptiveIcon": {
         "backgroundColor": "#0b1220",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": []
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -31,6 +33,12 @@
       "lang": "es",
       "name": "VarioField",
       "description": "Recetas y enlace a variadores en campo"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "variofield-smoke"
+      },
+      "platformsNote": "Official: Electron + Web. Android APK is experimental smoke UI (no embedded Python backend)."
     }
   }
 }

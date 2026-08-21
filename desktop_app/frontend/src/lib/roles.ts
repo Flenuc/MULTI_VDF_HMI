@@ -8,6 +8,8 @@
  * Product decision: operator MAY edit plant profiles with clear instructions.
  */
 
+import { storageGet, storageRemove, storageSet } from "./storage";
+
 export type AppRole = "operario" | "tecnico";
 
 const KEY_ROLE = "variofield_role";
@@ -19,14 +21,12 @@ export const DEFAULT_TECH_PIN = "2580";
 
 export function getRole(): AppRole {
   try {
-    const r = localStorage?.getItem(KEY_ROLE);
+    const r = storageGet(KEY_ROLE);
     if (r === "tecnico" || r === "operario") return r;
-    // Migrate legacy unlock flag
-    if (localStorage?.getItem(KEY_LEGACY_DEV) === "1") return "tecnico";
+    if (storageGet(KEY_LEGACY_DEV) === "1") return "tecnico";
   } catch {
     /* ignore */
   }
-  // Build-time force
   try {
     const flag =
       typeof process !== "undefined" ? process.env?.EXPO_PUBLIC_DEV_TOOLS : undefined;
@@ -42,10 +42,9 @@ export function getRole(): AppRole {
 
 export function setRole(role: AppRole): void {
   try {
-    localStorage?.setItem(KEY_ROLE, role);
-    // Keep legacy key in sync for older code paths
-    if (role === "tecnico") localStorage?.setItem(KEY_LEGACY_DEV, "1");
-    else localStorage?.removeItem(KEY_LEGACY_DEV);
+    storageSet(KEY_ROLE, role);
+    if (role === "tecnico") storageSet(KEY_LEGACY_DEV, "1");
+    else storageRemove(KEY_LEGACY_DEV);
   } catch {
     /* ignore */
   }
@@ -61,7 +60,7 @@ export function isOperator(): boolean {
 
 export function getTechPin(): string {
   try {
-    const p = localStorage?.getItem(KEY_PIN);
+    const p = storageGet(KEY_PIN);
     if (p && p.length >= 4) return p;
   } catch {
     /* ignore */
@@ -73,7 +72,7 @@ export function setTechPin(pin: string): void {
   const clean = String(pin || "").trim();
   if (clean.length < 4) throw new Error("El PIN debe tener al menos 4 dígitos");
   try {
-    localStorage?.setItem(KEY_PIN, clean);
+    storageSet(KEY_PIN, clean);
   } catch {
     /* ignore */
   }

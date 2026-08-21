@@ -1,37 +1,23 @@
-/** Lightweight prefs (web + Electron webview = localStorage). */
+/** Lightweight prefs — Web/Electron (localStorage) or native smoke (memory). */
+
+import { storageGet, storageRemove, storageSet } from "./storage";
 
 const KEY_TUTORIAL_DONE = "variofield_tutorial_done";
 const KEY_DRIVE_PROFILE = "variofield_drive_profile_id";
 
 export function isTutorialDone(): boolean {
-  try {
-    return localStorage?.getItem(KEY_TUTORIAL_DONE) === "1";
-  } catch {
-    return false;
-  }
+  return storageGet(KEY_TUTORIAL_DONE) === "1";
 }
 
 export function setTutorialDone(done: boolean): void {
-  try {
-    if (done) localStorage?.setItem(KEY_TUTORIAL_DONE, "1");
-    else localStorage?.removeItem(KEY_TUTORIAL_DONE);
-  } catch {
-    /* ignore */
-  }
+  if (done) storageSet(KEY_TUTORIAL_DONE, "1");
+  else storageRemove(KEY_TUTORIAL_DONE);
 }
 
 export function getLastDriveProfileId(): string | null {
-  try {
-    return localStorage?.getItem(KEY_DRIVE_PROFILE) || null;
-  } catch {
-    return null;
-  }
+  return storageGet(KEY_DRIVE_PROFILE);
 }
 
 export function setLastDriveProfileId(id: string): void {
-  try {
-    if (id) localStorage?.setItem(KEY_DRIVE_PROFILE, id);
-  } catch {
-    /* ignore */
-  }
+  if (id) storageSet(KEY_DRIVE_PROFILE, id);
 }

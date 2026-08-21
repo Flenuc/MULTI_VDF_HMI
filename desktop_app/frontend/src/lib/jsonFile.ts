@@ -124,7 +124,12 @@ export async function exportJsonFile(
     const res = await bridge.saveJsonFile({ defaultPath: filename, content: text });
     return res?.path ?? null;
   }
-  // Browser download
+  // Browser download (not available on native RN)
+  if (typeof document === "undefined") {
+    throw new Error(
+      "Exportar JSON en Android/iOS nativo aún no está disponible (smoke APK)."
+    );
+  }
   const blob = new Blob([text], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -142,6 +147,11 @@ export async function importJsonObject(): Promise<unknown | null> {
     const res = await bridge.openJsonFile();
     if (!res?.text) return null;
     return JSON.parse(res.text);
+  }
+  if (typeof document === "undefined") {
+    throw new Error(
+      "Importar JSON en Android/iOS nativo aún no está disponible (smoke APK)."
+    );
   }
   return new Promise((resolve, reject) => {
     const input = document.createElement("input");
@@ -183,6 +193,11 @@ export async function importParamListJson(): Promise<{
   }
 
   // Browser / Expo web
+  if (typeof document === "undefined") {
+    throw new Error(
+      "Importar receta en Android/iOS nativo aún no está disponible (smoke APK)."
+    );
+  }
   return new Promise((resolve, reject) => {
     const input = document.createElement("input");
     input.type = "file";
