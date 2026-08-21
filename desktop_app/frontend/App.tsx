@@ -1495,15 +1495,25 @@ export default function App() {
     });
   }, [plist.parameters, recipeSearch, recipeFilter, catalog]);
 
+  /** Diagnosis only — never physical start/stop (Sprint A / auditorías). */
   const quickActions = [
     { label: t.actCheckDrive, cmd: "ping" },
     { label: t.actLiveOn, cmd: "stream on" },
     { label: t.actLiveOff, cmd: "stream off" },
-    { label: t.actStart, cmd: "start" },
-    { label: t.actStop, cmd: "stop" },
     { label: t.actWifiInfo, cmd: "wifi status" },
     { label: t.actMqttInfo, cmd: "mqtt status" },
   ];
+
+  const confirmDriveStart = () => {
+    Alert.alert(t.driveStartConfirmTitle, t.driveStartConfirmBody, [
+      { text: t.driveStartConfirmCancel, style: "cancel" },
+      {
+        text: t.driveStartConfirmOk,
+        style: "destructive",
+        onPress: () => sendCmd("start"),
+      },
+    ]);
+  };
 
   // force re-read showDevTools after unlock
   void devTick;
@@ -1612,6 +1622,11 @@ export default function App() {
         style={{ flex: 1 }}
         contentContainerStyle={styles.pad}
         keyboardShouldPersistTaps="handled"
+        importantForAccessibility={
+          showSyncConfirm ? "no-hide-descendants" : "auto"
+        }
+        accessibilityElementsHidden={!!showSyncConfirm}
+        {...(showSyncConfirm ? ({ "aria-hidden": true } as object) : null)}
       >
         {tab === "home" && (
           <>
@@ -2096,7 +2111,12 @@ export default function App() {
               ))}
             </View>
 
-            <Text style={styles.section}>Acciones rápidas</Text>
+            <Text style={styles.section} accessibilityRole="header">
+              Acciones rápidas
+            </Text>
+            <Text style={styles.hint}>
+              Diagnóstico y lectura — no ponen el motor en marcha.
+            </Text>
             <View style={styles.chips}>
               {quickActions.map((a) => (
                 <Chip
@@ -2106,6 +2126,43 @@ export default function App() {
                   disabled={!connected}
                 />
               ))}
+            </View>
+
+            <Text style={styles.section} accessibilityRole="header">
+              {t.driveControlTitle}
+            </Text>
+            <Text style={styles.hint}>{t.driveControlHint}</Text>
+            <View style={styles.row}>
+              <Pressable
+                style={[
+                  styles.btnWarn,
+                  styles.btnLarge,
+                  { flex: 1 },
+                  !connected && styles.dis,
+                ]}
+                disabled={!connected}
+                onPress={confirmDriveStart}
+                accessibilityRole="button"
+                accessibilityLabel={t.actStart}
+                accessibilityHint={t.driveStartConfirmBody}
+              >
+                <Text style={styles.btnTextLarge}>{t.actStart}</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.btnDanger,
+                  styles.btnLarge,
+                  { flex: 1 },
+                  !connected && styles.dis,
+                ]}
+                disabled={!connected}
+                onPress={() => sendCmd("stop")}
+                accessibilityRole="button"
+                accessibilityLabel={t.actStop}
+                accessibilityHint="Detiene el variador de inmediato"
+              >
+                <Text style={styles.btnTextLarge}>{t.actStop}</Text>
+              </Pressable>
             </View>
 
             <Text style={styles.section}>{t.activity}</Text>
@@ -2382,12 +2439,16 @@ export default function App() {
                     accessibilityRole="button"
                     accessibilityLabel={`${a11yName} ${key} valor ${p.value}${
                       unit ? " " + unit : ""
-                    }`}
+                    }${p.mismatch ? ` ${t.mismatchBadge}` : ""}`}
+                    accessibilityState={{ selected: sel }}
                   >
                     <View style={{ flex: 1.1 }}>
                       <Text style={styles.td}>{key}</Text>
                       {p.manual_only ? (
                         <Text style={styles.tdSub}>Manual</Text>
+                      ) : null}
+                      {p.mismatch ? (
+                        <Text style={styles.mismatchBadge}>{t.mismatchBadge}</Text>
                       ) : null}
                     </View>
                     <View style={{ flex: 2.2 }}>
@@ -2774,30 +2835,39 @@ export default function App() {
           style={styles.syncOverlay}
           pointerEvents="box-none"
           accessibilityViewIsModal
+          accessibilityRole="summary"
+          accessibilityLabel={t.syncTitle}
         >
           <View style={styles.syncOverlayBackdrop}>
             <View style={styles.tutorialCard}>
-              <Text style={styles.tutorialTitle}>{t.syncTitle}</Text>
+              <Text style={styles.tutorialTitle} accessibilityRole="header">
+                {t.syncTitle}
+              </Text>
               <Text style={styles.tutorialBody}>
                 {t.syncBody(syncConfirmMeta.n, syncConfirmMeta.skipped)}
               </Text>
+              {/* Primary = safe path (Sprint A / auditorías) */}
               <Pressable
                 style={[styles.btnPri, styles.btnLarge, { marginTop: 8 }]}
                 onPress={() => {
                   setShowSyncConfirm(false);
-                  void runSync();
+                  void compareVfd();
                 }}
+                accessibilityRole="button"
+                accessibilityLabel={t.syncRecommendCompare}
               >
-                <Text style={styles.btnTextLarge}>{t.syncSendAnyway}</Text>
+                <Text style={styles.btnTextLarge}>{t.syncRecommendCompare}</Text>
               </Pressable>
               <Pressable
                 style={[styles.btnSec, { marginTop: 10 }]}
                 onPress={() => {
                   setShowSyncConfirm(false);
-                  void compareVfd();
+                  void runSync();
                 }}
+                accessibilityRole="button"
+                accessibilityLabel={t.syncSendAnyway}
               >
-                <Text style={styles.btnText}>{t.syncRecommendCompare}</Text>
+                <Text style={styles.btnText}>{t.syncSendAnyway}</Text>
               </Pressable>
               <Pressable
                 style={[styles.btnSec, { marginTop: 10 }]}
@@ -2805,6 +2875,8 @@ export default function App() {
                   setShowSyncConfirm(false);
                   pushLog("Envío cancelado.");
                 }}
+                accessibilityRole="button"
+                accessibilityLabel={t.syncCancel}
               >
                 <Text style={styles.btnText}>{t.syncCancel}</Text>
               </Pressable>
@@ -3383,7 +3455,7 @@ const styles = StyleSheet.create({
   },
   /** Full-window overlay for Electron (position fixed on web) */
   syncOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 10000,
     elevation: 10000,
   },
@@ -3392,6 +3464,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.82)",
     justifyContent: "center",
     padding: space.lg,
+  },
+  mismatchBadge: {
+    color: colors.danger,
+    fontSize: font.xs,
+    fontWeight: font.weightBold,
+    marginTop: 2,
   },
   modalCard: {
     backgroundColor: colors.bg,

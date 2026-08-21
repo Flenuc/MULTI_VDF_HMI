@@ -1,7 +1,7 @@
 {
   "name": "variofield-desktop",
   "productName": "VarioField",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "VarioField — recetas y enlace a variadores en campo (Electron + Python)",
   "homepage": "https://github.com/Flenuc/MULTI_VDF_HMI",
   "repository": {

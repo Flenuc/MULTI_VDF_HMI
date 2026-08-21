@@ -132,7 +132,11 @@
 ## 6. Estado
 
 - [x] Auditorías leídas y consolidadas (2026-08-21)
-- [ ] Sprint A implementado
+- [x] Sprint A implementado (2026-08-21)
+  - Marcha/Paro fuera de «Acciones rápidas»; bloque Control con confirmación de marcha
+  - Sync: primario = Comparar primero; secundario = Enviar sin comparar
+  - Overlay sync: contenido detrás con `importantForAccessibility` / `aria-hidden`
+  - Filas mismatch: badge textual `≠ Diferente`
 - [ ] Sprint B implementado
 - [ ] Sprint C implementado
 - [ ] Decisión P3-01 documentada en README / app.json

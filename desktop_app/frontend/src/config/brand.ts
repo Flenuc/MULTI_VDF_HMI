@@ -8,9 +8,9 @@ export const BRAND = {
   name: "VarioField",
   tagline: "Recetas y enlace a variadores en campo",
   fullName: "VarioField — gestor de campo multi-variador",
-  version: "0.3.7",
+  version: "0.3.8",
   /** Bump when Electron packaging UI must be distinguished from browser dev */
-  buildId: "20260821-catalog-ui-merge",
+  buildId: "20260821-sprint-a-ux-safety",
   /** Código interno / repo (solo diagnóstico) */
   codename: "MULTI_VDF_HMI",
 } as const;

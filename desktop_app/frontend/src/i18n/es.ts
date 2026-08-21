@@ -94,6 +94,15 @@ export const t = {
   actMqttInfo: "Estado de red del equipo",
   actBtInfo: "Estado Bluetooth",
   actHelpAdvanced: "Ayuda técnica (avanzado)",
+  driveControlTitle: "Control del variador",
+  driveControlHint:
+    "Estas acciones mueven el motor. Están separadas del diagnóstico a propósito.",
+  driveStartConfirmTitle: "¿Poner el variador en marcha?",
+  driveStartConfirmBody:
+    "Se enviará la orden de marcha al equipo. Confirmá solo si es seguro en planta.",
+  driveStartConfirmOk: "Sí, marcha",
+  driveStartConfirmCancel: "Cancelar",
+  mismatchBadge: "≠ Diferente",
 
   activity: "Actividad",
   activityEmpty: "Aquí verás lo que va haciendo la app…",
@@ -166,8 +175,8 @@ export const t = {
   syncBody: (n: number, skipped: number) =>
     `Se van a enviar ${n} parámetro(s) al variador.\n` +
     (skipped ? `Se omiten ${skipped} marcados como “solo manual”.\n\n` : "\n") +
-    "Recomendación: compara antes con el variador para ver diferencias.\n" +
-    "¿Enviar de todos modos?",
+    "Recomendación: compara primero con el variador para ver diferencias.\n" +
+    "El camino seguro es comparar antes de escribir.",
   syncRecommendCompare: "Comparar primero (recomendado)",
   syncSendAnyway: "Enviar sin comparar",
   syncCancel: "Cancelar",
